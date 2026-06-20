@@ -42,8 +42,39 @@ full manifests stay in the POC. Samples exist to teach the format, not to migrat
 PLAN originally said "leave the manifest as-is"; this trim supersedes that so the
 repo isn't dominated by one 4 MB file.
 
+## Front of the pipeline (2026-06-20) — idea → writer-ready plan
+The original repo started from a *writing prompt* and assumed the prose already existed
+(review → plan → write → format → chunk). Added a **front of the pipeline** — three skills
+that turn a human's raw idea into a writer-ready plan *before* that loop. Full design in
+`FRONT-OF-PIPELINE.md`.
+
+- **`outline-enhancer`** (the dramaturg) — deepens the human sketch and **seeds `world/`**
+  (characters `CHAR-NNN`, threads `THR-NNN`, arcs `ARC-NNN`), marking unresolved directions
+  campaign-pending rather than inventing them. It is the *first writer into `world/`*.
+- **`story-arc-reviewer`** (the arc gate) — a **deliberate human checkpoint**. Surfaces the
+  enhancer's arcs as questions (`AQ-NNN`) and records the author's answers (`AC-NNN`).
+  Resolves campaign-pending items only when the author decides. This is the design choice
+  that matters: the bot does not assume; it verifies arc direction with the author.
+- **`manuscript-planner`** (the generation planner) — converts the validated outline into a
+  **generation guide** (`GP-NNN`): chapter targets, scene briefs, thread beats, voice/
+  continuity anchors. Deliberately *distinct from* `manuscript-editing-planner` (which plans
+  revisions from reviewer findings); this one plans the first generation of new prose.
+
+Why this shape:
+- **Human checkpoints, not autonomy.** The arc gate mirrors the campaign-pending discipline
+  already baked into the back half — some decisions are the author's to make. Surfacing
+  beats inventing.
+- **One shared memory.** The front *writes* `world/`; the existing v2 skills already *read*
+  it as canon. The front simply fills, at genesis, the memory the back half expects.
+- **Design + scaffolding only.** Complete `SKILL.md` + templates, no runner and no scripts
+  yet. Each stage's hand-off contract is defined; wiring to execution is future work.
+
 ## Open questions
 - Should `world/` canon travel with this repo (the manuscript skills reference it for
-  continuity)? For now NO — left in POC. Revisit if the writer skills need it at runtime.
+  continuity)? PARTIALLY RESOLVED (2026-06-20): the front-of-pipeline skills are the ones
+  that *create* `world/`, so its directory shape is now documented (see
+  `FRONT-OF-PIPELINE.md`). Still NO bulk canon data copied into the repo — only structure.
+- Should the front-of-pipeline skills get a v2 (stable-ID/voice-gate parity with the back
+  half), or stay single-version? For now single-version; revisit once they have a runner.
 - Book 2 / prequel currently chunk into separate manifests; this repo is book-agnostic
   and samples are drawn from Book 1 only.

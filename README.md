@@ -56,6 +56,28 @@ awareness).
 The loop is iterative: review → plan → write, repeat, then format and chunk once the
 prose is settled.
 
+### Before the pipeline: from idea to plan (new — design)
+
+The table above starts from a *writing prompt* — it assumes the story already exists. A
+newer **front of the pipeline** adds the stages that turn a human's raw idea into a
+writer-ready plan, *before* review/plan/write. These three skills are **design +
+scaffolding** (complete `SKILL.md` + templates; no runner yet):
+
+| # | Stage | Skill | What it does | Reads | Writes |
+|---|------|-------|--------------|-------|--------|
+| 0a | **Sketch** | *(human)* | The human supplies the seed: premise, outline, or beats. The only mandatory human-authored artifact at the top. | — | a rough sketch |
+| 0b | **Enhance** | `outline-enhancer` (the dramaturg) | Deepens the sketch and **seeds the `world/` memory** the rest of the pipeline reads as canon — characters (`CHAR-NNN`), threads (`THR-NNN`, plant/grow/harvest), arcs (`ARC-NNN`). Marks unresolved directions campaign-pending instead of inventing them. | human sketch | enriched outline + seeded `world/` |
+| 0c | **Arc gate** | `story-arc-reviewer` (the arc gate) | Confirms arc direction **with the author** — a deliberate human checkpoint. Turns proposed arcs into questions (`AQ-NNN`), records answers (`AC-NNN`), resolves campaign-pending items only when the author decides. | enriched outline + `world/` | human-validated outline |
+| 0d | **Generation plan** | `manuscript-planner` (the generation planner) | Turns the validated outline into a writer-ready **generation guide** (`GP-NNN`): chapter targets, scene briefs, per-chapter thread beats, voice/continuity anchors. The bridge to "write it." | validated outline + `world/` | generation guide |
+
+> **`manuscript-planner` vs `manuscript-editing-planner`** — different planners at opposite
+> ends of the pipeline. `manuscript-planner` plans the *first generation* of prose that
+> doesn't exist yet (validated outline → generation guide). `manuscript-editing-planner`
+> plans *revisions* to an existing draft from reviewer findings (RV → EP).
+
+See **`FRONT-OF-PIPELINE.md`** for the full design, the combined diagram, and the ID
+schemes.
+
 > **Skill default paths point at the POC.** A few SKILL.md files mention a default
 > manuscript repo path (`~/RiderProjects/RoadBeneathDragonsWings/`). That is just the
 > POC convention these skills were authored against. The skills are book-agnostic —
@@ -70,7 +92,11 @@ book-writer/
   README.md               <- this file
   PLAN.md                 <- how this repo was built (build guide)
   DESIGN-DECISIONS.md     <- why it is shaped this way (rationale + open questions)
+  FRONT-OF-PIPELINE.md    <- design of the new front stages (idea -> writer-ready plan)
   skills/
+    outline-enhancer/               <- front of pipeline (design): deepen + seed world/
+    story-arc-reviewer/             <- front of pipeline (design): arc gate, human-in-loop
+    manuscript-planner/             <- front of pipeline (design): outline -> generation guide
     book-reviewer/                  book-reviewer-v2/
     manuscript-editing-planner/     manuscript-editing-planner-v2/
     manuscript-writer/              manuscript-writer-v2/
