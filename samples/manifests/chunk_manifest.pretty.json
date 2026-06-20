@@ -1,0 +1,2724 @@
+{
+  "project": "audiobook_text_prep",
+  "created_at": "2026-06-17T01:05:05.280703+00:00",
+  "settings": {
+    "target_min_chars": 1500,
+    "target_max_chars": 1800,
+    "hard_max_chars": 2000,
+    "preserve_paragraphs": true,
+    "preserve_headings": true,
+    "normalize_quotes": false,
+    "normalize_whitespace": true,
+    "strip_markdown": true,
+    "sentence_split_strategy": "safe_boundary_first",
+    "pronunciation_guide_path": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\reviews\\2026-06-13-narrator-pronunciation-guide.md",
+    "pronunciation_guide_loaded": true,
+    "pronunciation_rules_loaded": 50
+  },
+  "source_files": [
+    {
+      "source_file_id": "ch00",
+      "path": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "display_name": "Chapter 00 - Prologue",
+      "detected_chapter": "00",
+      "source_hash": "655c25698f8dbec10bb7992b690eb911edaca890d7231bce2e771c9714dffcca",
+      "character_count": 64149,
+      "estimated_chunks": 36,
+      "pronunciation": {
+        "rules_loaded": 50,
+        "rules_applied": 1,
+        "substitutions_total_count": 16,
+        "original_source_hash": "47594c5e922ea8869da80a998f2c280ca900f2ee896c3fb1b5c906f1561b8057",
+        "original_character_count": 64133,
+        "post_substitution_character_count": 64149,
+        "applied": [
+          {
+            "original": "Dossi",
+            "replacement": "dahsee",
+            "count": 16
+          }
+        ]
+      }
+    },
+    {
+      "source_file_id": "ch00_5",
+      "path": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00.5 - Part I - The Burning Town.txt",
+      "display_name": "Chapter 00.5 - Part I - The Burning Town",
+      "detected_chapter": "00_5",
+      "source_hash": "e8c8ec67a57f5870fb8736faea166ec8e306ea9339c81f54f5b0f219d59c9bb9",
+      "character_count": 27,
+      "estimated_chunks": 1,
+      "pronunciation": {
+        "rules_loaded": 54,
+        "rules_applied": 0,
+        "substitutions_total_count": 0,
+        "original_source_hash": "e8c8ec67a57f5870fb8736faea166ec8e306ea9339c81f54f5b0f219d59c9bb9",
+        "original_character_count": 27,
+        "post_substitution_character_count": 27,
+        "applied": []
+      }
+    }
+  ],
+  "chunks": [
+    {
+      "chunk_id": "ch00_0001",
+      "sequence_global": 1,
+      "sequence_in_source": 1,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0001.txt",
+      "text": "PROLOGUE: THE NAME HE WOULD NOT SAY\n\n1. THE SHORE\n\nThe boat hit stone before dawn.\n\nNot cleanly. Not with the honest crack of wood against rock and then a stillness afterward, but with a wet, splintering violence that threw the man sideways and drove the child beneath his cloak hard against his ribs. Water came over the broken side in a black sheet. The little craft twisted under them as if something below had seized it and meant to drag it back.\n\nThe man did not curse.\n\nHe had spent the last of curses somewhere behind him.\n\nHe caught the child under one arm and threw himself toward the nearest shape that was not water. His boots found nothing. His shoulder struck the jagged edge of the boat. The child slipped. For one instant the small body was gone from beneath his cloak, swallowed by cold and dark.\n\nThe man went after him.\n\nSalt filled his mouth. A broken spar raked his cheek. The world became pressure, cloth, bubbles, the child’s limp hand against his wrist, and the awful weight of soaked wool. He caught that hand and pulled until the child’s body came back against him. Too small. Too cold. Too silent.\n\nThe man kicked.\n\nHis knee struck stone.\n\nPain flared white up his leg, but the stone held. He shoved against it, broke the surface, and drew one breath that sounded like something torn open.\n\nThe child coughed.\n\nThat small, choking sound did what the freezing sea had not. It made the man move.\n\nHe dragged them both toward the shore.\n\nThe stones were black and slick and sharp enough to bite through his palms. The tide worked against him, tugging at his boots, pulling at the child’s blanket, sucking broken pieces of the boat back into itself one by one. Twice he fell.",
+      "character_count": 1697,
+      "word_count": 307,
+      "paragraph_count": 16,
+      "sentence_count": 33,
+      "starts_with_heading": true,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": false,
+      "forced_sentence_split": false,
+      "source_start_char": 0,
+      "source_end_char": 1697,
+      "text_hash": "421d83f0522b69c94ea7fb8154a8c80f577c4824c0781f5aab8f4bd55d3efd66",
+      "context": {
+        "previous_chunk_id": null,
+        "next_chunk_id": "ch00_0002",
+        "first_sentence": "PROLOGUE: THE NAME HE WOULD NOT SAY",
+        "last_sentence": "Twice he fell.",
+        "previous_context": "",
+        "next_context": "Once the child’s head struck his chest with a dull little sound, and the man froze long enough to press two fingers beneath the child’s jaw."
+      },
+      "speechify": {
+        "status": "generated",
+        "voice_id": "john-rhys-davies",
+        "model": "simba-english",
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": "2026-06-16T03:10:28+00:00",
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": 1700,
+        "estimated_cost_usd": null,
+        "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0001.mp3",
+        "speech_marks_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0001.speechmarks.json",
+        "api_response_metadata_file": null,
+        "generation_attempts": [
+          {
+            "recorded_at": "2026-06-16T03:07:46+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0001.mp3"
+          },
+          {
+            "recorded_at": "2026-06-16T03:10:28+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0001.mp3"
+          }
+        ]
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0002",
+      "sequence_global": 2,
+      "sequence_in_source": 2,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0002.txt",
+      "text": "Once the child’s head struck his chest with a dull little sound, and the man froze long enough to press two fingers beneath the child’s jaw.\n\nThere.\n\nA pulse.\n\nThin as a thread. Stubborn as a curse.\n\nHe gathered the child closer and climbed.\n\nAbove the shore, low scrub bent in the wind. Beyond it, a road climbed toward a handful of lights. Lamps. Windows. A town, or the edge of one. Smoke lifted from chimneys into the same dark sky that carried another smoke much farther behind them.\n\nThe man looked back.\n\nAcross the water, nothing followed.\n\nNothing that could be seen.\n\nHis eyes did not trust that.\n\nThey moved over the black line of sea, over the scattered wreckage, over the bruised distance where smoke lay under the clouds. They moved again, counting what was visible and what was not. They returned to the water as if something might rise from it wearing a man’s shape.\n\nThe child stirred beneath his cloak.\n\nThe man bent over him at once.\n\nNo words came from the child. He was too young for the right ones, too spent for the few he had. His hair was plastered to his face. His lips were blue. One hand clutched the torn edge of the man’s coat with the blind strength of fever or fear.\n\n“Hold,” the man whispered.\n\nThe child held.\n\nA gull cried somewhere overhead.\n\nThe man flinched, just once, before he could stop himself. His hand went beneath his coat, not to the child, but to the place where a knife sat hidden.\n\nOnly a bird.\n\nOnly wind.\n\nOnly waves.\n\nHe stayed crouched in the rocks until the gull cried again and no answering cry came from the road. Then he pulled the child into his arms and rose.\n\nHis left leg nearly failed.\n\nHe did not let it.\n\nUp the stones. Through the scrub. Toward the lamps.",
+      "character_count": 1721,
+      "word_count": 317,
+      "paragraph_count": 25,
+      "sentence_count": 41,
+      "starts_with_heading": false,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": true,
+      "forced_sentence_split": false,
+      "source_start_char": 1698,
+      "source_end_char": 3419,
+      "text_hash": "bb0b7acfdde2e8dcec14e45221396cba1b473d3542f0f33100ca2891fd279b2f",
+      "context": {
+        "previous_chunk_id": "ch00_0001",
+        "next_chunk_id": "ch00_0003",
+        "first_sentence": "Once the child’s head struck his chest with a dull little sound, and the man froze long enough to press two fingers beneath the child’s jaw.",
+        "last_sentence": "Toward the lamps.",
+        "previous_context": "Twice he fell.",
+        "next_context": "The child’s head rested beneath his chin."
+      },
+      "speechify": {
+        "status": "generated",
+        "voice_id": "john-rhys-davies",
+        "model": "simba-english",
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": "2026-06-16T03:10:58+00:00",
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": 1727,
+        "estimated_cost_usd": null,
+        "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0002.mp3",
+        "speech_marks_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0002.speechmarks.json",
+        "api_response_metadata_file": null,
+        "generation_attempts": [
+          {
+            "recorded_at": "2026-06-16T03:07:47+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0002.mp3"
+          },
+          {
+            "recorded_at": "2026-06-16T03:10:58+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0002.mp3"
+          }
+        ]
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0003",
+      "sequence_global": 3,
+      "sequence_in_source": 3,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0003.txt",
+      "text": "The child’s head rested beneath his chin. Each breath was damp against the man’s throat. Small proof. Small mercy. The man moved as if that breath were the only thing left in the world that had not betrayed him.\n\nAt the top of the beach, he turned back one final time.\n\nThe water worked at the broken boat.\n\nThe sky paled by the width of a blade.\n\nThe man’s eyes searched until searching became pain.\n\nThen he faced the road and carried the child into the town.\n\n2. TOMAS VALE\n\nThe first person to see them was a woman carrying ashes.\n\nShe came out the back of a low house with a bucket braced against her hip, her hair wrapped in a gray scarf, her mouth already tightened against the cold. She opened the little gate with her foot, turned toward the ditch, and stopped.\n\nThe man stood in the road with a child in his arms and the sea running off him.\n\nFor a moment, neither of them spoke.\n\nThe woman looked past him, down toward the shore. She looked at his torn sleeve, the blood darkening the cloth beneath it, the child’s bare foot hanging from under the cloak.\n\n“Shipwreck?” she asked.\n\nThe man’s eyes moved to the alley beside her house, to the window above, to the corner where the road bent between two fish sheds, to the bucket in her hand. Only then did they settle on her face.\n\n“Yes.”\n\n“Gods. Which boat?”\n\n“Small one.”\n\n“That tells me little.”\n\n“It told me less when it broke.”\n\nThe woman stared at him. Suspicion came first. Then pity, because the child coughed again and made a weak, miserable sound against the man’s chest.\n\n“There’s an inn near the quay,” she said. “Fire will be lit.”\n\nThe man nodded once.\n\nHe did not thank her. Not because he was ungrateful. Because gratitude required lowering something in the body, and every part of him remained braced.",
+      "character_count": 1776,
+      "word_count": 326,
+      "paragraph_count": 23,
+      "sentence_count": 36,
+      "starts_with_heading": false,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": true,
+      "forced_sentence_split": false,
+      "source_start_char": 3421,
+      "source_end_char": 5197,
+      "text_hash": "8b5ffd35c796f836c05ba283cdc83483f9d76611e2a3cc0f376ab3f60bedce65",
+      "context": {
+        "previous_chunk_id": "ch00_0002",
+        "next_chunk_id": "ch00_0004",
+        "first_sentence": "The child’s head rested beneath his chin.",
+        "last_sentence": "Because gratitude required lowering something in the body, and every part of him remained braced.",
+        "previous_context": "Toward the lamps.",
+        "next_context": "The inn had a painted sign that swung and knocked softly against its iron hook."
+      },
+      "speechify": {
+        "status": "generated",
+        "voice_id": "john-rhys-davies",
+        "model": "simba-english",
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": "2026-06-16T03:11:34+00:00",
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": 1799,
+        "estimated_cost_usd": null,
+        "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0003.mp3",
+        "speech_marks_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0003.speechmarks.json",
+        "api_response_metadata_file": null,
+        "generation_attempts": [
+          {
+            "recorded_at": "2026-06-16T03:07:52+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0003.mp3"
+          },
+          {
+            "recorded_at": "2026-06-16T03:11:34+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0003.mp3"
+          }
+        ]
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0004",
+      "sequence_global": 4,
+      "sequence_in_source": 4,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0004.txt",
+      "text": "The inn had a painted sign that swung and knocked softly against its iron hook. Inside, the common room smelled of peat smoke, fish stew, damp wool, and men who had risen before the sun. A few heads turned when the door opened. Conversation thinned, then pretended it had not.\n\nThe innkeeper was broad, bald, and wrapped in a sheepskin vest. He took one look at the man and reached for a towel without being asked.\n\n“Wreck?” he said.\n\n“Yes.”\n\n“Any others?”\n\nThe man’s jaw shifted.\n\n“No.”\n\nThe room heard that. Not the answer. The space beneath it.\n\nThe innkeeper set the towel on the counter. “Name?”\n\nThe man reached for it with his free hand and stopped.\n\nThe child stirred. His eyes opened to slits, unfocused and glassy. He saw light, smoke, the innkeeper’s beard, a bowl on a table, nothing that would remain in him as memory. His little fingers worked once in the man’s coat and closed again.\n\n“Name,” the innkeeper repeated, less sharply now.\n\nThe man looked down at the child.\n\nThe pause lasted long enough for the woman by the hearth to notice it. Long enough for the old fisherman near the wall to lift his eyes. Long enough for the name he did not speak to die another death behind his teeth.\n\n“Tomas,” he said.\n\nThe innkeeper waited.\n\nThe man drew breath through his nose. It hurt him; that much showed.\n\n“Vale.”\n\n“Tomas Vale,” the innkeeper said, shaping the name into something that could be written down, charged for, remembered if need be.\n\n“Yes.”\n\n“And the little one?”\n\n“My son.”\n\nThe answer came faster this time. Not because it was true in the way records cared about truth, but because it had to become true before anyone heard the seam.\n\nThe innkeeper leaned over the counter. “Boy’s name?”",
+      "character_count": 1712,
+      "word_count": 304,
+      "paragraph_count": 24,
+      "sentence_count": 39,
+      "starts_with_heading": false,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": true,
+      "forced_sentence_split": false,
+      "source_start_char": 5199,
+      "source_end_char": 6911,
+      "text_hash": "e8e76b07693df6a417188d3f863f14f38d51a8abe2b3bbde16286d1c5d9842c3",
+      "context": {
+        "previous_chunk_id": "ch00_0003",
+        "next_chunk_id": "ch00_0005",
+        "first_sentence": "The inn had a painted sign that swung and knocked softly against its iron hook.",
+        "last_sentence": "“Boy’s name?”",
+        "previous_context": "Because gratitude required lowering something in the body, and every part of him remained braced.",
+        "next_context": "The man adjusted the child beneath the cloak."
+      },
+      "speechify": {
+        "status": "generated",
+        "voice_id": "john-rhys-davies",
+        "model": "simba-english",
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": "2026-06-16T03:12:11+00:00",
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": 1742,
+        "estimated_cost_usd": null,
+        "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0004.mp3",
+        "speech_marks_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0004.speechmarks.json",
+        "api_response_metadata_file": null,
+        "generation_attempts": [
+          {
+            "recorded_at": "2026-06-16T03:07:54+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0004.mp3"
+          },
+          {
+            "recorded_at": "2026-06-16T03:12:11+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0004.mp3"
+          }
+        ]
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0005",
+      "sequence_global": 5,
+      "sequence_in_source": 5,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0005.txt",
+      "text": "The man adjusted the child beneath the cloak.\n\n“Gil.”\n\n“Gil Vale?”\n\n“Yes.”\n\nThe child blinked once.\n\nThe innkeeper nodded. “Room upstairs. Last door. Door sticks, but it shuts. My wife will find dry things for the boy.”\n\n“I need a room with a window.”\n\nThe innkeeper’s expression changed.\n\nThe man added, a fraction too late, “Air. He’s fevered.”\n\nThe innkeeper looked at the child again and accepted the lie because it was easier than refusing a fevered child.\n\n“Last room has one.”\n\n“Facing?”\n\n“The alley.”\n\n“Street?”\n\n“Alley.”\n\nThe man’s eyes went to the front windows, to the door, to the men at their bowls.\n\nThe innkeeper’s patience thinned. “Do you want the room or not?”\n\nThe man reached into his purse.\n\nThe coin he nearly drew out was wrong.\n\nHis fingers closed over it before anyone else could see clearly, but the innkeeper’s wife had come from the kitchen by then, and her eyes were sharper than her husband’s. They flicked down, then up.\n\nThe man found smaller coin. Duller coin. Coin that belonged in a wet stranger’s hand.\n\nHe paid.\n\nThe innkeeper gave him the key.\n\nAs the man crossed the room, the old fisherman near the wall said, “Sea takes what it wants.”\n\nThe man stopped.\n\nOnly for half a breath.\n\nThen he climbed the stairs with the child in his arms, and every step up made blood drip from his sleeve onto the boards behind him.\n\nIn the room, he set the child on the bed and checked the window before the blanket. Checked the latch before the wound. Checked the alley, the roofline, the drop to the ground, the angle of the door, the strength of the chair, the gap beneath the threshold.\n\nOnly then did he kneel beside the bed.\n\nThe child was watching him without understanding.",
+      "character_count": 1703,
+      "word_count": 302,
+      "paragraph_count": 30,
+      "sentence_count": 41,
+      "starts_with_heading": false,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": true,
+      "forced_sentence_split": false,
+      "source_start_char": 6913,
+      "source_end_char": 8616,
+      "text_hash": "0e039a3ce55a337faa8a425746dcf06c551cff484067b4730c195156d6927e61",
+      "context": {
+        "previous_chunk_id": "ch00_0004",
+        "next_chunk_id": "ch00_0006",
+        "first_sentence": "The man adjusted the child beneath the cloak.",
+        "last_sentence": "The child was watching him without understanding.",
+        "previous_context": "“Boy’s name?”",
+        "next_context": "“Gil,” the man whispered."
+      },
+      "speechify": {
+        "status": "generated",
+        "voice_id": "john-rhys-davies",
+        "model": "simba-english",
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": "2026-06-16T03:12:46+00:00",
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": 1736,
+        "estimated_cost_usd": null,
+        "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0005.mp3",
+        "speech_marks_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0005.speechmarks.json",
+        "api_response_metadata_file": null,
+        "generation_attempts": [
+          {
+            "recorded_at": "2026-06-16T03:07:53+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0005.mp3"
+          },
+          {
+            "recorded_at": "2026-06-16T03:12:46+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0005.mp3"
+          }
+        ]
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0006",
+      "sequence_global": 6,
+      "sequence_in_source": 6,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0006.txt",
+      "text": "“Gil,” the man whispered.\n\nNo response.\n\nThe man touched the child’s hair. His hand shook once and then went still by force.\n\n“Gil Vale.”\n\nThe child’s eyes closed.\n\nThe man stayed there until he was sure the boy breathed evenly. Then he rose, moved the chair beneath the latch, sat with his back to the wall where he could see both door and window, and listened to the town wake.\n\nBy noon, the innkeeper’s wife had brought dry clothes.\n\nBy dusk, the harbor knew a wrecked man named Tomas Vale had come ashore with his little son.\n\nBy morning, Tomas Vale had already learned the faces of every man who entered the inn twice.\n\n3. YEARS LATER: BOOTS BEFORE DAWN\n\n“Boots.”\n\nGil woke before the hand touched his shoulder.\n\nThat was how he knew.\n\nHis father stood beside the narrow bed with one finger pressed to his lips, though Gil had not made a sound. The candle in his hand was shielded by his palm. Its light did not fill the room. It only cut his face into pieces: cheekbone, brow, mouth, the dark of eyes already moving past Gil to the shutter, the door, the corner where the pack lay half-filled.\n\n“Boots,” his father said again.\n\nGil sat up.\n\nCold slipped under the blanket at once. He had slept dressed in inns before; he had slept booted once or twice in places his father would not name; this was not the first morning the dark had come to take him out of a town. It did not happen every year. It happened often enough.\n\n“When?” Gil whispered.\n\n“Now.”\n\nThe answer made his stomach hollow.\n\nThey had been in Rillbank nearly two years. Long enough for the baker to call him by name. Long enough for Jorin from the tannery to owe him three buttons and a copper from a game of stones. Long enough that he had stopped sleeping with his boots beside the bed unless his father reminded him.",
+      "character_count": 1790,
+      "word_count": 331,
+      "paragraph_count": 21,
+      "sentence_count": 32,
+      "starts_with_heading": false,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": true,
+      "forced_sentence_split": false,
+      "source_start_char": 8618,
+      "source_end_char": 10408,
+      "text_hash": "8df41317aedafc7e7907375e8f374c838b8909bd369003f3d62c27a37af2c4ca",
+      "context": {
+        "previous_chunk_id": "ch00_0005",
+        "next_chunk_id": "ch00_0007",
+        "first_sentence": "“Gil,” the man whispered.",
+        "last_sentence": "Long enough that he had stopped sleeping with his boots beside the bed unless his father reminded him.",
+        "previous_context": "The child was watching him without understanding.",
+        "next_context": "His father had reminded him last night."
+      },
+      "speechify": {
+        "status": "generated",
+        "voice_id": "john-rhys-davies",
+        "model": "simba-english",
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": "2026-06-16T03:13:23+00:00",
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": 1805,
+        "estimated_cost_usd": null,
+        "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0006.mp3",
+        "speech_marks_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0006.speechmarks.json",
+        "api_response_metadata_file": null,
+        "generation_attempts": [
+          {
+            "recorded_at": "2026-06-16T03:08:21+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0006.mp3"
+          },
+          {
+            "recorded_at": "2026-06-16T03:13:23+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0006.mp3"
+          }
+        ]
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0007",
+      "sequence_global": 7,
+      "sequence_in_source": 7,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0007.txt",
+      "text": "His father had reminded him last night.\n\nGil had pretended not to understand.\n\nNow the pack was open. He reached for his boots. The left one had a split near the toe. His father had promised to mend it after market day, and market day was tomorrow. Gil pulled it on anyway.\n\nHis father crossed to the shutter and lifted the edge by a finger’s width. He did not look out like other men looked out. Other men looked at weather, neighbors, carts, dogs. Tomas Vale looked as though the dark itself might have changed shape while he slept.\n\nGil tied his laces.\n\n“Is it work?” he asked.\n\nHis father let the shutter fall.\n\n“What?”\n\n“Why we’re going.”\n\nHis father turned.\n\nEven in the thin light, Gil saw the answer being made. He knew the look. His father kept reasons the way other men kept coins: sorted, hidden, chosen only when needed.\n\n“Work will be better south.”\n\nGil looked at the pack.\n\n“In winter?”\n\n“Especially before winter.”\n\nHis father put the candle down and crouched in front of him. That frightened Gil more than anger would have.\n\n“Gil,” he said. “What is the rule?”\n\nGil looked away.\n\nHis father waited.\n\n“Quiet feet,” Gil muttered.\n\n“And?”\n\n“No lamps in windows.”\n\n“And?”\n\n“Answer what I’m asked. Not what I know.”\n\nHis father nodded once. “Good.”\n\n“I don’t know anything.”\n\nThat almost made his father smile.\n\nAlmost.\n\n“You know enough to be dangerous by accident.”\n\nHis father took the pack, lifted the latch, and opened the door one finger’s width. He listened to the hall, then to the street beyond it, then to the house itself, to the old beams and sleeping walls and the breath of their landlord snoring below.\n\nOnly after all that did he open the door wide enough for Gil to slip through.",
+      "character_count": 1708,
+      "word_count": 304,
+      "paragraph_count": 31,
+      "sentence_count": 45,
+      "starts_with_heading": false,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": true,
+      "forced_sentence_split": false,
+      "source_start_char": 10410,
+      "source_end_char": 12118,
+      "text_hash": "781d92cc9f45f0b6404cb0853b339b91cfb2a3ea6ed48b639a6eedd573560825",
+      "context": {
+        "previous_chunk_id": "ch00_0006",
+        "next_chunk_id": "ch00_0008",
+        "first_sentence": "His father had reminded him last night.",
+        "last_sentence": "Only after all that did he open the door wide enough for Gil to slip through.",
+        "previous_context": "Long enough that he had stopped sleeping with his boots beside the bed unless his father reminded him.",
+        "next_context": "They left the room without a lamp."
+      },
+      "speechify": {
+        "status": "generated",
+        "voice_id": "john-rhys-davies",
+        "model": "simba-english",
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": "2026-06-16T03:13:59+00:00",
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": 1745,
+        "estimated_cost_usd": null,
+        "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0007.mp3",
+        "speech_marks_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0007.speechmarks.json",
+        "api_response_metadata_file": null,
+        "generation_attempts": [
+          {
+            "recorded_at": "2026-06-16T03:08:24+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0007.mp3"
+          },
+          {
+            "recorded_at": "2026-06-16T03:13:59+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0007.mp3"
+          }
+        ]
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0008",
+      "sequence_global": 8,
+      "sequence_in_source": 8,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0008.txt",
+      "text": "They left the room without a lamp.\n\nBehind them, on the table, lay the mended slate Gil had meant to show Jorin.\n\nHis father did not let him go back for it.\n\n4. GIL VALE\n\nIn Rillbank, Gil Vale had almost been ordinary.\n\nThat was not the same as ordinary, but Gil had learned not to be greedy. He had a hook by the door for his coat if he remembered. He knew which loose board in the stair sang no matter how softly anyone stepped on it. He knew his father’s work — letters for men who could shout across fields but went shy before paper, accounts for the brewer until the brewer accused him of making the sums too honest, latches mended, blades sharpened, a merchant’s dislocated finger reset once with a calm that made the merchant faint afterward.\n\nPeople called Tomas useful.\n\nThey called Gil quiet.\n\nHe knew his mother only from the shape of what his father said. She had died when Gil was small. She had liked rain. He had tried, when he was younger, to find her in himself — a face, a voice, the smell of hair or skin — and nothing had come.\n\nOnly roads. Rooms. His father’s hand holding his. His father’s voice saying, “Not that way.” His father waking from sleep already reaching for a knife.\n\nThat was childhood.\n\nA rented room. A packed bag. A rule for strangers. A story revised by firelight.\n\nIn Rillbank, Gil had begun to believe they might stay until the split in his boot became two splits, until he outgrew the coat with the patched elbow.\n\nThen the man with the green scarf came to town.\n\nTraders came through Rillbank before winter. Men bought wool, sold salt, argued over nails, lied about road conditions, and asked after beer. The man with the green scarf did all of these except buy. He touched a bolt of cloth without looking at it.",
+      "character_count": 1755,
+      "word_count": 326,
+      "paragraph_count": 15,
+      "sentence_count": 30,
+      "starts_with_heading": false,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": false,
+      "forced_sentence_split": false,
+      "source_start_char": 12120,
+      "source_end_char": 13875,
+      "text_hash": "a9f033218bd12c67f9e7ca0f065cc8cc3ac1b9c568b079b4129dcdd6a376c94c",
+      "context": {
+        "previous_chunk_id": "ch00_0007",
+        "next_chunk_id": "ch00_0009",
+        "first_sentence": "They left the room without a lamp.",
+        "last_sentence": "He touched a bolt of cloth without looking at it.",
+        "previous_context": "Only after all that did he open the door wide enough for Gil to slip through.",
+        "next_context": "He asked the cooper whether many strangers wintered in Rillbank."
+      },
+      "speechify": {
+        "status": "generated",
+        "voice_id": "john-rhys-davies",
+        "model": "simba-english",
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": "2026-06-16T03:14:35+00:00",
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": 1764,
+        "estimated_cost_usd": null,
+        "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0008.mp3",
+        "speech_marks_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0008.speechmarks.json",
+        "api_response_metadata_file": null,
+        "generation_attempts": [
+          {
+            "recorded_at": "2026-06-16T03:08:30+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0008.mp3"
+          },
+          {
+            "recorded_at": "2026-06-16T03:14:35+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0008.mp3"
+          }
+        ]
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0009",
+      "sequence_global": 9,
+      "sequence_in_source": 9,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0009.txt",
+      "text": "He asked the cooper whether many strangers wintered in Rillbank. He stood too long near the schoolroom door while Master Ell showed Gil how to divide three apples among five boys who all deserved less than one.\n\nGil noticed him because his father did.\n\nTomas Vale was across the square, speaking to a farmer with a torn lease in his hand. His head turned slightly. Not much. Not enough that anyone else would have called it looking.\n\nBut Gil saw his father see.\n\nThat evening, his father burned the copy scraps. He always saved clean scraps for Gil’s sums. That night he burned all of them, even the ones with good space left on one side.\n\n“Paper draws mice,” he said.\n\n“There are no mice.”\n\n“There will be.”\n\nThen his father opened the shutter, watched the road for a long while, and said, “Boots by the bed.”\n\nSo Gil put his boots by the bed.\n\nAnd before dawn, his father woke him.\n\n5. THE TOWN THAT ALMOST HELD\n\nThey went by the back stairs.\n\nTheir landlord’s old hound lifted its head from the kitchen rug and thumped its tail once before Tomas looked at it. The dog lowered its head again without a sound.\n\nEven animals listened when Gil’s father was like this.\n\nOutside, Rillbank was all blue dark and chimney smoke. The baker’s window was dark. Gil slowed as they passed it. His father’s hand touched his shoulder. No. Gil kept walking.\n\nHis father did not rush. That would draw notice. He walked at the pace of a man with somewhere to be and nothing to hide, but his eyes never stayed with his feet. They touched every doorway. Every shutter. The roofline above Master Ell’s schoolroom.\n\nAt the edge of town, he stopped.\n\nGil’s hope rose so suddenly it hurt. Maybe they were only going to the road. Maybe his father would look at whatever he needed to look at and decide it was nothing.",
+      "character_count": 1794,
+      "word_count": 327,
+      "paragraph_count": 19,
+      "sentence_count": 37,
+      "starts_with_heading": false,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": false,
+      "forced_sentence_split": false,
+      "source_start_char": 13876,
+      "source_end_char": 15670,
+      "text_hash": "3a98748ea0a6255592422ec482468ebe5aa2ee4b83b1269ce3d272c9225e7279",
+      "context": {
+        "previous_chunk_id": "ch00_0008",
+        "next_chunk_id": "ch00_0010",
+        "first_sentence": "He asked the cooper whether many strangers wintered in Rillbank.",
+        "last_sentence": "Maybe his father would look at whatever he needed to look at and decide it was nothing.",
+        "previous_context": "He touched a bolt of cloth without looking at it.",
+        "next_context": "Maybe they would go back, and Gil would pretend he had never been afraid."
+      },
+      "speechify": {
+        "status": "generated",
+        "voice_id": "john-rhys-davies",
+        "model": "simba-english",
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": "2026-06-16T03:15:12+00:00",
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": 1809,
+        "estimated_cost_usd": null,
+        "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0009.mp3",
+        "speech_marks_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0009.speechmarks.json",
+        "api_response_metadata_file": null,
+        "generation_attempts": [
+          {
+            "recorded_at": "2026-06-16T03:08:29+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0009.mp3"
+          },
+          {
+            "recorded_at": "2026-06-16T03:15:12+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0009.mp3"
+          }
+        ]
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0010",
+      "sequence_global": 10,
+      "sequence_in_source": 10,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0010.txt",
+      "text": "Maybe they would go back, and Gil would pretend he had never been afraid.\n\nHis father crouched by the milepost.\n\nA scrap of paper had been wedged into a crack in the wood.\n\nGil had passed that post every week and never noticed the crack.\n\nHis father took the paper without unfolding it. He looked once down the road behind them. Once at the town. Once at the field wall where frost had gathered white along the stones. Then he held the paper over the little flame of the candle stub he had carried in his pocket.\n\nThe paper curled black.\n\n“Was it for us?” Gil asked.\n\nHis father ground the ash into the mud with his boot.\n\n“It was for someone who might have been.”\n\n“What does that mean?”\n\n“It means walk.”\n\nSo Gil walked.\n\nBy sunrise, Rillbank had become one more town behind them.\n\nThen he looked up and saw Tomas Vale watching a rider crest the hill behind them. The rider was far away. Too far to know. Too far for any sensible man to fear.\n\nHis father guided Gil off the road and through a gap in the hedge without breaking stride. They crossed a field in the hard morning light while the rider passed along the road above them.\n\nGil did not hate him then.\n\nHe hated that his father was almost always right to be afraid.",
+      "character_count": 1225,
+      "word_count": 232,
+      "paragraph_count": 17,
+      "sentence_count": 25,
+      "starts_with_heading": false,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": true,
+      "forced_sentence_split": false,
+      "source_start_char": 15671,
+      "source_end_char": 16896,
+      "text_hash": "c36de91e4a41bdfbc99c0f64a6e0c6d118e0bd57aa13ce48797ead9953a4a620",
+      "context": {
+        "previous_chunk_id": "ch00_0009",
+        "next_chunk_id": "ch00_0011",
+        "first_sentence": "Maybe they would go back, and Gil would pretend he had never been afraid.",
+        "last_sentence": "He hated that his father was almost always right to be afraid.",
+        "previous_context": "Maybe his father would look at whatever he needed to look at and decide it was nothing.",
+        "next_context": "6. HIS FATHER’S EYES"
+      },
+      "speechify": {
+        "status": "generated",
+        "voice_id": "john-rhys-davies",
+        "model": "simba-english",
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": "2026-06-16T03:15:41+00:00",
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": 1233,
+        "estimated_cost_usd": null,
+        "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0010.mp3",
+        "speech_marks_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0010.speechmarks.json",
+        "api_response_metadata_file": null,
+        "generation_attempts": [
+          {
+            "recorded_at": "2026-06-16T03:08:24+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0010.mp3"
+          },
+          {
+            "recorded_at": "2026-06-16T03:15:41+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0010.mp3"
+          }
+        ]
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0011",
+      "sequence_global": 11,
+      "sequence_in_source": 11,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0011.txt",
+      "text": "6. HIS FATHER’S EYES\n\nOn the road from Rillbank, his father changed direction six times before noon.\n\n“South is that way,” Gil said after the third turn.\n\nHis father glanced at him. “Yes.”\n\n“You said work was better south.”\n\n“It is.”\n\n“We aren’t going south.”\n\n“No.”\n\nGil waited. His father did not explain.\n\nAt midday, they ate behind a collapsed sheep wall. His father broke the bread into uneven pieces and gave Gil the larger one without seeming to notice he had done it. He listened while they ate. Not to Gil. To everything else.\n\n“Why do people ask about us?” Gil said.\n\n“They ask about everyone.”\n\n“No, they don’t.”\n\nHis father looked at him then. Gil wished, suddenly, that he had stayed quiet.\n\n“What did someone ask?” Tomas said.\n\n“In Rillbank. The man with the scarf. He asked Master Ell if I had always lived there.”\n\nHis father’s face became still in a way Gil knew from winter ponds.\n\n“What did Master Ell say?”\n\n“That she was dead.”\n\nHis father looked away.\n\nFor a moment, Gil saw not fear in him, but pain. Not the kind from his bad knee or old shoulder. A lower thing. Deeper. It was gone before Gil knew what to do with it.\n\n“What should I say if someone asks?” Gil asked.\n\n“The truth you know.”\n\n“My mother died years ago.”\n\n“Yes.”\n\n“You don’t like to talk about her.”\n\n“No.”\n\n“We move for work.”\n\n“Yes.”\n\nGil stared at the bread in his lap.\n\n“Is that enough truth?”\n\nHis father picked up his piece again and did not eat it.\n\n“For most people.”\n\n“And for the others?”\n\nTomas Vale looked over the wall, toward the road they were no longer using.\n\n“For the others,” he said, “you come find me.”",
+      "character_count": 1612,
+      "word_count": 295,
+      "paragraph_count": 36,
+      "sentence_count": 49,
+      "starts_with_heading": true,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": true,
+      "forced_sentence_split": false,
+      "source_start_char": 16898,
+      "source_end_char": 18510,
+      "text_hash": "df32c16aa7b65aac6b1c2cff8c9fdc208fe3084960a87faf6d60952a658fb9a8",
+      "context": {
+        "previous_chunk_id": "ch00_0010",
+        "next_chunk_id": "ch00_0012",
+        "first_sentence": "6. HIS FATHER’S EYES",
+        "last_sentence": "“For the others,” he said, “you come find me.”",
+        "previous_context": "He hated that his father was almost always right to be afraid.",
+        "next_context": "7. LEAVING VALE BEHIND"
+      },
+      "speechify": {
+        "status": "generated",
+        "voice_id": "john-rhys-davies",
+        "model": "simba-english",
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": "2026-06-16T03:16:18+00:00",
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": 1669,
+        "estimated_cost_usd": null,
+        "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0011.mp3",
+        "speech_marks_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0011.speechmarks.json",
+        "api_response_metadata_file": null,
+        "generation_attempts": [
+          {
+            "recorded_at": "2026-06-16T03:08:56+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0011.mp3"
+          },
+          {
+            "recorded_at": "2026-06-16T03:16:18+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0011.mp3"
+          }
+        ]
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0012",
+      "sequence_global": 12,
+      "sequence_in_source": 12,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0012.txt",
+      "text": "7. LEAVING VALE BEHIND\n\nThe last thing Tomas Vale kept of Rillbank was not from Rillbank at all.\n\nIt was a little wooden tally Gil had seen him use for work, a narrow piece of ash marked with cuts along one side. It lived in his father’s writing kit with the cheap ink, dull knife, and folded papers.\n\nOn the second night after leaving, his father took it from the kit and sat by the fire a long while. Gil lay under his blanket and pretended to sleep.\n\nHis father scraped something from the tally with the point of his knife.\n\nNot the cuts. Marks on the back.\n\nLetters, maybe.\n\nWhen the scraping was done, he held the tally close to the coals until it browned, smoked, then burned. He watched until it was only a red line in the ash.\n\nGil sat up.\n\n“Was that ours?”\n\nHis father did not look surprised to find him awake.\n\n“No.”\n\n“Did it say Vale?”\n\nSilence.\n\n“Are we still Vale?”\n\nHis father stirred the ash with a stick. The red line broke apart.\n\n“For now.”\n\nBefore dawn, they left the hollow.\n\nThe ash where the tally burned scattered under Tomas Vale’s boot, and the name Vale began to loosen behind them like a thread pulled from cloth.",
+      "character_count": 1140,
+      "word_count": 214,
+      "paragraph_count": 19,
+      "sentence_count": 24,
+      "starts_with_heading": true,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": true,
+      "forced_sentence_split": false,
+      "source_start_char": 18512,
+      "source_end_char": 19652,
+      "text_hash": "598c299489694f406d63d4f3341baf89f24f10ad752be5ccfde7b72f43beec61",
+      "context": {
+        "previous_chunk_id": "ch00_0011",
+        "next_chunk_id": "ch00_0013",
+        "first_sentence": "7. LEAVING VALE BEHIND",
+        "last_sentence": "The ash where the tally burned scattered under Tomas Vale’s boot, and the name Vale began to loosen behind them like a thread pulled from cloth.",
+        "previous_context": "“For the others,” he said, “you come find me.”",
+        "next_context": "8. THE ROAD BETWEEN NAMES"
+      },
+      "speechify": {
+        "status": "generated",
+        "voice_id": "john-rhys-davies",
+        "model": "simba-english",
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": "2026-06-16T03:16:46+00:00",
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": 1152,
+        "estimated_cost_usd": null,
+        "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0012.mp3",
+        "speech_marks_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0012.speechmarks.json",
+        "api_response_metadata_file": null,
+        "generation_attempts": [
+          {
+            "recorded_at": "2026-06-16T03:08:53+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0012.mp3"
+          },
+          {
+            "recorded_at": "2026-06-16T03:16:46+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0012.mp3"
+          }
+        ]
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0013",
+      "sequence_global": 13,
+      "sequence_in_source": 13,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0013.txt",
+      "text": "8. THE ROAD BETWEEN NAMES\n\nThe road inland took them through country Gil did not know. There were fewer gulls, then none. The air lost its salt and grew full of turned earth, leaf mold, sheep, smoke, and rain caught in hedges.\n\nHis father became different on inland roads. Not easier. Never easy. But near water his eyes went again and again to the horizon; inland they went to crossroads, tree lines, ridge paths, places where a horse could wait unseen.\n\nThe new name came in a hayloft, on the seventh day, during a hard rain that rattled the roof and turned the yard below to muck. Gil had been practicing figures on a scrap of slate with a bit of chalk. His father sat near the loft door, where he could see the barn entrance through a crack in the boards.\n\n“De Vere,” his father said.\n\nGil looked up. “What?”\n\n“If anyone asks our name.”\n\n“Our name is Vale.”\n\n“Not when we reach the next town.”\n\nGil stared at him. His father’s face gave nothing away.\n\n“Why?”\n\n“Vale has become inconvenient.”\n\n“That’s not a reason.”\n\n“It is one of the oldest reasons.”\n\nGil threw the chalk down. “I don’t want another name.”\n\nHis father did not scold him. That made it worse.\n\nFor a while, there was only rain.\n\nThen Tomas said, “Say it.”\n\n“No.”\n\nHis father rose, crossed the loft, and crouched in front of him.\n\n“I’m tired of being someone else.”\n\nHis father’s hand moved as if to touch his face, then stopped short.\n\n“You are not someone else.”\n\n“Then why does my name change?”\n\nHis father was quiet for a moment.",
+      "character_count": 1502,
+      "word_count": 275,
+      "paragraph_count": 25,
+      "sentence_count": 36,
+      "starts_with_heading": true,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": true,
+      "forced_sentence_split": false,
+      "source_start_char": 19654,
+      "source_end_char": 21156,
+      "text_hash": "75294119727280650769ccc146c8f1bf90c7c4e9616965887c27d0573d9768e9",
+      "context": {
+        "previous_chunk_id": "ch00_0012",
+        "next_chunk_id": "ch00_0014",
+        "first_sentence": "8. THE ROAD BETWEEN NAMES",
+        "last_sentence": "His father was quiet for a moment.",
+        "previous_context": "The ash where the tally burned scattered under Tomas Vale’s boot, and the name Vale began to loosen behind them like a thread pulled from cloth.",
+        "next_context": "“It has changed before."
+      },
+      "speechify": {
+        "status": "not_generated",
+        "voice_id": null,
+        "model": null,
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": null,
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": null,
+        "estimated_cost_usd": null,
+        "audio_file": null,
+        "speech_marks_file": null,
+        "api_response_metadata_file": null,
+        "generation_attempts": []
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0014",
+      "sequence_global": 14,
+      "sequence_in_source": 14,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0014.txt",
+      "text": "“It has changed before. You were Varley on the water, before you had the word for it. Vale you grew into.”\n\nTomas looked at him for a long time. “Because the world is more interested in names than in boys,” he said. “And I am more interested in the boy.”\n\nGil blinked hard.\n\nHis father picked up the chalk and wrote on the slate.\n\nGil de Vere.",
+      "character_count": 343,
+      "word_count": 67,
+      "paragraph_count": 5,
+      "sentence_count": 9,
+      "starts_with_heading": false,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": true,
+      "forced_sentence_split": false,
+      "source_start_char": 21157,
+      "source_end_char": 21500,
+      "text_hash": "79be7c24495ebeafa5367dcaf23a6fe5a3ef4ed91ea15fa35f5d1772dfdd9443",
+      "context": {
+        "previous_chunk_id": "ch00_0013",
+        "next_chunk_id": "ch00_0015",
+        "first_sentence": "“It has changed before.",
+        "last_sentence": "Gil de Vere.",
+        "previous_context": "His father was quiet for a moment.",
+        "next_context": "He considered it, then wiped away Gil and wrote again."
+      },
+      "speechify": {
+        "status": "not_generated",
+        "voice_id": null,
+        "model": null,
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": null,
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": null,
+        "estimated_cost_usd": null,
+        "audio_file": null,
+        "speech_marks_file": null,
+        "api_response_metadata_file": null,
+        "generation_attempts": []
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0015",
+      "sequence_global": 15,
+      "sequence_in_source": 15,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0015.txt",
+      "text": "He considered it, then wiped away Gil and wrote again.\n\nGilbert de Vere.\n\n“That is too long,” Gil said.\n\n“It will wear shorter.”\n\n“Why Gilbert?”\n\n“You are old enough for it.”\n\nHis father wrote the last name again beneath the first. Smaller.\n\nde Vere.\n\nHis voice changed when he spoke next. Not much. Enough.\n\n“Not bright,” he murmured. “Not proud. Not something for men to point at.”\n\nGil watched the chalk move.\n\n“A thread,” his father said. “Not a banner.”\n\n“What banner?”\n\nHis father wiped the slate clean.\n\n“Say the name.”\n\nGil did, eventually.\n\nThe first time, it sounded silly.\n\nThe second time, it sounded like a borrowed coat.\n\nBy the tenth, it began to sound like something his father needed him to survive.\n\n9. BRINDLEFORD\n\nBrindleford did not announce itself.\n\nThere was no wall, no gate, no guard asking names with a spear in hand. The road simply widened, the mud deepened, and houses began appearing where fields gave up trying to be fields. A mill turned lazily over a brown stream. A smithy smoked near the square. Chickens picked their way through cart ruts with the offended dignity of magistrates.\n\nGil hated it immediately because he wanted to like it.\n\nHis father stopped at the rise before town and studied it.\n\nGil knew better than to speak while that was happening.\n\nTomas counted roads. One in from the west, one south toward low farms, one north through thin woods, one little more than a track toward the mill. He counted chimneys, then windows, then the places where a man could watch the inn without standing in the open. His eyes rested on the chapel bell, the smithy yard, the market square, the two-story house with faded blue shutters.\n\nThen, slowly, something in his shoulders eased.",
+      "character_count": 1717,
+      "word_count": 297,
+      "paragraph_count": 27,
+      "sentence_count": 40,
+      "starts_with_heading": false,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": true,
+      "forced_sentence_split": false,
+      "source_start_char": 21359,
+      "source_end_char": 23076,
+      "text_hash": "28ff8a32d92abf9b9e21c5758bd95a4164a0fe36932ce520a2e3c515c7e77f94",
+      "context": {
+        "previous_chunk_id": "ch00_0014",
+        "next_chunk_id": "ch00_0016",
+        "first_sentence": "He considered it, then wiped away Gil and wrote again.",
+        "last_sentence": "Then, slowly, something in his shoulders eased.",
+        "previous_context": "Gil de Vere.",
+        "next_context": "Not trust."
+      },
+      "speechify": {
+        "status": "generated",
+        "voice_id": "john-rhys-davies",
+        "model": "simba-english",
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": "2026-06-16T03:17:59+00:00",
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": 1737,
+        "estimated_cost_usd": null,
+        "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0015.mp3",
+        "speech_marks_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0015.speechmarks.json",
+        "api_response_metadata_file": null,
+        "generation_attempts": [
+          {
+            "recorded_at": "2026-06-16T03:09:06+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0014.mp3"
+          },
+          {
+            "recorded_at": "2026-06-16T03:17:59+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0014.mp3"
+          }
+        ]
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0016",
+      "sequence_global": 16,
+      "sequence_in_source": 16,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0016.txt",
+      "text": "Not trust.\n\nNever that.\n\nBut a decision.\n\n“We will try here,” he said.\n\nGilbert de Vere came into Brindleford with mud on his boots and a name still stiff from lack of use.\n\nAt the inn, his father gave it without hesitation.\n\n“Tomas de Vere.”\n\nThe innkeeper was a narrow woman with sleeves rolled above her elbows and flour on one cheek. She looked from Tomas to Gil.\n\n“And the boy?”\n\n“My son. Gilbert.”\n\nGil almost turned at the sound of it. Almost failed the first test.\n\nHis father’s hand brushed the back of his coat.\n\nNot a warning to fear. A reminder to become.\n\n“Gilbert de Vere,” Gil said.\n\nThe woman nodded. “You looking for beds or work?”\n\n“Both, if the town has either to spare.”\n\n“Town has beds if you pay. Work if you’re useful. Are you useful?”\n\nHis father paused just long enough to seem humble.\n\n“I can write a fair hand. Keep accounts. Mend small things. Read contracts.”\n\nThe woman snorted. “That is three kinds of trouble and one kind of work. Ask at the reeve’s house. His clerk ran off with a cobbler’s daughter and half a rent book.”\n\nGil looked at his father.\n\nHis father did not smile, but Gil saw the possibility of it pass behind his eyes.\n\nThey rented a room for four nights.\n\nBy the third, Tomas de Vere had copied two petitions, corrected the reeve’s rent book, repaired the inn’s pantry latch, and refused payment once in a way that made the innkeeper insist twice.\n\nGil held the lantern while his father reset the latch.\n\nIt was a small brass thing, bent by too many impatient hands. Tomas took it apart on a cloth, laid the screws in a neat row, and cleaned each piece with the corner of his sleeve.\n\n“Why do you care?” Gil asked. “It is only a pantry.”\n\nHis father tested the catch with his thumb. “A lock is a promise.”",
+      "character_count": 1753,
+      "word_count": 325,
+      "paragraph_count": 28,
+      "sentence_count": 44,
+      "starts_with_heading": false,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": true,
+      "forced_sentence_split": false,
+      "source_start_char": 23078,
+      "source_end_char": 24831,
+      "text_hash": "f91f094e016c672b1d1c0be356fc44f676559291f8236b65798968a0a0dcbf58",
+      "context": {
+        "previous_chunk_id": "ch00_0015",
+        "next_chunk_id": "ch00_0017",
+        "first_sentence": "Not trust.",
+        "last_sentence": "“A lock is a promise.”",
+        "previous_context": "Then, slowly, something in his shoulders eased.",
+        "next_context": "Gil looked at the warped door, the scratched brass, the gouge where someone had once tried a knife."
+      },
+      "speechify": {
+        "status": "generated",
+        "voice_id": "john-rhys-davies",
+        "model": "simba-english",
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": "2026-06-16T03:18:35+00:00",
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": 1785,
+        "estimated_cost_usd": null,
+        "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0016.mp3",
+        "speech_marks_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0016.speechmarks.json",
+        "api_response_metadata_file": null,
+        "generation_attempts": [
+          {
+            "recorded_at": "2026-06-16T03:09:05+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0015.mp3"
+          },
+          {
+            "recorded_at": "2026-06-16T03:18:35+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0015.mp3"
+          }
+        ]
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0017",
+      "sequence_global": 17,
+      "sequence_in_source": 17,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0017.txt",
+      "text": "Gil looked at the warped door, the scratched brass, the gouge where someone had once tried a knife.\n\n“That lock cannot promise much.”\n\n“No,” Tomas said. “Most promises are poor work. That does not make them nothing.”\n\nHe set the latch back into place and tightened the screws.\n\n“A door is not good because it is strong,” he said. “It is good because someone smaller sleeps behind it.”\n\nGil remembered that because his father said it without looking at him.\n\nBy the seventh day, they had the back room of a widow’s cottage on Mill Lane.\n\nThe widow was Mara Pell.\n\nShe had a back like a broom handle and a voice that could scrape soot from a chimney. She looked at Tomas as if she had seen men with secrets before and found most of them disappointing.\n\n“You drink?” she asked.\n\n“Little.”\n\n“Gamble?”\n\n“No.”\n\n“Beat the boy?”\n\nTomas went very still.\n\nMara Pell lifted one eyebrow.\n\n“No,” he said.\n\n“Good. If that changes, you will find I still own my husband’s splitting axe.”\n\nGil decided he liked her at once.\n\nThe room she let them had a narrow hearth, a bed, a pallet, two shelves, and a window looking toward the lane. His father checked the window. Of course he did. He checked the latch, the roofline, the distance to the ground, the lane, the shadow beneath the opposite eave.\n\nMara watched from the doorway.\n\n“Expecting company?”\n\n“No.”\n\n“Then you inspect a window like a guilty man.”\n\nHis father turned.\n\nGil held his breath.\n\nMara folded her arms. “Rent due each Tenday. Water from the well. Wood stacked by the shed. If you break anything, mend it better than before. If you bring trouble, take it with you when you leave.”\n\nHis father inclined his head.\n\nToo formal.\n\nMara noticed. Her eyes sharpened.",
+      "character_count": 1709,
+      "word_count": 304,
+      "paragraph_count": 30,
+      "sentence_count": 44,
+      "starts_with_heading": false,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": true,
+      "forced_sentence_split": false,
+      "source_start_char": 24833,
+      "source_end_char": 26542,
+      "text_hash": "cb23268c5759b0fc767cd9dc175fe73e80abad57d23fd1929c71e0a27e94fd2a",
+      "context": {
+        "previous_chunk_id": "ch00_0016",
+        "next_chunk_id": "ch00_0018",
+        "first_sentence": "Gil looked at the warped door, the scratched brass, the gouge where someone had once tried a knife.",
+        "last_sentence": "Her eyes sharpened.",
+        "previous_context": "“A lock is a promise.”",
+        "next_context": "Then she looked at Gil."
+      },
+      "speechify": {
+        "status": "generated",
+        "voice_id": "john-rhys-davies",
+        "model": "simba-english",
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": "2026-06-16T03:19:11+00:00",
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": 1743,
+        "estimated_cost_usd": null,
+        "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0017.mp3",
+        "speech_marks_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0017.speechmarks.json",
+        "api_response_metadata_file": null,
+        "generation_attempts": [
+          {
+            "recorded_at": "2026-06-16T03:09:28+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0016.mp3"
+          },
+          {
+            "recorded_at": "2026-06-16T03:19:11+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0016.mp3"
+          }
+        ]
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0018",
+      "sequence_global": 18,
+      "sequence_in_source": 18,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0018.txt",
+      "text": "Then she looked at Gil. “You eat onions?”\n\nGil blinked. “Yes?”\n\n“Good. Supper has onions.”\n\nAnd so Brindleford began.\n\nNot as home.\n\nGil had learned not to trust that word.\n\nBut as a place where the bed did not move for a week, then a month, then three. A place where the smith’s boy invited him to throw stones at bottles behind the forge. A place where the baker gave him burnt crusts and called him Gilbert as if the name had always belonged to him. A place where his father’s new name settled into accounts, receipts, errands, and other people’s mouths until even Gil stopped flinching when he heard it.\n\nBy winter, Vale felt like something that had happened to a smaller boy.\n\nBy spring, Gilbert de Vere had begun to answer before he remembered to choose.\n\n10. ALMOST A YEAR\n\nBrindleford held through the thaw.\n\nIt held when the road became soup and carts sank axle-deep outside the mill. It held when Mara Pell caught Gilbert stealing peppermint from the blue tin and punished him by making him split kindling badly for an hour under her supervision.\n\n“That piece has done nothing to deserve your mercy,” she said.\n\n“I’m trying.”\n\n“That is often what people say when they are losing.”\n\nGilbert split the next piece cleanly and looked back at her.\n\nShe sniffed. “Do not become proud. It was small wood.”\n\nHis father became useful in Brindleford, which was the safest kind of known. He wrote for the reeve. He copied contracts, settled columns, patched locks. He mended the hinge on the chapel door and refused the priest’s blessing with such quiet panic that the priest never offered again.\n\nGilbert helped him with the hinge because the chapel door was too heavy to hold straight with only two hands. He braced his shoulder against the wood while his father knelt with tools spread on a rag.",
+      "character_count": 1797,
+      "word_count": 318,
+      "paragraph_count": 19,
+      "sentence_count": 32,
+      "starts_with_heading": false,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": true,
+      "forced_sentence_split": false,
+      "source_start_char": 26544,
+      "source_end_char": 28341,
+      "text_hash": "862232f652e14b8e8b0cad8eee004b477bb902ae71b191950d8b3121866ae61f",
+      "context": {
+        "previous_chunk_id": "ch00_0017",
+        "next_chunk_id": "ch00_0019",
+        "first_sentence": "Then she looked at Gil.",
+        "last_sentence": "He braced his shoulder against the wood while his father knelt with tools spread on a rag.",
+        "previous_context": "Her eyes sharpened.",
+        "next_context": "“Why not replace it?” Gilbert asked."
+      },
+      "speechify": {
+        "status": "generated",
+        "voice_id": "john-rhys-davies",
+        "model": "simba-english",
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": "2026-06-16T03:19:47+00:00",
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": 1816,
+        "estimated_cost_usd": null,
+        "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0018.mp3",
+        "speech_marks_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0018.speechmarks.json",
+        "api_response_metadata_file": null,
+        "generation_attempts": [
+          {
+            "recorded_at": "2026-06-16T03:09:33+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0017.mp3"
+          },
+          {
+            "recorded_at": "2026-06-16T03:19:47+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0017.mp3"
+          }
+        ]
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0019",
+      "sequence_global": 19,
+      "sequence_in_source": 19,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0019.txt",
+      "text": "“Why not replace it?” Gilbert asked.\n\n“The door or the hinge?”\n\n“Both.”\n\nHis father drove a peg into place with three careful taps. “If you can choose what breaks first, choose the thing that can be mended.”\n\n“That sounds like one of Mara’s sayings.”\n\n“It is older than Mara.”\n\n“How old?”\n\nTomas looked at the door, not at Gilbert. “Old enough.”\n\nThen he stood and tested the swing. The chapel door opened without complaint, closed without catching, and settled against the frame with a sound so clean that even the priest looked impressed.\n\nHis father touched the wood once, briefly.\n\n“A door is not good because it is strong,” he said, almost to himself. “It is good because someone smaller sleeps behind it.”\n\n“What?” Gilbert asked.\n\nHis father lowered his hand.\n\n“Hold the lantern higher.”\n\nSo Gilbert did.\n\nThe baker, Mistress Harn, gave Gilbert burnt crusts.\n\n“Good for the teeth,” she said.\n\nMara Pell said that was nonsense, but ate one anyway.\n\nThere were evenings that almost fooled him. The hearth warm. Mara complaining. His father at the table with ink on his fingers, head bent over some farmer’s account. Rain ticking against the shutters.\n\nOn those nights, his father sometimes looked almost ordinary. Then a horse passed too late on the lane, and his pen stopped. Or a wagon wheel halted before the cottage for no reason, and one hand disappeared beneath the table.\n\nThe ordinary man vanished so quickly Gilbert wondered if he had imagined him.\n\nBrenn from the west field let Gilbert help bring water to the sheep. Brenn was old enough to say whatever he liked and did so with the joy of a man who had outlived correction.\n\n“Your father’s a strange one,” he told Gilbert.\n\nGilbert stiffened.",
+      "character_count": 1708,
+      "word_count": 293,
+      "paragraph_count": 24,
+      "sentence_count": 35,
+      "starts_with_heading": false,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": true,
+      "forced_sentence_split": false,
+      "source_start_char": 28343,
+      "source_end_char": 30051,
+      "text_hash": "1a4cd1fc08a5b4eb47b63ed2b9f47f56a0856996730d034e88f2cb561cc821f1",
+      "context": {
+        "previous_chunk_id": "ch00_0018",
+        "next_chunk_id": "ch00_0020",
+        "first_sentence": "“Why not replace it?” Gilbert asked.",
+        "last_sentence": "Gilbert stiffened.",
+        "previous_context": "He braced his shoulder against the wood while his father knelt with tools spread on a rag.",
+        "next_context": "Brenn spat into the grass."
+      },
+      "speechify": {
+        "status": "generated",
+        "voice_id": "john-rhys-davies",
+        "model": "simba-english",
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": "2026-06-16T03:20:23+00:00",
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": 1739,
+        "estimated_cost_usd": null,
+        "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0019.mp3",
+        "speech_marks_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0019.speechmarks.json",
+        "api_response_metadata_file": null,
+        "generation_attempts": [
+          {
+            "recorded_at": "2026-06-16T03:20:23+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0018.mp3"
+          }
+        ]
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0020",
+      "sequence_global": 20,
+      "sequence_in_source": 20,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0020.txt",
+      "text": "Brenn spat into the grass. “Not bad. Strange. Bad men take more space than they need. Your father takes less.”\n\nThat sounded true.\n\n“Is that good?”\n\n“Usually means a man is either humble, hunted, or planning to steal your roof.”\n\nGilbert laughed because Brenn did.\n\nThat night, he told his father.\n\nTomas went quiet at hunted. Not long. Not enough for anyone else to know.\n\nBut Gilbert knew.\n\nHis father asked, “What did Brenn say exactly?”\n\nGilbert repeated it.\n\n“All of it.”\n\nHe repeated all of it.\n\nHis father nodded and returned to his work.\n\nThe next day, he found a reason for Gilbert to help Mistress Harn instead of Brenn.\n\nWhen Gilbert protested, his father said the sheep could spare him.\n\nGilbert did not ask whether Brenn could.\n\nBy spring, the baker called Gilbert by name, and Sella from the smithy threatened him over a game of stones by his whole name, Gilbert de Vere, as if the name belonged in the same sentence as a threat, a joke, and tomorrow.\n\nThat was the first time another child in any town had said it that way.\n\nHe played until dark.\n\nNo one sent him away.\n\nTomas was liked in the way a sharp tool is liked. Kept close. Respected. Not embraced. Gilbert did better. But on the long evenings when his father stood at the edge of the square with his back to a wall and a cup in his hand not drinking, his eyes always returned to one place: the south road, the lane by the smithy, the well, the inn door, and Gilbert.\n\nAlways Gilbert.",
+      "character_count": 1458,
+      "word_count": 268,
+      "paragraph_count": 22,
+      "sentence_count": 33,
+      "starts_with_heading": false,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": true,
+      "forced_sentence_split": false,
+      "source_start_char": 30053,
+      "source_end_char": 31511,
+      "text_hash": "451f32607fcede781eb67f696bc1aabfb1b9354f99393ab0055fff45920f7582",
+      "context": {
+        "previous_chunk_id": "ch00_0019",
+        "next_chunk_id": "ch00_0021",
+        "first_sentence": "Brenn spat into the grass.",
+        "last_sentence": "Always Gilbert.",
+        "previous_context": "Gilbert stiffened.",
+        "next_context": "11. THE SIGNS RETURN"
+      },
+      "speechify": {
+        "status": "generated",
+        "voice_id": "john-rhys-davies",
+        "model": "simba-english",
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": "2026-06-16T03:20:56+00:00",
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": 1468,
+        "estimated_cost_usd": null,
+        "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0020.mp3",
+        "speech_marks_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0020.speechmarks.json",
+        "api_response_metadata_file": null,
+        "generation_attempts": [
+          {
+            "recorded_at": "2026-06-16T03:20:56+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0019.mp3"
+          }
+        ]
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0021",
+      "sequence_global": 21,
+      "sequence_in_source": 21,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0021.txt",
+      "text": "11. THE SIGNS RETURN\n\nThe first sign was the raven.\n\nIt sat on the chapel roof for an entire morning and did not cry.\n\nThat was all.\n\nGilbert noticed it because his father noticed it.\n\nRavens came to Brindleford. They stole grain, insulted cats, and flapped away from thrown stones with the lazy confidence of black-cloaked nobles. This one sat above the chapel bell and watched the square until Tomas de Vere stepped out of the reeve’s house.\n\nThen it turned its head.\n\nTomas stopped in the doorway.\n\nThe reeve, still speaking, walked three steps before realizing he had lost him.\n\n“De Vere?”\n\nTomas looked at the raven.\n\nThe raven looked back.\n\nThen it opened its wings and flew north.\n\nTomas did not move until it was gone.\n\nThe second sign was a dead fox under the mill bridge.\n\nNo blood. No broken neck. No marks Gilbert could see. The miller’s wife said poison and cursed whoever had laid it so close to town. Tomas crouched beside the fox without touching it. His eyes followed the mud beneath the bridge, then the stones, then the reeds beyond.\n\n“Come away,” he told Gilbert.\n\n“Was it poison?”\n\n“Come away.”\n\nThe third sign was a man who bought nails one at a time.\n\nHe came to the smithy in a brown cloak and asked Sella’s father for four nails. Then three more. Then one larger. Then twine. Then directions to the road north. Then whether many copyists made their living in Brindleford.\n\nSella told Gilbert because she thought it was funny.\n\nGilbert did not laugh.\n\nThat evening, his father asked him to describe the man.\n\n“How tall?”\n\n“I don’t know. Tall.”\n\n“Taller than me?”\n\n“Maybe.”\n\n“Hands.”\n\n“What?”\n\n“His hands, Gilbert.”\n\n“I didn’t look at his hands.”\n\nHis father’s jaw tightened.\n\nGilbert’s face burned. “I didn’t know I was supposed to.”",
+      "character_count": 1757,
+      "word_count": 307,
+      "paragraph_count": 34,
+      "sentence_count": 48,
+      "starts_with_heading": true,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": true,
+      "forced_sentence_split": false,
+      "source_start_char": 31513,
+      "source_end_char": 33270,
+      "text_hash": "8bdb7daa9d91d8d72d2d0df17d455dcb3ef0691ed18afb22ad4c25ae628e2e6a",
+      "context": {
+        "previous_chunk_id": "ch00_0020",
+        "next_chunk_id": "ch00_0022",
+        "first_sentence": "11. THE SIGNS RETURN",
+        "last_sentence": "“I didn’t know I was supposed to.”",
+        "previous_context": "Always Gilbert.",
+        "next_context": "Tomas closed his eyes briefly."
+      },
+      "speechify": {
+        "status": "generated",
+        "voice_id": "john-rhys-davies",
+        "model": "simba-english",
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": "2026-06-16T03:21:33+00:00",
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": 1791,
+        "estimated_cost_usd": null,
+        "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0021.mp3",
+        "speech_marks_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0021.speechmarks.json",
+        "api_response_metadata_file": null,
+        "generation_attempts": [
+          {
+            "recorded_at": "2026-06-16T03:21:33+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0020.mp3"
+          }
+        ]
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0022",
+      "sequence_global": 22,
+      "sequence_in_source": 22,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0022.txt",
+      "text": "Tomas closed his eyes briefly.\n\nWhen he opened them, the anger was gone, if it had been anger.\n\n“No. You were not.”\n\nBut the next morning, he taught Gilbert to look at hands.\n\n“Not staring,” he said. “Never staring. Just enough. Ink. Callus. Rings. Scars. Clean nails on a muddy road. A missing finger. Sword hand. Work hand.”\n\n“Why?”\n\n“So you know what kind of man is speaking before his mouth begins lying.”\n\nGilbert practiced on everyone until Mara Pell caught him studying her fingers.\n\n“Looking for a ring to steal?”\n\n“No.”\n\n“A pulse to stop?”\n\n“No!”\n\n“Then stop squinting at my hands and fetch water.”\n\nThe fourth sign came after supper three nights later.\n\nA knock at the door.\n\nNot Mara’s knock. Not Brenn’s. Not the baker’s boy with leftover crusts. Three measured strikes, spaced evenly.\n\nTomas rose from the table.\n\nGilbert had seen his father move quickly before. This was different. Not fast. Quiet. The way a knife comes free when no one has yet seen the hand move.\n\nHe touched two fingers to the table.\n\nGilbert went silent.\n\nMara Pell looked from one to the other and, for once, said nothing.\n\nTomas crossed to the door but did not open it.\n\n“Yes?”\n\nA man’s voice answered. “Looking for the reeve’s house.”\n\n“Across the square. Blue shutters.”\n\n“Lost in the dark.”\n\n“Then wait for light.”\n\nA pause.\n\nMara’s eyes narrowed.\n\nThe voice outside said, almost pleasantly, “Is this the de Vere cottage?”\n\nTomas did not answer.\n\nThe latch moved.\n\nOnly a little.\n\nSomeone outside tested it.\n\nMara stood, very slowly, and reached for the poker by the hearth.\n\nTomas’s voice remained calm. “You have the wrong door.”\n\n“Do I?”\n\n“Yes.”\n\nAnother pause.\n\nThen footsteps retreated from the threshold.",
+      "character_count": 1700,
+      "word_count": 290,
+      "paragraph_count": 40,
+      "sentence_count": 61,
+      "starts_with_heading": false,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": true,
+      "forced_sentence_split": false,
+      "source_start_char": 33272,
+      "source_end_char": 34972,
+      "text_hash": "647963b865ea25626067ce5634671d37a480f33e3e7502225c94852a029b9a28",
+      "context": {
+        "previous_chunk_id": "ch00_0021",
+        "next_chunk_id": "ch00_0023",
+        "first_sentence": "Tomas closed his eyes briefly.",
+        "last_sentence": "Then footsteps retreated from the threshold.",
+        "previous_context": "“I didn’t know I was supposed to.”",
+        "next_context": "Gilbert did not breathe until they faded."
+      },
+      "speechify": {
+        "status": "generated",
+        "voice_id": "john-rhys-davies",
+        "model": "simba-english",
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": "2026-06-16T03:22:08+00:00",
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": 1745,
+        "estimated_cost_usd": null,
+        "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0022.mp3",
+        "speech_marks_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0022.speechmarks.json",
+        "api_response_metadata_file": null,
+        "generation_attempts": [
+          {
+            "recorded_at": "2026-06-16T03:22:08+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0021.mp3"
+          }
+        ]
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0023",
+      "sequence_global": 23,
+      "sequence_in_source": 23,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0023.txt",
+      "text": "Gilbert did not breathe until they faded.\n\nTomas waited much longer.\n\nWhen he finally turned, his face was the face from the road, from Rillbank, from every dawn that had stolen a town.\n\nMara saw it, too.\n\n“No,” she said.\n\nTomas looked at her.\n\nShe gripped the poker. “Whatever this is, do not bring it into my house and then pretend it is weather.”\n\n“I am sorry.”\n\n“I did not ask for sorry. I asked for what.”\n\nTomas said nothing.\n\nMara stared at him.\n\nThen, because she was not foolish, she looked at Gilbert and swallowed the rest.\n\nTomas went to the back room.\n\nGilbert followed.\n\nThe pack was already under the bed.\n\nOf course it was.\n\nHis father drew it out.\n\n“Boots,” he said.\n\nGilbert did not move.\n\n“We just got here.”\n\nHis father did not answer.\n\n“It’s been almost a year.”\n\n“I know.”\n\n“That is getting here.”\n\nHis father’s hands stilled on the pack.\n\nFor one heartbeat, Gilbert thought he had won something. Or hurt something. He could not tell which.\n\nThen something struck the front door hard enough to shake dust from the rafters.\n\nMara shouted.\n\nThe second strike split wood.\n\nTomas turned toward the wall beside the hearth.\n\nNot the door.\n\nThe wall.\n\nHe crossed to it, reached behind the loose shelf where Mara kept old jars, and pressed two fingers into a crack Gilbert had never noticed.\n\nA panel shifted.",
+      "character_count": 1323,
+      "word_count": 235,
+      "paragraph_count": 34,
+      "sentence_count": 38,
+      "starts_with_heading": false,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": true,
+      "forced_sentence_split": false,
+      "source_start_char": 34974,
+      "source_end_char": 36297,
+      "text_hash": "0ccdebcb4eb890da75aafd73e7eeadb3bc39b83baa7b5951137a0a43b2972c0f",
+      "context": {
+        "previous_chunk_id": "ch00_0022",
+        "next_chunk_id": "ch00_0024",
+        "first_sentence": "Gilbert did not breathe until they faded.",
+        "last_sentence": "A panel shifted.",
+        "previous_context": "Then footsteps retreated from the threshold.",
+        "next_context": "12. THE HIDDEN SPELLBOOK"
+      },
+      "speechify": {
+        "status": "generated",
+        "voice_id": "john-rhys-davies",
+        "model": "simba-english",
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": "2026-06-16T03:22:36+00:00",
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": 1343,
+        "estimated_cost_usd": null,
+        "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0023.mp3",
+        "speech_marks_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0023.speechmarks.json",
+        "api_response_metadata_file": null,
+        "generation_attempts": [
+          {
+            "recorded_at": "2026-06-16T03:22:36+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0022.mp3"
+          }
+        ]
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0024",
+      "sequence_global": 24,
+      "sequence_in_source": 24,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0024.txt",
+      "text": "12. THE HIDDEN SPELLBOOK\n\nGilbert forgot the door.\n\nBehind the wall was a narrow hollow.\n\nInside it lay a bundle wrapped in oilcloth and tied with black cord.\n\nHis father took it out with both hands.\n\nThe third strike hit the front door. Wood cracked. Mara swore loudly enough to shame the chapel bell. Something heavy scraped across the floor as she dragged the table toward the entrance.\n\nBut Gilbert could only stare at the bundle.\n\nHe knew his father’s things.\n\nThe writing kit. The knife. The spare cord. The little packet of herbs for fever. The whetstone. The purse. The second purse, smaller, hidden better. The needle case. The folded papers no one else touched. The wrapped bit of something hard his father checked when he thought Gilbert slept but never opened.\n\nHe did not know this.\n\nHis father cut the cord.\n\nThe oilcloth unfolded.\n\nA book lay inside.\n\nNot like the reeve’s rent book. Not like Master Ell’s primer. Not like the farmer’s contracts or chapel hymnal. This book seemed too old for the room around it. Its cover was dark leather, almost black, with no title. The edges were bound in dull metal. The clasp had been wrapped in thread and sealed with something cloudy and pale.\n\nGilbert’s mouth went dry.\n\n“Father?”\n\nTomas looked at him then.\n\nSomething like apology crossed his face.\n\nThen another blow struck the door, and apology became useless.\n\nHe opened the book.\n\nThe room changed.\n\nNot visibly, not at first. The fire still burned. Mara still braced the table against the door. Gilbert still stood in his stocking feet beside the bed with his heart hammering. But the air tightened around the book, as if the cottage had drawn a breath and held it.\n\nThe pages were covered in writing Gilbert could not read.",
+      "character_count": 1738,
+      "word_count": 302,
+      "paragraph_count": 23,
+      "sentence_count": 45,
+      "starts_with_heading": true,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": true,
+      "forced_sentence_split": false,
+      "source_start_char": 36299,
+      "source_end_char": 38037,
+      "text_hash": "d8c299214c7ce2f4571e7e982d64b9e6d34794603a45769caa36d006b3b80832",
+      "context": {
+        "previous_chunk_id": "ch00_0023",
+        "next_chunk_id": "ch00_0025",
+        "first_sentence": "12. THE HIDDEN SPELLBOOK",
+        "last_sentence": "The pages were covered in writing Gilbert could not read.",
+        "previous_context": "A panel shifted.",
+        "next_context": "No."
+      },
+      "speechify": {
+        "status": "generated",
+        "voice_id": "john-rhys-davies",
+        "model": "simba-english",
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": "2026-06-16T03:23:11+00:00",
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": 1745,
+        "estimated_cost_usd": null,
+        "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0024.mp3",
+        "speech_marks_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0024.speechmarks.json",
+        "api_response_metadata_file": null,
+        "generation_attempts": [
+          {
+            "recorded_at": "2026-06-16T03:23:11+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0023.mp3"
+          }
+        ]
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0025",
+      "sequence_global": 25,
+      "sequence_in_source": 25,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0025.txt",
+      "text": "No.\n\nNot could not read.\n\nCould not look at properly.\n\nThe lines seemed to move when his eyes tried to follow them. Diagrams nested inside circles nested inside angles that made his head ache. Small marks filled the margins, precise and crowded, written by a hand he almost recognized and yet had never seen from his father.\n\nBecause his father wrote plain.\n\nHis father wrote rent books, letters, accounts, shopping lists.\n\nHis father did not write stars trapped in ink.\n\nThe door split.\n\nA blade came through the crack.\n\nMara struck it with the poker. The blade vanished. A man outside cursed.\n\nTomas put one hand flat on the open page.\n\nHe spoke.\n\nThe words were not loud.\n\nThat made them worse.\n\nGilbert had heard prayers, songs, curses, bargaining, lullabies from other mothers to other children, tavern boasts, market cries, and the muttered arithmetic of a man pretending not to be good with numbers. He had never heard speech like this. It seemed to pass through the room without using the air.\n\nThe candle flames bent toward him.\n\nThe book’s pages stirred though no wind touched them.\n\nThe front door groaned.\n\nNot from the men outside.\n\nFrom something inside answering his father.\n\n“Gilbert,” Tomas said without looking away from the page. “Shoes. Coat. Pack.”\n\nGilbert did not move.\n\nHis father turned his head.\n\n“Now.”\n\nGilbert moved.",
+      "character_count": 1345,
+      "word_count": 226,
+      "paragraph_count": 25,
+      "sentence_count": 34,
+      "starts_with_heading": false,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": true,
+      "forced_sentence_split": false,
+      "source_start_char": 38039,
+      "source_end_char": 39384,
+      "text_hash": "8ca10d036ee0f6fdccf6195e4d9f239b3c1ce44b7c4abca504f81c33134fdb4f",
+      "context": {
+        "previous_chunk_id": "ch00_0024",
+        "next_chunk_id": "ch00_0026",
+        "first_sentence": "No.",
+        "last_sentence": "Gilbert moved.",
+        "previous_context": "The pages were covered in writing Gilbert could not read.",
+        "next_context": "13. THE DOOR HELD SHUT"
+      },
+      "speechify": {
+        "status": "generated",
+        "voice_id": "john-rhys-davies",
+        "model": "simba-english",
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": "2026-06-16T03:23:40+00:00",
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": 1352,
+        "estimated_cost_usd": null,
+        "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0025.mp3",
+        "speech_marks_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0025.speechmarks.json",
+        "api_response_metadata_file": null,
+        "generation_attempts": [
+          {
+            "recorded_at": "2026-06-16T03:23:40+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0024.mp3"
+          }
+        ]
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0026",
+      "sequence_global": 26,
+      "sequence_in_source": 26,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0026.txt",
+      "text": "13. THE DOOR HELD SHUT\n\nThe door should have broken.\n\nGilbert knew doors. He had watched his father mend enough of them. He knew where they failed: hinge first if the screws were poor, latch if the wood had softened, frame if the builder had been lazy or drunk. Mara Pell’s front door was old oak, but old oak still broke when men put a ram to it.\n\nThe next strike came with the weight of several bodies behind it.\n\nThe cottage shook.\n\nThe door bent inward.\n\nThen stopped.\n\nNot held by the table. The table jumped back an inch, scraping against the floorboards. Not held by the latch. The latch had already half torn free.\n\nThe door stopped because something unseen stood behind it.\n\nThe whole frame shuddered.\n\nDust fell from the lintel.\n\nOne hinge screamed as the force outside drove against the force within, metal twisting, wood complaining, the cottage itself caught between. A crack raced up the plaster beside the door. Mara stumbled back, poker raised, eyes wide.\n\nOutside, a man shouted, “Again!”\n\nAgain came.\n\nThe door did not open.\n\nTomas stood in the middle of the room with one hand on the book and the other lifted toward the entrance. His fingers were spread as if pressed against invisible wood. His face had gone bloodless. His lips moved around words Gilbert did not know, could not hold, could not even remember the shape of once they left his father’s mouth.\n\nGilbert clutched his coat to his chest.\n\nThe poor copyist was gone.\n\nThe careful man who counted coppers, mended hinges, refused supper invitations, and told him to keep his boots by the bed was gone.\n\nOr no.\n\nWorse.\n\nHe had not gone anywhere.\n\nHe had been this also.",
+      "character_count": 1647,
+      "word_count": 292,
+      "paragraph_count": 23,
+      "sentence_count": 34,
+      "starts_with_heading": true,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": true,
+      "forced_sentence_split": false,
+      "source_start_char": 39386,
+      "source_end_char": 41033,
+      "text_hash": "b564d5af492f44b6c35d0f08089904bd2a404ab8e019a1c54c46f379796b8357",
+      "context": {
+        "previous_chunk_id": "ch00_0025",
+        "next_chunk_id": "ch00_0027",
+        "first_sentence": "13. THE DOOR HELD SHUT",
+        "last_sentence": "He had been this also.",
+        "previous_context": "Gilbert moved.",
+        "next_context": "All along, beneath the coat, beneath the ink stains, beneath Tomas Varley and Tomas Vale and Tomas de Vere and every ordinary thing Gilbert had believed because sons believe fathers before they believe evidence."
+      },
+      "speechify": {
+        "status": "generated",
+        "voice_id": "john-rhys-davies",
+        "model": "simba-english",
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": "2026-06-16T03:24:14+00:00",
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": 1651,
+        "estimated_cost_usd": null,
+        "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0026.mp3",
+        "speech_marks_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0026.speechmarks.json",
+        "api_response_metadata_file": null,
+        "generation_attempts": [
+          {
+            "recorded_at": "2026-06-16T03:24:14+00:00",
+            "provider": "speechify",
+            "success": true,
+            "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0025.mp3"
+          }
+        ]
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0027",
+      "sequence_global": 27,
+      "sequence_in_source": 27,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0027.txt",
+      "text": "All along, beneath the coat, beneath the ink stains, beneath Tomas Varley and Tomas Vale and Tomas de Vere and every ordinary thing Gilbert had believed because sons believe fathers before they believe evidence.\n\nHis father was holding a door shut with words.\n\nThe third strike sounded like thunder trapped in a box.\n\nThe air in front of the door flashed faintly, not light exactly, but the impression of light, like seeing the memory of lightning after closing one’s eyes. The men outside cried out. One fell against the threshold. Gilbert heard boots sliding in mud.\n\nMara Pell whispered a prayer.\n\nTomas’s hand shook.\n\nJust slightly.\n\nGilbert saw it because he could see nothing else.\n\nHis father lowered his hand an inch, and the door bowed inward.\n\nHe lifted it again.\n\nThe door slammed back into place hard enough to splinter the cracked frame.\n\nGilbert remembered the chapel hinge.\n\nA door is not good because it is strong.\n\nSomeone smaller sleeps behind it.\n\nOnly now the smaller thing was him.\n\nAnd his father was the door.\n\n“Back room,” Tomas said.\n\nMara did not move.\n\nHe looked at her. “Now.”\n\nShe obeyed.\n\nThat frightened Gilbert almost as much as the spell.\n\nHis father snatched the pack and shoved it into Gilbert’s arms. Then he tore two pages from the back of the book.\n\nGilbert made a sound.\n\nHis father did not look at him. “Go with Mara.”\n\n“I’m staying with you.”\n\n“No.”\n\nThe answer was immediate. Final. Older than argument.\n\nAnother blow hit the door.\n\nThis time, something else answered from outside.\n\nNot a word. A whistle. Low and rising.\n\nTomas’s head snapped toward it.\n\nHis eyes changed.\n\nGilbert had seen fear in them all his life, though his father tried to hide it. This was different. Recognition without explanation. A wound touched through cloth.",
+      "character_count": 1780,
+      "word_count": 304,
+      "paragraph_count": 33,
+      "sentence_count": 46,
+      "starts_with_heading": false,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": true,
+      "forced_sentence_split": false,
+      "source_start_char": 41178,
+      "source_end_char": 42958,
+      "text_hash": "a4dfa7168d71ab9cb0fb7378aea221d7936229eab0d3a70444e403a29f6e7a1e",
+      "context": {
+        "previous_chunk_id": "ch00_0026",
+        "next_chunk_id": "ch00_0028",
+        "first_sentence": "All along, beneath the coat, beneath the ink stains, beneath Tomas Varley and Tomas Vale and Tomas de Vere and every ordinary thing Gilbert had believed because sons believe fathers before they believe evidence.",
+        "last_sentence": "A wound touched through cloth.",
+        "previous_context": "He had been this also.",
+        "next_context": "Tomas closed the book with one hand and thrust it beneath his coat."
+      },
+      "speechify": {
+        "status": "not_generated",
+        "voice_id": null,
+        "model": null,
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": null,
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": null,
+        "estimated_cost_usd": null,
+        "audio_file": null,
+        "speech_marks_file": null,
+        "api_response_metadata_file": null,
+        "generation_attempts": []
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0028",
+      "sequence_global": 28,
+      "sequence_in_source": 28,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0028.txt",
+      "text": "Tomas closed the book with one hand and thrust it beneath his coat.\n\nThen he caught Gilbert by both shoulders.\n\n“Listen to me.”\n\n“I don’t—”\n\n“Listen.”\n\nGilbert stopped.\n\nHis father’s fingers dug into the coat.\n\n“If I say run, you run. If I say hide, you hide. You do not come back for me. You do not answer if anyone calls. You do not trust a voice because it knows your name.”\n\nMara, in the back room, had gone very still.\n\nGilbert’s throat closed. “Why would someone know my name?”\n\nHis father’s face broke for less than a second.\n\nThen the door exploded inward.\n\n14. THE ATTACK AT BRINDLEFORD\n\nMen came through with the broken door.\n\nGilbert never knew how many.\n\nToo many for the room. Too many for the little life that had been built inside it. Mud on boots. Dark cloth. A sleeve marked with a shape he saw only as a flash before Mara’s poker cracked across the man’s wrist. A blade. A gloved hand. Someone shouting for the boy. Someone else shouting not to burn the book. The smell of wet wool, iron, smoke, and splintered oak.\n\nTomas moved.\n\nNot like a clerk. Not like a man with a bad knee.\n\nHe stepped into the first attacker’s reach and drove the heel of his hand into the man’s throat. He turned, pulled Mara back from a blade, spoke a word that made the hearth fire leap sideways like a living thing. Flame struck a sleeve. A man screamed.\n\nGilbert stood frozen with the pack in his arms.\n\nHis father had told him rules all his life.\n\nRun meant run.\n\nHide meant hide.\n\nBut no rule had prepared him for seeing Tomas de Vere become impossible.\n\nMara grabbed Gilbert by the collar and dragged him toward the back room. “Move, boy!”\n\nThe cottage filled with noise.\n\nA chair overturned. The table cracked. Glass shattered.",
+      "character_count": 1729,
+      "word_count": 317,
+      "paragraph_count": 27,
+      "sentence_count": 48,
+      "starts_with_heading": false,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": false,
+      "forced_sentence_split": false,
+      "source_start_char": 42800,
+      "source_end_char": 44529,
+      "text_hash": "9db80b7e60f107923bbcb5d7f979873e0915fb82ca420299de1f60bcdc090e43",
+      "context": {
+        "previous_chunk_id": "ch00_0027",
+        "next_chunk_id": "ch00_0029",
+        "first_sentence": "Tomas closed the book with one hand and thrust it beneath his coat.",
+        "last_sentence": "Glass shattered.",
+        "previous_context": "A wound touched through cloth.",
+        "next_context": "The front room vanished behind bodies and smoke and the hard, bright movements of his father’s hands."
+      },
+      "speechify": {
+        "status": "generated",
+        "voice_id": null,
+        "model": null,
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": null,
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": null,
+        "estimated_cost_usd": null,
+        "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0028.mp3",
+        "speech_marks_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0028.speechmarks.json",
+        "api_response_metadata_file": null,
+        "generation_attempts": []
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0029",
+      "sequence_global": 29,
+      "sequence_in_source": 29,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0029.txt",
+      "text": "The front room vanished behind bodies and smoke and the hard, bright movements of his father’s hands. Tomas opened the spellbook again with one thumb while parrying a knife with his forearm. Blood ran down his sleeve. He did not look at it.\n\nOutside, Brindleford woke into terror.\n\nA bell rang once, twice, then too quickly for prayer. Dogs barked. Someone screamed in the lane. Hooves struck mud. A torch arced through the dark and burst against the thatch of Brenn’s empty shed.\n\nNo, not empty.\n\nGilbert remembered too late that Brenn kept lambs there in bad weather.\n\n“Mara—”\n\n“Window,” she snapped.\n\nThe back room window was small.\n\nToo small for Mara.\n\nNot too small for Gilbert.\n\nShe shoved it open. Cold air and smoke rushed in.\n\nTomas appeared in the doorway behind them.\n\nOne side of his face was bleeding. The spellbook was clutched against his chest. His eyes found Gilbert first, then the window, then Mara.\n\n“You know the old mill track?” he said.\n\nMara stared at him. “Of course I know the old mill track.”\n\n“Take him.”\n\n“No.”\n\nIt was Gilbert who said it.\n\nHis father looked at him.\n\n“No,” Gilbert said again. “I’m not leaving you.”\n\nTomas crossed the room in two strides.\n\nHe knelt. Or tried to. His bad leg buckled halfway and he caught himself on the wall. Even then his eyes went past Gilbert’s shoulder, out the window, up toward the lane.\n\n“Gilbert.”\n\nThe full name struck harder than shouting.\n\n“You will go with Mara.”\n\n“No.”\n\n“You will do as I say.”\n\n“You lied.”\n\nThe words came out before Gilbert knew they were there.\n\nTomas went still.\n\n“You lied about everything.”\n\nMara made a small sound. Outside, another scream rose, then cut off.\n\nTomas’s mouth opened.\n\nFor one heartbeat, the truth stood near enough to touch.",
+      "character_count": 1742,
+      "word_count": 303,
+      "paragraph_count": 34,
+      "sentence_count": 50,
+      "starts_with_heading": false,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": true,
+      "forced_sentence_split": false,
+      "source_start_char": 44530,
+      "source_end_char": 46272,
+      "text_hash": "2a4ac87f66f6f3bec82f9986f4cf3b99e9ce63f78b65d0eeb94ba1f5172ffe27",
+      "context": {
+        "previous_chunk_id": "ch00_0028",
+        "next_chunk_id": "ch00_0030",
+        "first_sentence": "The front room vanished behind bodies and smoke and the hard, bright movements of his father’s hands.",
+        "last_sentence": "For one heartbeat, the truth stood near enough to touch.",
+        "previous_context": "Glass shattered.",
+        "next_context": "Then boots thundered in the front room again."
+      },
+      "speechify": {
+        "status": "generated",
+        "voice_id": null,
+        "model": null,
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": null,
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": null,
+        "estimated_cost_usd": null,
+        "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0029.mp3",
+        "speech_marks_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0029.speechmarks.json",
+        "api_response_metadata_file": null,
+        "generation_attempts": []
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0030",
+      "sequence_global": 30,
+      "sequence_in_source": 30,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0030.txt",
+      "text": "Then boots thundered in the front room again.\n\nHe shut whatever he might have said behind his teeth.\n\n“Yes,” he said.\n\nGilbert stared at him.\n\n“Yes. And now you will live long enough to hate me for it.”\n\nHe seized Gilbert’s wrist and turned him toward the window.\n\nA man appeared behind Tomas, blade raised.\n\nMara shouted.\n\nTomas spoke without turning.\n\nThe attacker flew backward as if struck by a horse.\n\nThe wall boomed when he hit it.\n\nThe world became motion again.\n\nMara climbed through the window first with more fury than grace. Gilbert followed, falling hard into wet weeds outside. His father came last, but not through the window. He turned back into the cottage.\n\n“Father!”\n\nTomas did not answer.\n\nFor a moment, Gilbert saw him framed by smoke and firelight, spellbook open in one hand, the other lifted toward the broken front of the house.\n\nThen the roof beam above the hearth caught flame.\n\nMara yanked Gilbert to his feet.\n\nThey ran.\n\nBrindleford was no longer Brindleford.\n\nIt was flame and shadow and screaming.\n\nThe thatched roofs burned fast, one after another, as if the village had been built for this and no other purpose. Men ran in the street, some half-dressed, some bleeding, some carrying children who no longer cried. Dark shapes moved among them with axes and spears and torches. Their faces were wrong in firelight, some painted, some masked by soot, all of them made stranger by the way they knew where to go.\n\nThey killed goats.\n\nThey killed dogs.\n\nThey killed old men crawling from doorways.\n\nThey laughed as they did it.\n\nMara pulled Gilbert through the lane behind the cooper’s shed.\n\n“Mill track,” she gasped. “Keep low.”\n\nA rider cut across the lane ahead of them.",
+      "character_count": 1702,
+      "word_count": 294,
+      "paragraph_count": 29,
+      "sentence_count": 37,
+      "starts_with_heading": false,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": true,
+      "forced_sentence_split": false,
+      "source_start_char": 46274,
+      "source_end_char": 47976,
+      "text_hash": "be1c7d60a71a4391037d9afd75ae8918030c057f6e99fab662eae6ceb993a896",
+      "context": {
+        "previous_chunk_id": "ch00_0029",
+        "next_chunk_id": "ch00_0031",
+        "first_sentence": "Then boots thundered in the front room again.",
+        "last_sentence": "A rider cut across the lane ahead of them.",
+        "previous_context": "For one heartbeat, the truth stood near enough to touch.",
+        "next_context": "Mara shoved Gilbert behind a rain barrel."
+      },
+      "speechify": {
+        "status": "generated",
+        "voice_id": null,
+        "model": null,
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": null,
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": null,
+        "estimated_cost_usd": null,
+        "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0030.mp3",
+        "speech_marks_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0030.speechmarks.json",
+        "api_response_metadata_file": null,
+        "generation_attempts": []
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0031",
+      "sequence_global": 31,
+      "sequence_in_source": 31,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0031.txt",
+      "text": "Mara shoved Gilbert behind a rain barrel.\n\nThe rider slowed.\n\nFor one awful second, Gilbert thought the horse had seen him.\n\nThen a flash of white light burst from the direction of the cottage.\n\nThe horse reared. The rider cursed and hauled at the reins. Mara grabbed Gilbert’s sleeve and pulled him into the alley beside the cooper’s shed.\n\nThey almost reached the mill track.\n\nA man stepped out of the smoke.\n\nMara stopped so quickly Gilbert ran into her back.\n\nThe man held a short blade low at his side. His cloak was muddy. His face was ordinary in the way of faces that had decided ordinary was useful.\n\n“Evening,” he said.\n\nMara put herself in front of Gilbert.\n\nThe man smiled at that, not kindly.\n\n“Not you.”\n\nMara spat in his face.\n\nHe hit her with the hilt of the blade.\n\nShe fell hard.\n\nGilbert screamed.\n\nThe man reached for him.\n\nThen Tomas was there.\n\n15. THE INVISIBILITY\n\nGilbert did not see where his father came from.\n\nOne moment the man’s hand closed around Gilbert’s coat. The next, his fingers opened and he was on the ground, clutching at his own wrist as if something inside it had broken backward.\n\nTomas stood between them.\n\nHe was breathing hard. Blood ran from his hairline into one eye. The spellbook hung from a strap across his shoulder now, half-hidden beneath his coat. One hand shook. The other held a knife Gilbert had seen a hundred times at supper and never truly seen at all.\n\n“Run,” Tomas said.\n\nGilbert dropped to his knees beside Mara.\n\n“Mara!”\n\nShe groaned.\n\n“Run,” Tomas said again.\n\nThe man on the ground laughed through his teeth.\n\n“Still playing father?”\n\nTomas looked at him.\n\nNothing in his face moved.\n\nThe man stopped laughing.\n\nGilbert did not understand the words. He understood what they did to his father.",
+      "character_count": 1759,
+      "word_count": 310,
+      "paragraph_count": 35,
+      "sentence_count": 45,
+      "starts_with_heading": false,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": false,
+      "forced_sentence_split": false,
+      "source_start_char": 47978,
+      "source_end_char": 49737,
+      "text_hash": "e2ddec4d4805835b00790d0ef851a76c4ac0535788f548c02f628ded20452554",
+      "context": {
+        "previous_chunk_id": "ch00_0030",
+        "next_chunk_id": "ch00_0032",
+        "first_sentence": "Mara shoved Gilbert behind a rain barrel.",
+        "last_sentence": "He understood what they did to his father.",
+        "previous_context": "A rider cut across the lane ahead of them.",
+        "next_context": "The cottage, the road, the years, the names, all of it seemed to tighten in him at once."
+      },
+      "speechify": {
+        "status": "generated",
+        "voice_id": null,
+        "model": null,
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": null,
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": null,
+        "estimated_cost_usd": null,
+        "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0031.mp3",
+        "speech_marks_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0031.speechmarks.json",
+        "api_response_metadata_file": null,
+        "generation_attempts": []
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0032",
+      "sequence_global": 32,
+      "sequence_in_source": 32,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0032.txt",
+      "text": "The cottage, the road, the years, the names, all of it seemed to tighten in him at once.\n\nTomas kicked the fallen man hard enough to silence him.\n\nThen he pulled Gilbert up.\n\nMara stirred, trying to rise.\n\nTomas looked at her. “Can you stand?”\n\nShe spat blood into the mud. “I can kill him if you hand me that poker.”\n\n“Take the mill track.”\n\n“With the boy.”\n\n“No.”\n\nGilbert grabbed his sleeve. “No.”\n\nHis father crouched before him in the burning lane.\n\nAll around them, Brindleford came apart: bells, hooves, crying, fire, the deep crack of timber failing somewhere near the square. But inside the circle of his father’s hands, the world narrowed.\n\n“Gilbert de Vere,” Tomas said.\n\nGilbert began to cry then, not loudly. He hated himself for it.\n\n“I am going to make you difficult to see.”\n\n“What?”\n\n“Not gone. Not safe. Difficult to see.”\n\n“I don’t understand.”\n\n“I know.”\n\nHis father’s thumb brushed mud from his cheek. It left blood there instead.\n\n“You remember the oldest rule?”\n\nGilbert swallowed. “Hide until the world is quiet.”\n\n“Good.”\n\n“I don’t want to.”\n\n“I know.”\n\n“Come with me.”\n\nHis father’s face did the breaking thing again, and this time Gilbert saw how much effort it took to force the pieces back.\n\n“I will be behind you.”\n\nThat was not a promise.\n\nIt sounded like one because Gilbert needed it to.\n\nTomas opened the spellbook.\n\nThe pages snapped in the smoky wind though his hand held them down. He spoke quickly, too quietly for the chaos around them, yet the words found Gilbert. They slipped under his skin cold as rain.\n\nAt first nothing happened.\n\nThen his hands vanished.\n\nGilbert gasped and held them up.\n\nNo fingers. No palms. The mud on his sleeve hung in the air for a breath before it, too, thinned and disappeared. His coat faded. His boots faded.",
+      "character_count": 1782,
+      "word_count": 313,
+      "paragraph_count": 36,
+      "sentence_count": 51,
+      "starts_with_heading": false,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": false,
+      "forced_sentence_split": false,
+      "source_start_char": 49738,
+      "source_end_char": 51520,
+      "text_hash": "2a372e6f67ffc45518baf9edab03115568576b8a18169fe82ed9bad6e808493c",
+      "context": {
+        "previous_chunk_id": "ch00_0031",
+        "next_chunk_id": "ch00_0033",
+        "first_sentence": "The cottage, the road, the years, the names, all of it seemed to tighten in him at once.",
+        "last_sentence": "His boots faded.",
+        "previous_context": "He understood what they did to his father.",
+        "next_context": "His tears fell from nowhere."
+      },
+      "speechify": {
+        "status": "generated",
+        "voice_id": null,
+        "model": null,
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": null,
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": null,
+        "estimated_cost_usd": null,
+        "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0032.mp3",
+        "speech_marks_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0032.speechmarks.json",
+        "api_response_metadata_file": null,
+        "generation_attempts": []
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0033",
+      "sequence_global": 33,
+      "sequence_in_source": 33,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0033.txt",
+      "text": "His tears fell from nowhere.\n\nMara swore.\n\nGilbert looked down and saw only footprints filling slowly with water.\n\nHis father’s hand remained on his shoulder. He could feel it, though he could no longer see where it touched him.\n\n“Do not speak,” Tomas whispered.\n\nThe effort in his voice frightened Gilbert.\n\nHe looked up.\n\nTomas’s nose had begun to bleed.\n\nA thin red line ran over his mouth. He wiped it away with the back of his hand and left a smear across his cheek. His lips kept moving. One hand held the book. The other hovered where Gilbert’s shoulder was, fingers bent as if gripping invisible cloth.\n\nMara pushed herself upright against the wall.\n\n“Tomas,” she said. “You cannot—”\n\n“Take the track.”\n\n“The boy—”\n\n“Cannot be taken with you now.”\n\nHis voice thinned on the last word.\n\nThe invisible pressure around Gilbert tightened. He felt it like cold glass over his skin.\n\nAnother rider entered the lane.\n\nTomas turned his head.\n\nHis hand slipped from Gilbert’s shoulder.\n\nFor one terrible instant, Gilbert saw his own fingers flicker back into being.\n\nTomas made a sound low in his throat, half pain, half command. The spell clenched again. Gilbert vanished completely.\n\nBlood dripped from Tomas’s chin onto the open page.\n\n“Go,” he whispered.\n\nGilbert did not.\n\nHis father looked directly at the place where he stood.\n\nNot almost. Directly.\n\nOf course he could see him.\n\nOf course his father could do one impossible thing more.\n\n“Please,” Tomas said.\n\nThat broke what commands had not.\n\nGilbert ran.\n\nBehind him, Mara shouted something.\n\nHis father answered.\n\nThen a horse screamed, the lane filled with firelight, and the voices he knew were swallowed by the voices he did not.",
+      "character_count": 1693,
+      "word_count": 285,
+      "paragraph_count": 34,
+      "sentence_count": 44,
+      "starts_with_heading": false,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": true,
+      "forced_sentence_split": false,
+      "source_start_char": 51521,
+      "source_end_char": 53214,
+      "text_hash": "08a729bf4b202bf3fd0281b3d73dc0113f27805a5c0ce984a28cb99b6a356ef9",
+      "context": {
+        "previous_chunk_id": "ch00_0032",
+        "next_chunk_id": "ch00_0034",
+        "first_sentence": "His tears fell from nowhere.",
+        "last_sentence": "Then a horse screamed, the lane filled with firelight, and the voices he knew were swallowed by the voices he did not.",
+        "previous_context": "His boots faded.",
+        "next_context": "16. GILBERT FINDS THE CART"
+      },
+      "speechify": {
+        "status": "generated",
+        "voice_id": null,
+        "model": null,
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": null,
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": null,
+        "estimated_cost_usd": null,
+        "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0033.mp3",
+        "speech_marks_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0033.speechmarks.json",
+        "api_response_metadata_file": null,
+        "generation_attempts": []
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0034",
+      "sequence_global": 34,
+      "sequence_in_source": 34,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0034.txt",
+      "text": "16. GILBERT FINDS THE CART\n\nNo one chased him at first because no one saw him.\n\nThat was worse than being chased.\n\nGilbert had never understood how much of being alive was being seen until the world stopped making room for him. People ran into him. A woman’s elbow struck his shoulder and she screamed at the air. A dog snarled, hackles raised, then backed away whining. Sparks landed on his invisible sleeve; he felt the heat and smelled wool singe but saw no flame on himself.\n\nHe clamped both hands over his mouth and kept running.\n\nThe lane bent wrong in smoke.\n\nBrindleford had been simple before. Cottage to well. Well to square. Square to baker. Baker to mill road. But fire and shouting rearranged everything. A cart had overturned near the smithy. The chapel door hung open. Someone lay in the mud beside the trough. Not moving. The bell rang until it stopped mid-swing with a sound like a throat cut short.\n\nHide until the world is quiet.\n\nHis father’s oldest rule.\n\nBut where?\n\nNot Mara’s cottage. Burning.\n\nNot the bakery. Fire in the window.\n\nNot the chapel. Too many people.\n\nNot the mill road. Riders.\n\nGilbert ran toward the square and then away from it when men came through with torches. One carried a shape on his sleeve that flashed when firelight touched it. Gilbert did not know the symbol. He only knew his father would have seen it from across a room and changed their whole life because of it.\n\nHe slipped in mud and fell hard.\n\nThe spell flickered.\n\nHis hands appeared beneath him for half a second, pale against black earth.\n\nA shout went up nearby.\n\n“There!”\n\nGilbert scrambled back, biting down on a sob.\n\nHe could not see his own feet. He could not tell where his body ended and the smoke began. He crawled because standing felt too much like being found.",
+      "character_count": 1785,
+      "word_count": 320,
+      "paragraph_count": 22,
+      "sentence_count": 45,
+      "starts_with_heading": true,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": true,
+      "forced_sentence_split": false,
+      "source_start_char": 53216,
+      "source_end_char": 55001,
+      "text_hash": "98c663203d9395f85c82e29618da21609526d2440d2b49d8552ec0b05790a8aa",
+      "context": {
+        "previous_chunk_id": "ch00_0033",
+        "next_chunk_id": "ch00_0035",
+        "first_sentence": "16. GILBERT FINDS THE CART",
+        "last_sentence": "He crawled because standing felt too much like being found.",
+        "previous_context": "Then a horse screamed, the lane filled with firelight, and the voices he knew were swallowed by the voices he did not.",
+        "next_context": "The spell tightened again."
+      },
+      "speechify": {
+        "status": "generated",
+        "voice_id": null,
+        "model": null,
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": null,
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": null,
+        "estimated_cost_usd": null,
+        "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0034.mp3",
+        "speech_marks_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0034.speechmarks.json",
+        "api_response_metadata_file": null,
+        "generation_attempts": []
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0035",
+      "sequence_global": 35,
+      "sequence_in_source": 35,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0035.txt",
+      "text": "The spell tightened again.\n\nSomewhere behind him, his father cried out.\n\nGilbert turned toward the sound.\n\nHe almost ran back.\n\nThen a horse crashed through the smoke between them, wild-eyed and riderless, dragging broken tack. Gilbert threw himself flat. The hoof came down inches from his face, splashing mud over nothing. The horse vanished toward the mill.\n\nBy the time Gilbert lifted his head, he no longer knew where his father was.\n\nThe cart stood near the edge of the square.\n\nIt was Brenn’s old hay cart, though at first Gilbert knew it only by shape: one wheel sunk in mud, one shaft broken, the bed tilted under half-burned sacks. He had hidden beneath it once in summer when Sella dared him to steal apples from the back and Brenn pretended not to see.\n\nA child’s hiding place.\n\nA stupid place.\n\nA place his father had not chosen.\n\nThat made him hesitate.\n\nThen men ran past the far side of the square, and one of them stopped.\n\nHis head turned.\n\nNot toward Gilbert.\n\nToward the empty trail of footprints appearing in mud.\n\nGilbert looked down.\n\nEvery step he had taken marked him.\n\nThe man saw.\n\nGilbert bolted for the cart.\n\nHe did not stand. He crawled, slid, dragged himself through muck beneath the tilted bed. A splinter tore his cheek. The sacks smelled of wet hay and old grain. Mud filled his sleeves. He pulled his knees to his chest and pressed both hands over his mouth.\n\nThe man reached the cart.\n\nGilbert saw his boots.\n\nBlack leather. Mud to the ankle. Clean stitching above it.\n\nThe boots stopped beside the wheel.\n\nGilbert did not breathe.\n\nThe man crouched.\n\nThe spell flickered again.\n\nGilbert felt it go thin. Not gone. Thin. Like ice under a foot.\n\nHis knee appeared.",
+      "character_count": 1700,
+      "word_count": 299,
+      "paragraph_count": 30,
+      "sentence_count": 44,
+      "starts_with_heading": false,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": true,
+      "forced_sentence_split": false,
+      "source_start_char": 55003,
+      "source_end_char": 56703,
+      "text_hash": "35d527080f3630045736ce94f5e208a3b6a36e0f1a6bf329abc0547f8370ef11",
+      "context": {
+        "previous_chunk_id": "ch00_0034",
+        "next_chunk_id": "ch00_0036",
+        "first_sentence": "The spell tightened again.",
+        "last_sentence": "His knee appeared.",
+        "previous_context": "He crawled because standing felt too much like being found.",
+        "next_context": "Only the knee."
+      },
+      "speechify": {
+        "status": "generated",
+        "voice_id": null,
+        "model": null,
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": null,
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": null,
+        "estimated_cost_usd": null,
+        "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0035.mp3",
+        "speech_marks_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0035.speechmarks.json",
+        "api_response_metadata_file": null,
+        "generation_attempts": []
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0036",
+      "sequence_global": 36,
+      "sequence_in_source": 36,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0036.txt",
+      "text": "Only the knee. Mud-streaked cloth fading in and out beneath the cart.\n\nThe man leaned closer.\n\nThen, from across the square, a blast of white fire struck the ground hard enough to throw sparks and mud against the cart. The man spun toward it.\n\nSomeone shouted a name Gilbert knew.\n\nNot Father.\n\nTomas.\n\nThe name sounded wrong from a stranger’s mouth.\n\nThe boots left.\n\nGilbert stayed.\n\nThe world did not become quiet.\n\nIt became louder, then stranger, then far away. His father’s voice rose once. Not in words Gilbert knew. The air answered. Men shouted. Something heavy collapsed with a roar that drove heat beneath the cart. A horse screamed. Someone called for water. Someone called for a mother. Someone called for a name Gilbert did not know and would not remember.\n\nFor a moment, between bootsteps and smoke, Gilbert saw something roll through the mud near the cart: Mara Pell’s blue peppermint tin, dented open, little white sweets scattered in ash like teeth.\n\nHe reached for it.\n\nA boot came down nearby.\n\nHe pulled his hand back.\n\nThe tin lay there, open to the rain.\n\nHe never saw Mara again.\n\nThe spell finally failed.\n\nGilbert saw his hands reappear in the mud.\n\nHe stared at them.\n\nSmall. Shaking. Real.\n\nHe pressed them over his mouth again before the sob could escape.\n\nHide until the world is quiet.\n\nSo he hid.\n\nHe hid while Brindleford burned.\n\nHe hid while footsteps passed near enough to crush his fingers.\n\nHe hid while rain began, soft at first, then harder, hissing where it touched hot wood.\n\nHe hid until the shouting thinned.\n\nHe hid until the bell stopped trying to ring.\n\nHe hid until he could no longer tell the difference between smoke, night, and the inside of his own closed eyes.",
+      "character_count": 1713,
+      "word_count": 299,
+      "paragraph_count": 30,
+      "sentence_count": 43,
+      "starts_with_heading": false,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": true,
+      "forced_sentence_split": false,
+      "source_start_char": 56705,
+      "source_end_char": 58418,
+      "text_hash": "0dc6cf01f3519932c1e4efb4cba820889dd84171360192b2e69d900a97d22889",
+      "context": {
+        "previous_chunk_id": "ch00_0035",
+        "next_chunk_id": "ch00_0037",
+        "first_sentence": "Only the knee.",
+        "last_sentence": "He hid until he could no longer tell the difference between smoke, night, and the inside of his own closed eyes.",
+        "previous_context": "His knee appeared.",
+        "next_context": "17. DAHSEE FINDS HIM"
+      },
+      "speechify": {
+        "status": "generated",
+        "voice_id": null,
+        "model": null,
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": null,
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": null,
+        "estimated_cost_usd": null,
+        "audio_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0036.mp3",
+        "speech_marks_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\audio\\chunks\\ch00_0036.speechmarks.json",
+        "api_response_metadata_file": null,
+        "generation_attempts": []
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0037",
+      "sequence_global": 37,
+      "sequence_in_source": 37,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0037.txt",
+      "text": "17. DAHSEE FINDS HIM\n\nToward dawn, rain began to fall in earnest.\n\nNot enough to save anything. Only enough to turn ash into black paste and make the smoke crawl low along the ground. By first light, Gilbert was only a boy beneath a cart, curled around himself, shivering so hard his teeth clicked.\n\nHe did not move.\n\nNot when the raiders left.\n\nNot when the last roof collapsed.\n\nNot when crows began to gather.\n\nThe rule said hide until the world was quiet.\n\nThe world was quiet enough.\n\nStill his father did not come.\n\nHoofbeats came after sunrise.\n\nGilbert heard them through the cotton-thick silence that follows too much noise. Horses. Harness. Men speaking low. Not shouting. Not laughing.\n\nThat mattered, though he did not know why.\n\nA company rode into what had been Brindleford with swords drawn and faces like stone.\n\nThey were too late.\n\nThere are words men say for such moments. Fate. Chance. The will of gods. The turning of some great unseen wheel grinding lives beneath it and calling the sound destiny. Men say those words afterward, when the dead are too still to argue and the living need something larger than failure to blame.\n\ndahsee’s company had simply come too late.\n\nCaptain Arlan Voss reined in near the blackened well and cursed with the tired precision of a man who had seen villages burn before and hated that he knew the shape of it. Another man muttered a prayer. A third made a sign against evil and looked ashamed of needing it.\n\ndahsee rode near the front in those days, not yet old, though weather had already begun its work on him. His hair was fuller then, his back straighter, his mail better kept than most men’s consciences. He took in the village with one long look and said nothing for a time.",
+      "character_count": 1736,
+      "word_count": 309,
+      "paragraph_count": 19,
+      "sentence_count": 35,
+      "starts_with_heading": true,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": true,
+      "forced_sentence_split": false,
+      "source_start_char": 58580,
+      "source_end_char": 60316,
+      "text_hash": "4d3bc4278b1d278c5a154dd7aeafffed6700ec0188c6d615c3cf2f82bc82ad8f",
+      "context": {
+        "previous_chunk_id": "ch00_0036",
+        "next_chunk_id": "ch00_0038",
+        "first_sentence": "17. DAHSEE FINDS HIM",
+        "last_sentence": "He took in the village with one long look and said nothing for a time.",
+        "previous_context": "He hid until he could no longer tell the difference between smoke, night, and the inside of his own closed eyes.",
+        "next_context": "Perhaps he was counting."
+      },
+      "speechify": {
+        "status": "not_generated",
+        "voice_id": null,
+        "model": null,
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": null,
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": null,
+        "estimated_cost_usd": null,
+        "audio_file": null,
+        "speech_marks_file": null,
+        "api_response_metadata_file": null,
+        "generation_attempts": []
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0038",
+      "sequence_global": 38,
+      "sequence_in_source": 38,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0038.txt",
+      "text": "Perhaps he was counting.\n\nSoldiers counted even when they wished they would not. Doors kicked in. Bodies in the lane. Smoke from the chapel. Blood at the well. A child’s shoe in the mud. Three crows on the roof beam of what had been someone’s home.\n\nSuch things entered a man and stayed there, whether invited or not.\n\nCaptain Voss cursed again, softer this time.\n\ndahsee dismounted.\n\nHe moved through the ruins carefully, not because he feared ambush, though perhaps he did, but because there were dead beneath the ash. He turned one body with the butt of his spear and looked away. He kicked aside a broken shutter, checked a doorway, paused by the well. His eyes missed little. Men who lived by the sword often learned to look at the world as if it meant to cheat them.\n\nHe found Gilbert beneath the cart.\n\nFor a long moment neither of them moved.\n\nThe boy stared at him through soot and dried tears. His hair was gray with ash. His bare feet were cut. One sleeve had burned away to the elbow, though the skin beneath was only reddened. He clutched a carved wooden horse in both hands, though he did not remember picking it up.\n\ndahsee crouched slowly, as one might before a frightened dog.\n\n“Well,” he said.\n\nThat was all.\n\nGilbert said nothing.\n\ndahsee reached into the pouch at his belt and took out a heel of bread wrapped in cloth. He broke it in two, considered the larger half, then gave that to Gilbert. The boy stared at it until dahsee took a bite from the smaller piece.\n\n“Not poisoned,” dahsee said. “More than can be said for some camp stews.”\n\nGilbert took the bread.\n\nHe ate too quickly and nearly choked.\n\ndahsee waited. He did not touch him. He did not ask where his parents were. He did not promise anything foolish, such as safety, or justice, or that everything would be well.",
+      "character_count": 1799,
+      "word_count": 328,
+      "paragraph_count": 18,
+      "sentence_count": 38,
+      "starts_with_heading": false,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": true,
+      "forced_sentence_split": false,
+      "source_start_char": 60318,
+      "source_end_char": 62117,
+      "text_hash": "06e12844e486e25eed0c738b92917878b49e7c455ed6353994326c48e17b4e45",
+      "context": {
+        "previous_chunk_id": "ch00_0037",
+        "next_chunk_id": "ch00_0039",
+        "first_sentence": "Perhaps he was counting.",
+        "last_sentence": "He did not promise anything foolish, such as safety, or justice, or that everything would be well.",
+        "previous_context": "He took in the village with one long look and said nothing for a time.",
+        "next_context": "Perhaps that was why Gilbert did not run from him."
+      },
+      "speechify": {
+        "status": "not_generated",
+        "voice_id": null,
+        "model": null,
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": null,
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": null,
+        "estimated_cost_usd": null,
+        "audio_file": null,
+        "speech_marks_file": null,
+        "api_response_metadata_file": null,
+        "generation_attempts": []
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0039",
+      "sequence_global": 39,
+      "sequence_in_source": 39,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0039.txt",
+      "text": "Perhaps that was why Gilbert did not run from him.\n\nAfter a while, dahsee said, “What’s your name, lad?”\n\nGilbert’s mouth was dry. His throat hurt. For one terrible moment he could not remember.\n\nThen his father’s voice came back to him.\n\nNot the voice raised in fear. Not the voice that had told him to go. The quieter voice from ordinary mornings, from market days and mended hinges and lessons scratched in chalk by the hearth. The voice that had taught him his letters, his rules, and his name.\n\nGilbert de Vere.\n\nHe did not know why the name had been made. He did not know what had been cut away so it could fit inside a village life. He did not know why his father had worn the same name except that a father and son needed to look like they belonged to one another.\n\nHe only knew what he had been taught to say.\n\n“Gilbert,” he whispered.\n\ndahsee waited.\n\n“Gilbert de Vere.”\n\ndahsee nodded as if this were enough. As if a name, once spoken, could be a tent against the rain. As if the world, having taken everything else, had been denied this one small theft.\n\n“Gilbert de Vere,” he repeated. “I am dahsee.”\n\nCaptain Voss called from the road. “Alive?”\n\ndahsee looked at the boy, at the burned village, at the bread disappearing in small desperate bites. His jaw worked beneath his beard.\n\n“Aye,” he called back. “One.”\n\nThere were arguments later.\n\nGilbert remembered voices more than words. Captain Voss saying they could not drag a child through a bandit hunt. Someone else saying Lord Edric Harrowmere would take him, since Brindleford had been under his protection and the dead were his dead to answer for.",
+      "character_count": 1617,
+      "word_count": 291,
+      "paragraph_count": 18,
+      "sentence_count": 33,
+      "starts_with_heading": false,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": true,
+      "forced_sentence_split": false,
+      "source_start_char": 62119,
+      "source_end_char": 63736,
+      "text_hash": "a6d8475f3cd2569afe7973f145ac4ade32d07947c323c33e4a279cc9c1fc758b",
+      "context": {
+        "previous_chunk_id": "ch00_0038",
+        "next_chunk_id": "ch00_0040",
+        "first_sentence": "Perhaps that was why Gilbert did not run from him.",
+        "last_sentence": "Someone else saying Lord Edric Harrowmere would take him, since Brindleford had been under his protection and the dead were his dead to answer for.",
+        "previous_context": "He did not promise anything foolish, such as safety, or justice, or that everything would be well.",
+        "next_context": "Another saying there were orphan houses in Neverwinter, if the boy lived long enough to reach one."
+      },
+      "speechify": {
+        "status": "not_generated",
+        "voice_id": null,
+        "model": null,
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": null,
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": null,
+        "estimated_cost_usd": null,
+        "audio_file": null,
+        "speech_marks_file": null,
+        "api_response_metadata_file": null,
+        "generation_attempts": []
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0040",
+      "sequence_global": 40,
+      "sequence_in_source": 40,
+      "source_file_id": "ch00",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00 - Prologue.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_0040.txt",
+      "text": "Another saying there were orphan houses in Neverwinter, if the boy lived long enough to reach one.\n\ndahsee said something low and hard enough that the argument ended.\n\nBy noon, Gilbert was wrapped in a cloak too large for him, sitting on the back of dahsee’s horse with both hands fisted in the man’s belt.\n\nThey left Brindleford behind.\n\nHe did not look back until the village was only smoke between the trees.",
+      "character_count": 411,
+      "word_count": 73,
+      "paragraph_count": 5,
+      "sentence_count": 5,
+      "starts_with_heading": false,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": true,
+      "forced_sentence_split": false,
+      "source_start_char": 63737,
+      "source_end_char": 64148,
+      "text_hash": "c5fd7d06c47c427f42edd9be603991f9e0df5ef9a296fa27026ba33529ae5771",
+      "context": {
+        "previous_chunk_id": "ch00_0039",
+        "next_chunk_id": "ch00_5_0001",
+        "first_sentence": "Another saying there were orphan houses in Neverwinter, if the boy lived long enough to reach one.",
+        "last_sentence": "He did not look back until the village was only smoke between the trees.",
+        "previous_context": "Someone else saying Lord Edric Harrowmere would take him, since Brindleford had been under his protection and the dead were his dead to answer for.",
+        "next_context": "Part One"
+      },
+      "speechify": {
+        "status": "not_generated",
+        "voice_id": null,
+        "model": null,
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": null,
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": null,
+        "estimated_cost_usd": null,
+        "audio_file": null,
+        "speech_marks_file": null,
+        "api_response_metadata_file": null,
+        "generation_attempts": []
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_5_0001",
+      "sequence_global": 41,
+      "sequence_in_source": 1,
+      "source_file_id": "ch00_5",
+      "source_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\chapters\\Chapter 00.5 - Part I - The Burning Town.txt",
+      "chunk_text_file": "C:\\Users\\tmviz\\RiderProjects\\RoadBeneathDragonsWings\\audiobook-prep\\book-1\\chunks\\ch00_5_0001.txt",
+      "text": "Part One\n\nThe Burning Town",
+      "character_count": 26,
+      "word_count": 5,
+      "paragraph_count": 2,
+      "sentence_count": 2,
+      "starts_with_heading": true,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": true,
+      "forced_sentence_split": false,
+      "source_start_char": 0,
+      "source_end_char": 26,
+      "text_hash": "0b7ab065c8f093ab4d92f37906300ff0291bd175b1f1e83153ef5faf9b3ecba7",
+      "context": {
+        "previous_chunk_id": "ch00_0040",
+        "next_chunk_id": "ch01_0001",
+        "first_sentence": "Part One",
+        "last_sentence": "The Burning Town",
+        "previous_context": "He did not look back until the village was only smoke between the trees.",
+        "next_context": "Chapter 1: The First Broken Seal"
+      },
+      "speechify": {
+        "status": "not_generated",
+        "voice_id": null,
+        "model": null,
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": null,
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": null,
+        "estimated_cost_usd": null,
+        "audio_file": null,
+        "speech_marks_file": null,
+        "api_response_metadata_file": null,
+        "generation_attempts": []
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    }
+  ],
+  "summary": {
+    "source_file_count": 2,
+    "chunk_count": 41,
+    "total_characters": 1539372,
+    "average_chunk_characters": 1687,
+    "min_chunk_characters": 24,
+    "max_chunk_characters": 1998,
+    "chunks_over_target": 23,
+    "chunks_under_target": 49,
+    "chunks_over_hard_max": 0,
+    "sentence_splits_forced": 5,
+    "warnings_count": 76,
+    "pronunciation_rules_loaded": 50,
+    "pronunciation_distinct_terms_applied": 1,
+    "pronunciation_substitutions_total": 16,
+    "_note": "counts reflect this trimmed sample, not the full book"
+  },
+  "_sample_note": "TRIMMED SAMPLE. The real manifest has 51 source_files / 912 chunks; this copy keeps the first 2 chapters (ch00, ch00_5) and their chunks to demonstrate the exact schema without bulk. Absolute paths are verbatim from the source (Windows) machine and are environment-specific."
+}

@@ -1,0 +1,17 @@
+{
+  "project": "The Road Beneath Dragon Wings",
+  "title_map": [
+    {
+      "order": 0,
+      "current_file": "",
+      "current_heading": "",
+      "reader_facing_title": "",
+      "filename_safe_title": "",
+      "type": "prologue|chapter|part|section|interlude|appendix",
+      "status": "keep|revise|combine|split|remove|uncertain",
+      "notes": ""
+    }
+  ],
+  "warnings": [],
+  "assumptions": []
+}

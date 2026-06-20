@@ -1,0 +1,156 @@
+{
+  "project": "audiobook_text_prep",
+  "created_at": "2026-06-13T01:20:26.705903+00:00",
+  "settings": {
+    "target_min_chars": 1500,
+    "target_max_chars": 1800,
+    "hard_max_chars": 2000,
+    "preserve_paragraphs": true,
+    "preserve_headings": true,
+    "normalize_quotes": false,
+    "normalize_whitespace": true,
+    "sentence_split_strategy": "safe_boundary_first"
+  },
+  "source_files": [
+    {
+      "source_file_id": "ch00",
+      "path": "/tmp/_chunker_in/Chapter 00 - The Long Road Home.txt",
+      "display_name": "Chapter 00 - The Long Road Home",
+      "detected_chapter": "00",
+      "source_hash": "a540fe3206d64e6da5ff9f6c3ffed489768c1e2390d00cfe8d3d40cc78e4410a",
+      "character_count": 3127,
+      "estimated_chunks": 2
+    }
+  ],
+  "chunks": [
+    {
+      "chunk_id": "ch00_0001",
+      "sequence_global": 1,
+      "sequence_in_source": 1,
+      "source_file_id": "ch00",
+      "source_file": "/tmp/_chunker_in/Chapter 00 - The Long Road Home.txt",
+      "chunk_text_file": "/tmp/_chunker_out/chunks/ch00_0001.txt",
+      "text": "Chapter 00 - The Long Road Home\n\nThe road had been built before anyone now living remembered the building of it. It cut across the lowlands in a slow, patient curve that paid no mind to property lines or modern surveys. People said the original surveyors had followed an older path — a deer trail, or a riverbed long since rerouted, or perhaps something even older than that. Eleanor liked the last theory best. It made the road feel less like a thing she walked on and more like a thing that walked with her.\n\nShe left the house just after sunrise. The kettle was still warm on the stove. A note on the table read \"Back by Sunday — don't forget the chickens,\" which she had written twice already that week, as if the chickens were a danger she could not stop preparing for. She locked the kitchen door, slipped the key under the third stone on the path, and turned toward the gate.\n\nIt rained on her for the first three miles, and then it did not. The clouds moved off like a curtain pulled politely aside. By the time she reached the wooden bridge at Halver's Crossing, the sky was the kind of blue you only see in late October, when the air has stopped pretending to be summer and the leaves have stopped pretending to be green.\n\nShe paused at the threshold of the bridge, listening for footsteps that never came. There had been a story, when she was a child, about a man who had drowned beneath that bridge and now waited for travelers who walked too quickly. She did not believe the story. She had also never crossed the bridge at a hurry.\n\nHalfway across, she stopped to lean on the railing and watch the water. It moved with the slow, unhurried weight of water that knew where it was going. A heron stood on the far bank, perfectly still, considering its breakfast. Eleanor considered her own.",
+      "character_count": 1800,
+      "word_count": 333,
+      "paragraph_count": 6,
+      "sentence_count": 21,
+      "starts_with_heading": true,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": false,
+      "forced_sentence_split": false,
+      "source_start_char": 0,
+      "source_end_char": 1800,
+      "text_hash": "0e4549ccdb186737f6de956e9b4bf5edb80f59b7f116acd9a3b01d04f26d21cc",
+      "context": {
+        "previous_chunk_id": null,
+        "next_chunk_id": "ch00_0002",
+        "first_sentence": "Chapter 00 - The Long Road Home",
+        "last_sentence": "Eleanor considered her own.",
+        "previous_context": "",
+        "next_context": "She had a heel of bread in her coat pocket and an apple she had been saving since Tuesday."
+      },
+      "speechify": {
+        "status": "not_generated",
+        "voice_id": null,
+        "model": null,
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": null,
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": null,
+        "estimated_cost_usd": null,
+        "audio_file": null,
+        "speech_marks_file": null,
+        "api_response_metadata_file": null,
+        "generation_attempts": []
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    },
+    {
+      "chunk_id": "ch00_0002",
+      "sequence_global": 2,
+      "sequence_in_source": 2,
+      "source_file_id": "ch00",
+      "source_file": "/tmp/_chunker_in/Chapter 00 - The Long Road Home.txt",
+      "chunk_text_file": "/tmp/_chunker_out/chunks/ch00_0002.txt",
+      "text": "She had a heel of bread in her coat pocket and an apple she had been saving since Tuesday. She ate the apple and saved the bread.\n\nThe path on the far side climbed up through a stand of oaks and then leveled out across a long stretch of pasture. Cows watched her without interest. A barn cat watched her with great interest, then lost interest the moment she looked back. The world, she thought, was very busy not noticing her, which suited her well.\n\nBy midday she had reached the edge of the woods, and by mid-afternoon she had crossed them. The trees thinned. The road widened. And there, at the bottom of the last slope, was the village she had left twenty-two years ago.\n\nShe did not go down at once. She sat on a stone by the side of the road and watched the smoke from the chimneys curl up and disperse into the bright sky. She counted the houses. There were three more than she remembered, and one fewer. She did not know whether to feel that as gain or as loss, so for a little while she felt it as neither.\n\nWhen she finally stood up, her knees complained, as they had been complaining for several years now in a voice that grew louder every winter. She told them, politely, that they could complain all the way down the hill if they wished, but they would have to keep walking while they did it.\n\nShe started down.",
+      "character_count": 1325,
+      "word_count": 252,
+      "paragraph_count": 6,
+      "sentence_count": 18,
+      "starts_with_heading": false,
+      "ends_at_sentence_boundary": true,
+      "ends_at_paragraph_boundary": true,
+      "forced_sentence_split": false,
+      "source_start_char": 1801,
+      "source_end_char": 3126,
+      "text_hash": "c084a32eb65f8ae32d211d32af1653f1b6e35732ff6447be98c756abcc876e84",
+      "context": {
+        "previous_chunk_id": "ch00_0001",
+        "next_chunk_id": null,
+        "first_sentence": "She had a heel of bread in her coat pocket and an apple she had been saving since Tuesday.",
+        "last_sentence": "She started down.",
+        "previous_context": "Eleanor considered her own.",
+        "next_context": ""
+      },
+      "speechify": {
+        "status": "not_generated",
+        "voice_id": null,
+        "model": null,
+        "audio_format": "mp3",
+        "requested_at": null,
+        "completed_at": null,
+        "api_endpoint": "/v1/audio/speech",
+        "billable_characters": null,
+        "estimated_cost_usd": null,
+        "audio_file": null,
+        "speech_marks_file": null,
+        "api_response_metadata_file": null,
+        "generation_attempts": []
+      },
+      "validation": {
+        "status": "not_validated",
+        "whisper_passes": [],
+        "overall_similarity": null,
+        "missing_text_flags": [],
+        "artifact_flags": [],
+        "human_review_required": false,
+        "approved_for_final": false
+      },
+      "repair": {
+        "repair_status": "not_needed",
+        "repair_items": [],
+        "patched_audio_file": null,
+        "repair_notes": []
+      }
+    }
+  ],
+  "summary": {
+    "source_file_count": 1,
+    "chunk_count": 2,
+    "total_characters": 3125,
+    "average_chunk_characters": 1562,
+    "min_chunk_characters": 1325,
+    "max_chunk_characters": 1800,
+    "chunks_over_target": 0,
+    "chunks_under_target": 1,
+    "chunks_over_hard_max": 0,
+    "sentence_splits_forced": 0,
+    "warnings_count": 0
+  }
+}
