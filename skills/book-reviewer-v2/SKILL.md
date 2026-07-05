@@ -280,6 +280,41 @@ Strategies:
 
 When the user asks for a "full review," confirm the scope before starting. If you must scope down, state the scoping explicitly in the review's header.
 
+## Retrieval-Augmented Review (RAG) — cut query cost
+
+Loading whole chapters into context on every pass is the main cost driver, and
+the reason the *Length-Safety Guidance* above forces manual scoping. The
+`manuscript-rag` skill removes most of that cost for **targeted** reviews: it
+holds a local vector index of the manuscript (built once, embeddings computed
+locally at no per-query cost) and returns only the passages relevant to a query,
+each cited by `source_file_id` and line range.
+
+Use retrieval instead of full-chapter reads for the targeted modes — **D
+(continuity), E (character arc), F (motif/repetition), G (audiobook readiness)** —
+and for any review where only a fraction of the book is in play:
+
+1. **Ensure an index exists.** If `<repo>/chapters/.rag-index/` is missing or
+   stale, (re)build it: `python skills/manuscript-rag/scripts/rag_index.py
+   --source <repo>/chapters/`. It is incremental — only edited chapters re-embed.
+2. **Query per concern.** Turn each concern into retrieval queries (the motif
+   word; the character name + trait; the continuity fact; the proper noun) and run
+   `rag_query.py --db <repo>/chapters/.rag-index --query "…" --k 8 --json`. Scope
+   to chapters with `--scope ch07,ch08` when the concern is local.
+3. **Reason over the retrieved passages only**, and put their `source_file_id` +
+   line range into each `RV-…` finding's **Location** and **Evidence** fields —
+   the retrieval gives you the anchor for free.
+4. **Deep-read selectively.** Escalate to a full chapter read only for the few
+   chapters whose retrieved passages raise a flag. This is the same "sample, then
+   deep-read" discipline as before, now driven by retrieval instead of scanning.
+
+Retrieval does **not** replace broad reading for **Mode A manuscript-wide
+*structural* review** (overall arc cohesion, book-level pacing) — those need
+continuous reading, not top-k passages. Use RAG for the targeted work; read
+broadly for the structural work. Still honor the Campaign-Pending Rule, the voice
+catalog, and evidence requirements — retrieval changes *what you load*, not *how
+you judge*. If `manuscript-rag` is unavailable, fall back to the manual
+length-safety scoping above.
+
 ## What the Reviewer Will NOT Do
 
 - Rewrite prose.

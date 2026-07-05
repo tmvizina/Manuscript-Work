@@ -5,3 +5,8 @@ __pycache__/
 
 # local demo/run output
 /tmp-*/
+
+# manuscript-rag vector store (rebuildable cache, never canon)
+.rag-index/
+venv/
+.venv/

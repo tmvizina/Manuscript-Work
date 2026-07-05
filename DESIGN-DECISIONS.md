@@ -19,6 +19,40 @@ v2 skills (reviewer/planner/writer) add stable IDs, voice gates, dependency grap
 v1 are still valid for one-off use. Both are copied so the repo is complete; the
 README points users at v2 by default.
 
+## RAG index for reviews (`manuscript-rag`) — why, and the choices made
+The review skills read chapters into context to reason about them. At ~290k
+words the reviewer's own *Length-Safety Guidance* admits a full read "will not
+fit in any practical context budget," forcing manual scoping. `manuscript-rag`
+attacks that cost directly: index the chapters once into a local ChromaDB vector
+store, then for a **targeted** review retrieve only the top-k relevant passages
+(cited by chapter + line) and send *those* to the review model instead of whole
+chapters.
+
+Choices:
+- **Local embeddings by default.** The default `local` embedder is ChromaDB's
+  bundled ONNX MiniLM: runs on CPU, no API key, **no per-query cost**. That is
+  the cost win — retrieval is free; only the retrieved passages hit the paid
+  review model. `openai` (cheap API) and `hash` (offline, deterministic, low
+  quality — for CI/smoke tests) are alternatives. Embedder+model are recorded in
+  `rag_config.json`; switching them requires `--full` (vectors aren't comparable).
+- **Index raw prose, not the audiobook chunks.** The audiobook chunker strips
+  Markdown and applies pronunciation respellings ("Dossi" → "DAH-si"); that text
+  is wrong to embed or cite. RAG builds its own sentence-aware passages (with
+  overlap, char/line offsets) from the original chapters so citations read as the
+  author wrote them. The two "chunkers" serve opposite consumers and are not
+  interchangeable.
+- **Incremental by source hash**, mirroring the chunker: unchanged chapters are
+  skipped, edited chapters re-embedded. `--only`, `--dry-run`, `--full` included.
+- **Additive, not invasive.** New skill + a *Retrieval-Augmented Review* section
+  in `book-reviewer-v2`. The full-read path stays as the documented fallback, and
+  Mode A (structural, book-level) reviews still read broadly — RAG is for the
+  targeted modes (continuity, character arc, motif, audiobook).
+- **New third-party dependency.** `chromadb` is the repo's first non-stdlib
+  runtime dep (the chunker is stdlib-only). It is isolated to this one skill,
+  pinned in `skills/manuscript-rag/requirements.txt`, and the scripts fail with a
+  clear install hint if it's absent. The `.rag-index/` store is a rebuildable
+  cache — git-ignore it, don't commit it.
+
 ## Naming conventions observed (kept as-is)
 - Chapters: `Chapter NN - Title.txt` (NN can be fractional: `00.5`, `07.6`).
 - Chunks: `chXX_NNNN.txt` where `chXX` is the manifest `source_file_id`.

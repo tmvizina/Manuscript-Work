@@ -103,6 +103,7 @@ awareness).
 | # | Step | Skill (v1 / v2) | What it does | Reads | Writes |
 |---|------|------------------|--------------|-------|--------|
 | 2 | **Review** | `book-reviewer` / `book-reviewer-v2` | Reads the manuscript and produces a review report: continuity, motif/repetition audits, character arcs, pacing, audiobook readiness. v2 emits stable `RV-NNN` finding IDs. | manuscript `.txt` | review report `.md` |
+| 2a | **Retrieval** (optional, cost) | `manuscript-rag` | Local ChromaDB vector index of the chapters so targeted reviews (continuity, motif, character-arc, audiobook) retrieve only the relevant passages — cited by chapter + line — instead of loading whole chapters. Embeds locally at no per-query cost; only the retrieved passages reach the review model. Built once, incremental on re-run. | manuscript `.txt` | vector index + top-k cited passages |
 | 3 | **Plan** (editing) | `manuscript-editing-planner` / `manuscript-editing-planner-v2` | Turns the review report into a structured editing plan: book-structure recommendations, chapter-split proposals, and per-chapter edit plans. v2 emits `EP-NNN` plan IDs that reference the `RV-NNN` findings, plus a dependency graph and conflict detection. | review report `.md` | editing plan `.md` (overall + per-chapter) |
 | 4 | **Write** | `manuscript-writer` / `manuscript-writer-v2` | Generates the first draft from the generation guide, **and** executes editing plans on later passes. For each finding it decides **implement / push back / suggestion-only**, with reasoning. It only commits accepted edits; proposed rewrites go to a sidecar `.md` for human approval. v2 adds a voice fingerprint and a self-diff voice gate. | generation guide *or* editing plan `.md` + manuscript | manuscript `.txt` (+ sidecar of suggestions) |
 | — | **Title cleanup** (as needed) | `chapter-title-cleanup` | Audits, renumbers, and standardizes chapter/part/section/file titles **without** rewriting prose. Produces a title map and an audit. Run whenever chapter numbering or titles drift. | chapter files / titles | title audit + title map JSON |
@@ -146,6 +147,7 @@ book-writer/
     book-reviewer/                  book-reviewer-v2/
     manuscript-editing-planner/     manuscript-editing-planner-v2/
     manuscript-writer/              manuscript-writer-v2/
+    manuscript-rag/                 <- local vector index (cuts review query cost); scripts/ CLI
     chapter-title-cleanup/
     novel-formatting/
     audiobook-text-prep-chunker/    <- includes scripts/ (the chunker CLI)

@@ -1,0 +1,12 @@
+# manuscript-rag dependencies.
+#
+# Only ChromaDB is required. It bundles the local ONNX embedding model
+# (all-MiniLM-L6-v2, downloaded once on first use) and onnxruntime, so the
+# default `--embedder local` path needs nothing else and makes no API calls.
+#
+#   pip install -r requirements.txt
+#
+# The `--embedder openai` path additionally reads OPENAI_API_KEY from the
+# environment and uses chromadb's built-in OpenAIEmbeddingFunction (no extra
+# package). The `--embedder hash` path (offline smoke test) needs only stdlib.
+chromadb>=0.5
