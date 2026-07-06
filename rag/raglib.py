@@ -109,8 +109,13 @@ def chunk_file(book: str, path: Path) -> list[dict]:
 
 
 def get_client():
+    """Local PersistentClient by default; set CHROMA_HOST (and optionally
+    CHROMA_PORT) to talk to a chromadb server instead (the compose setup)."""
     import chromadb
 
+    host = os.environ.get("CHROMA_HOST")
+    if host:
+        return chromadb.HttpClient(host=host, port=int(os.environ.get("CHROMA_PORT", "8000")))
     return chromadb.PersistentClient(path=str(DB_DIR))
 
 
