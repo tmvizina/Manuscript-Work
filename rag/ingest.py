@@ -11,15 +11,11 @@ import time
 import raglib
 
 
-def main():
-    ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--rebuild", action="store_true", help="drop and re-create the collection first")
-    ap.add_argument("--batch", type=int, default=64, help="upsert batch size")
-    args = ap.parse_args()
-
+def run_ingest(rebuild: bool = False, batch: int = 64, quiet: bool = False) -> dict:
+    """Ingest the corpus; returns {files, chunks, seconds, count}. Importable (serve.py's POST /ingest)."""
     t0 = time.time()
     client = raglib.get_client()
-    if args.rebuild:
+    if rebuild:
         try:
             client.delete_collection(raglib.COLLECTION)
         except Exception:
@@ -44,15 +40,30 @@ def main():
             ids.append(c["id"])
             docs.append(c["text"])
             metas.append(c["metadata"])
-            if len(ids) >= args.batch:
+            if len(ids) >= batch:
                 flush()
-        print(f"  [{book}] {path.name}: {len(chunks)} chunks", file=sys.stderr)
+        if not quiet:
+            print(f"  [{book}] {path.name}: {len(chunks)} chunks", file=sys.stderr)
     flush()
 
-    dt = time.time() - t0
+    return {
+        "files": n_files,
+        "chunks": n_chunks,
+        "seconds": round(time.time() - t0, 1),
+        "count": col.count(),
+    }
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--rebuild", action="store_true", help="drop and re-create the collection first")
+    ap.add_argument("--batch", type=int, default=64, help="upsert batch size")
+    args = ap.parse_args()
+
+    r = run_ingest(rebuild=args.rebuild, batch=args.batch)
     print(
-        f"Ingested {n_chunks} chunks from {n_files} files in {dt:.1f}s "
-        f"-> {raglib.DB_DIR} (collection '{raglib.COLLECTION}', count={col.count()})"
+        f"Ingested {r['chunks']} chunks from {r['files']} files in {r['seconds']}s "
+        f"-> {raglib.DB_DIR} (collection '{raglib.COLLECTION}', count={r['count']})"
     )
 
 

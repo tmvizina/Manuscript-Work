@@ -1,0 +1,75 @@
+# Book Writer stack: app (Fastify + baked React UI) + rag (ChromaDB canon RAG)
+# + chromadb (the vector store).
+#
+#   docker compose up -d --build
+#   UI_REBUILD=$(date +%s) docker compose build app   # force a fresh UI build
+#
+# claude runs are NOT containerized: start the host-side bridge in an IDE
+# terminal (`node bridge/claude-bridge.js`) — see docs/guides/claude-bridge.md.
+# ~/.claude is never mounted into any container.
+
+services:
+  chromadb:
+    image: chromadb/chroma:1.5.9 # pinned: must match chromadb==1.5.9 in rag/requirements.txt
+    restart: unless-stopped
+    volumes:
+      - chroma-data:/data
+    ports:
+      - "8322:8000" # published for host-side debugging only
+    healthcheck:
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/8000"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  rag:
+    build: ./rag
+    restart: unless-stopped
+    ports:
+      - "8323:8801" # host access = RAG-aware skills' fallback + debugging
+    environment:
+      - RAG_REPO_ROOT=/manuscript
+      - CHROMA_HOST=chromadb
+      - CHROMA_PORT=8000
+    volumes:
+      - ${MANUSCRIPT_DIR:-.}:/manuscript:ro
+    depends_on:
+      chromadb:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8801/health', timeout=5)"]
+      interval: 5s
+      timeout: 8s
+      retries: 5
+      start_period: 30s
+
+  app:
+    build:
+      context: . # repo root — the Dockerfile copies app/ui and app/server
+      dockerfile: app/server/Dockerfile
+      args:
+        UI_REBUILD: "${UI_REBUILD:-0}"
+    restart: unless-stopped
+    ports:
+      - "8321:8321"
+    environment:
+      - BW_DATA_DIR=/data
+      - REPO_ROOT=/repo
+      - MANUSCRIPT_ROOT=/manuscript
+      - RAG_URL=http://rag:8801
+      - CLAUDE_BRIDGE_URL=http://host.docker.internal:8412
+      - CLAUDE_BRIDGE_TOKEN=${BRIDGE_TOKEN:-}
+    volumes:
+      - bw-data:/data
+      - ./:/repo:ro # skills/, skills-rag/, docs/guides/ — guide edits show live
+      - ${MANUSCRIPT_DIR:-.}:/manuscript:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # no-op on Docker Desktop, needed on Linux
+    depends_on:
+      rag:
+        condition: service_healthy
+
+volumes:
+  chroma-data:
+  bw-data:

@@ -24,6 +24,35 @@ sample under `samples/`.
 
 ---
 
+## Book Writer Studio (the web app)
+
+The repo ships a browser app that drives the whole pipeline: every skill gets
+a tab in a sidebar (in pipeline order) with a prompt box that runs it through
+`claude -p`, streaming output live; a **Chapter Texts** viewer (chapters are
+stored in the `.txt` files *and* mirrored into SQLite); a **RAG** page for
+semantic canon search over `world/` + chapters (ChromaDB, all local); and a
+**?** Help button that serves each guide in `docs/guides/` as its own page.
+Every skill also has a **RAG-aware variant** (`skills-rag/`) that answers
+canon lookups from the index instead of re-reading whole `world/` files.
+
+```sh
+# 1. the stack (app :8321, rag :8323, chromadb :8322)
+docker compose up -d --build
+
+# 2. the claude bridge, in an IDE terminal (keeps your host claude login)
+node bridge/claude-bridge.js
+
+# open http://localhost:8321
+```
+
+No docker? `cd app/server && npm install && npm start` serves the app alone
+(build the UI once: `cd app/ui && npm install && npm run build`).
+
+See `docs/guides/claude-bridge.md` (how runs reach claude),
+`docs/guides/rag-overview.md`, and `docs/guides/rag-maintenance.md`.
+
+---
+
 ## What goes in, what comes out
 
 **Input** — depends on which half you enter at:

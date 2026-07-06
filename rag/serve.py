@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 """Tiny HTTP wrapper around the canon RAG, for running inside the container.
 
-  GET /health            -> {"ok": true, "chunks": N}
-  GET /query?q=...&k=5   -> query.run_query() JSON (+ "ok": true)
+  GET  /health           -> {"ok": true, "chunks": N}
+  GET  /query?q=...&k=5  -> query.run_query() JSON (+ "ok": true)
+  POST /ingest           -> re-scan the corpus and rebuild the index
+                            {"ok": true, "files": N, "chunks": N, "seconds": S}
 
 Single chroma client behind a lock; queries are ~100ms so serialization is fine
-for a handful of concurrent annotation workers.
+for a handful of concurrent annotation workers. Ingest holds the lock for its
+whole run (minutes on a full book) — health/query requests queue behind it.
 """
 import json
 import threading
@@ -13,6 +16,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
 import raglib
+from ingest import run_ingest
 from query import run_query
 
 PORT = 8801
@@ -33,7 +37,7 @@ class Handler(BaseHTTPRequestHandler):
         if u.path == "/health":
             try:
                 with LOCK:
-                    col = raglib.get_collection()
+                    col = raglib.get_collection(create=True)
                     self._send(200, {"ok": True, "chunks": col.count()})
             except Exception as e:
                 self._send(500, {"ok": False, "error": str(e)})
@@ -58,13 +62,27 @@ class Handler(BaseHTTPRequestHandler):
             return
         self._send(404, {"ok": False, "error": "not found"})
 
+    def do_POST(self):
+        u = urlparse(self.path)
+        if u.path == "/ingest":
+            try:
+                with LOCK:
+                    res = run_ingest(rebuild=True, quiet=True)
+                res["ok"] = True
+                self._send(200, res)
+            except Exception as e:
+                self._send(500, {"ok": False, "error": str(e)})
+            return
+        self._send(404, {"ok": False, "error": "not found"})
+
     def log_message(self, *args):  # keep container logs quiet
         pass
 
 
 if __name__ == "__main__":
     with LOCK:
-        col = raglib.get_collection()
-        col.query(query_texts=["warmup"], n_results=1)
+        col = raglib.get_collection(create=True)
+        if col.count():
+            col.query(query_texts=["warmup"], n_results=1)
         print(f"rag serve ready: {col.count()} chunks on :{PORT}", flush=True)
     ThreadingHTTPServer(("0.0.0.0", PORT), Handler).serve_forever()

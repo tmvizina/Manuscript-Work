@@ -1,13 +1,18 @@
 FROM python:3.11-slim
 
 WORKDIR /app
-RUN pip install --no-cache-dir chromadb
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
-COPY raglib.py query.py serve.py ./
-COPY chroma_db ./chroma_db
+# Bake the ONNX MiniLM embedding model into the image so the first in-container
+# ingest doesn't stall on an ~80MB download.
+RUN python -c "from chromadb.utils.embedding_functions import DefaultEmbeddingFunction; DefaultEmbeddingFunction()(['warmup'])"
 
-# Download the ONNX embedding model into the image and validate the baked DB.
-RUN python -c "import raglib; c = raglib.get_collection(); c.query(query_texts=['warmup'], n_results=1); print('warm:', c.count(), 'chunks')"
+COPY raglib.py ingest.py query.py rag_worker.py serve.py ./
+
+# No chroma_db/ baked in: the index lives either in the chromadb service
+# (CHROMA_HOST set, the compose setup) or a mounted volume. Rebuild via
+# POST /ingest or `python ingest.py --rebuild`.
 
 EXPOSE 8801
 CMD ["python", "serve.py"]

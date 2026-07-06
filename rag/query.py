@@ -16,7 +16,7 @@ import raglib
 
 def run_query(q: str, k: int = 5) -> dict:
     t0 = time.time()
-    col = raglib.get_collection()
+    col = raglib.get_collection(create=True)  # empty index -> zero results, not an error
     res = col.query(query_texts=[q], n_results=k)
     latency_ms = round((time.time() - t0) * 1000)
     results = []

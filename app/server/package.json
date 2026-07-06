@@ -1,0 +1,25 @@
+{
+  "name": "book-writer-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fastify/static": "^8.0.0",
+    "better-sqlite3": "^12.0.0",
+    "fastify": "^5.0.0",
+    "gpt-tokenizer": "^2.4.0",
+    "gray-matter": "^4.0.3",
+    "marked": "^15.0.0",
+    "tsx": "^4.19.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.11",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0"
+  }
+}

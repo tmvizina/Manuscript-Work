@@ -1,0 +1,68 @@
+import { useEffect, useState } from "react";
+import { api, type SkillSummary } from "./lib/api";
+import Sidebar from "./components/Sidebar";
+import TopBar from "./components/TopBar";
+import ChaptersPage from "./pages/ChaptersPage";
+import SkillPage from "./pages/SkillPage";
+import RagPage from "./pages/RagPage";
+import HelpIndexPage from "./pages/HelpIndexPage";
+import HelpSectionPage from "./pages/HelpSectionPage";
+
+export function useHashRoute(): string {
+  const [hash, setHash] = useState(location.hash.slice(1) || "/chapters");
+  useEffect(() => {
+    const onChange = () => setHash(location.hash.slice(1) || "/chapters");
+    window.addEventListener("hashchange", onChange);
+    return () => window.removeEventListener("hashchange", onChange);
+  }, []);
+  return hash;
+}
+
+export default function App() {
+  const route = useHashRoute();
+  const [skills, setSkills] = useState<SkillSummary[]>([]);
+  const [phaseLabels, setPhaseLabels] = useState<Record<string, string>>({});
+  const [health, setHealth] = useState<any>(null);
+
+  useEffect(() => {
+    api("/api/skills")
+      .then((d) => {
+        setSkills(d.skills);
+        setPhaseLabels(d.phase_labels ?? {});
+      })
+      .catch(() => setSkills([]));
+  }, []);
+
+  useEffect(() => {
+    let alive = true;
+    const poll = () => api("/api/health").then((h) => alive && setHealth(h)).catch(() => alive && setHealth(null));
+    poll();
+    const t = setInterval(poll, 30_000);
+    return () => {
+      alive = false;
+      clearInterval(t);
+    };
+  }, []);
+
+  let page: JSX.Element;
+  if (route.startsWith("/skill/")) {
+    const id = decodeURIComponent(route.slice("/skill/".length));
+    page = <SkillPage key={id} skillId={id} bridgeOk={!!health?.bridge?.ok} />;
+  } else if (route === "/rag") {
+    page = <RagPage />;
+  } else if (route === "/help") {
+    page = <HelpIndexPage />;
+  } else if (route.startsWith("/help/")) {
+    page = <HelpSectionPage key={route} slug={route.slice("/help/".length)} />;
+  } else {
+    page = <ChaptersPage />;
+  }
+
+  return (
+    <div className="layout">
+      <TopBar route={route} health={health} />
+      <Sidebar route={route} skills={skills} phaseLabels={phaseLabels} />
+      <main className="main">{page}</main>
+    </div>
+  );
+}

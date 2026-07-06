@@ -1,0 +1,7 @@
+.git
+.idea
+**/node_modules
+**/dist
+**/.venv
+app/server/data
+rag/chroma_db

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "book-writer",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["start", "--prefix", "app/server"],
+      "port": 8321
+    }
+  ]
+}
