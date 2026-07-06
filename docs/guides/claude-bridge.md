@@ -17,7 +17,7 @@ browser ──► app (docker :8321) ──► bridge (your terminal :8412) ─�
 ## Starting it (once per work session)
 
 1. In Rider (or any IDE), open the built-in **Terminal** at this repo's root.
-2. Run:
+2. Run (same command on Mac and Windows):
 
    ```sh
    node bridge/claude-bridge.js
@@ -27,8 +27,24 @@ browser ──► app (docker :8321) ──► bridge (your terminal :8412) ─�
 
    ```
    claude-bridge listening on :8412  (cwd for runs: …/Manuscript-Work)
-   claude: 2.1.201 (Claude Code)
+   claude: 2.1.201 (Claude Code) via claude
    ```
+
+**Which claude does it run?** The bridge resolves the executable
+**Windows-first**: it checks the usual Windows installs
+(`%APPDATA%\npm\claude.cmd`, `%USERPROFILE%\.local\bin\claude.exe`,
+`%LOCALAPPDATA%\Programs\claude\claude.exe`, then `claude.cmd` / `claude.exe`
+on PATH) and falls back to the mac/unix `claude` only when no Windows install
+is present. The startup line (and `/health`) shows exactly which one it
+picked. Prompts are passed over stdin, so Windows `.cmd` quoting is never an
+issue.
+
+**RAG lookups pre-allowed.** RAG-aware skill variants fetch canon with `curl`
+against the app's RAG endpoint; a headless run can't answer a permission
+prompt, so the bridge starts claude with `curl` pre-allowed
+(`--allowedTools "Bash(curl:*)"`). This applies only to runs spawned through
+the bridge. Start with `BRIDGE_ALLOW_CURL=0` to turn it off (RAG-aware
+variants will then fall back to reading `world/` files directly).
 
 4. Check the top bar of the app — the **bridge** dot turns green within ~30
    seconds (or refresh). The Run buttons on every skill page are now enabled.

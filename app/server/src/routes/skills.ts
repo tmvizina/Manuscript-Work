@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import type { DB } from "../db/db.js";
-import { PHASE_LABELS } from "../seed/skills.js";
+import { PHASE_LABELS, SIDEBAR_ALIASES } from "../seed/skills.js";
 import { syncSkills } from "../skillSync.js";
 
 export default function skillRoutes(app: FastifyInstance, db: DB): void {
@@ -10,8 +10,17 @@ export default function skillRoutes(app: FastifyInstance, db: DB): void {
         `SELECT skill_id, display_name, pipeline_order, phase, blurb, image_path, has_rag_variant
          FROM skills ORDER BY pipeline_order`,
       )
-      .all();
-    return { skills: rows, phase_labels: PHASE_LABELS };
+      .all() as any[];
+    // Sidebar = every skill in pipeline order, plus alias placements (the same
+    // skill linked into a second phase, e.g. the v2 writer under Generation).
+    const sidebar = [
+      ...rows.map((r) => ({ ...r, alias: false })),
+      ...SIDEBAR_ALIASES.flatMap((a) => {
+        const row = rows.find((r) => r.skill_id === a.skill_id);
+        return row ? [{ ...row, phase: a.phase, pipeline_order: a.pipeline_order, alias: true }] : [];
+      }),
+    ].sort((x, y) => x.pipeline_order - y.pipeline_order);
+    return { skills: rows, sidebar, phase_labels: PHASE_LABELS };
   });
 
   app.get("/api/skills/:id", async (req, reply) => {

@@ -20,17 +20,17 @@ export function useHashRoute(): string {
 
 export default function App() {
   const route = useHashRoute();
-  const [skills, setSkills] = useState<SkillSummary[]>([]);
+  const [sidebar, setSidebar] = useState<SkillSummary[]>([]);
   const [phaseLabels, setPhaseLabels] = useState<Record<string, string>>({});
   const [health, setHealth] = useState<any>(null);
 
   useEffect(() => {
     api("/api/skills")
       .then((d) => {
-        setSkills(d.skills);
+        setSidebar(d.sidebar ?? d.skills);
         setPhaseLabels(d.phase_labels ?? {});
       })
-      .catch(() => setSkills([]));
+      .catch(() => setSidebar([]));
   }, []);
 
   useEffect(() => {
@@ -61,7 +61,7 @@ export default function App() {
   return (
     <div className="layout">
       <TopBar route={route} health={health} />
-      <Sidebar route={route} skills={skills} phaseLabels={phaseLabels} />
+      <Sidebar route={route} items={sidebar} phaseLabels={phaseLabels} />
       <main className="main">{page}</main>
     </div>
   );

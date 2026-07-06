@@ -6,9 +6,16 @@ export interface SkillSeed {
   skill_id: string;
   display_name: string;
   pipeline_order: number;
-  phase: "intake" | "generation" | "revision" | "output";
+  phase: "intake" | "generation" | "revision" | "output" | "archived";
   blurb: string;
 }
+
+/** Extra sidebar placements: the same skill linked into a second phase.
+ * The v2 writer lives in Revision but also generates the first draft, so it
+ * is linked into Generation too. */
+export const SIDEBAR_ALIASES: Array<{ skill_id: string; phase: SkillSeed["phase"]; pipeline_order: number }> = [
+  { skill_id: "manuscript-writer-v2", phase: "generation", pipeline_order: 4.5 },
+];
 
 export const SKILL_SEED: SkillSeed[] = [
   {
@@ -44,41 +51,17 @@ export const SKILL_SEED: SkillSeed[] = [
       "The generation planner. Converts the validated outline into a writer-ready generation guide: chapter targets, scene briefs, per-chapter thread beats, and voice anchors.",
   },
   {
-    skill_id: "manuscript-writer",
-    display_name: "Manuscript Writer",
-    pipeline_order: 5,
-    phase: "generation",
-    blurb:
-      "The writer. Generates the first draft from the generation guide, and on later passes executes editing plans — deciding implement / push back / suggest-only per finding.",
-  },
-  {
-    skill_id: "book-reviewer",
-    display_name: "Book Reviewer",
-    pipeline_order: 6,
-    phase: "revision",
-    blurb:
-      "The lector (v1). Reads the manuscript and reports on continuity, motifs, character arcs, pacing, and audiobook readiness. Good for quick one-off reviews with no prior context.",
-  },
-  {
     skill_id: "book-reviewer-v2",
     display_name: "Book Reviewer v2",
-    pipeline_order: 7,
+    pipeline_order: 5,
     phase: "revision",
     blurb:
       "The enhanced lector. Stable RV-NNN finding IDs, world/ memory integration, protected voice signatures, and delta-review / sign-off modes that don't re-flag resolved issues.",
   },
   {
-    skill_id: "manuscript-editing-planner",
-    display_name: "Editing Planner",
-    pipeline_order: 8,
-    phase: "revision",
-    blurb:
-      "Turns a review report into a structured editing plan: book-structure recommendations, chapter-split proposals, and per-chapter edit plans the writer will triage (v1).",
-  },
-  {
     skill_id: "manuscript-editing-planner-v2",
     display_name: "Editing Planner v2",
-    pipeline_order: 9,
+    pipeline_order: 6,
     phase: "revision",
     blurb:
       "The enhanced planner. EP-NNN plan items that reference RV-NNN findings, a dependency graph, conflict detection, a risk register, and S/M/L/XL effort estimates.",
@@ -86,15 +69,15 @@ export const SKILL_SEED: SkillSeed[] = [
   {
     skill_id: "manuscript-writer-v2",
     display_name: "Manuscript Writer v2",
-    pipeline_order: 10,
+    pipeline_order: 7,
     phase: "revision",
     blurb:
-      "The enhanced writer. Adds a voice fingerprint, precedent ledger, proactive findings, and a self-diff voice gate that demotes drifting edits to suggest-only before commit.",
+      "The writer. Generates the first draft from the generation guide and executes editing plans on revision passes — with a voice fingerprint, precedent ledger, proactive findings, and a self-diff voice gate that demotes drifting edits before commit.",
   },
   {
     skill_id: "chapter-title-cleanup",
     display_name: "Chapter Title Cleanup",
-    pipeline_order: 11,
+    pipeline_order: 8,
     phase: "output",
     blurb:
       "Audits, renumbers, and standardizes chapter, part, and file titles without touching prose. Produces a title audit and a rename map.",
@@ -102,7 +85,7 @@ export const SKILL_SEED: SkillSeed[] = [
   {
     skill_id: "novel-formatting",
     display_name: "Novel Formatting",
-    pipeline_order: 12,
+    pipeline_order: 9,
     phase: "output",
     blurb:
       "Formats chapter files into clean, novel-ready text — consistent headings, scene breaks, and paragraph spacing. Preserves the prose and chapter order untouched.",
@@ -110,10 +93,36 @@ export const SKILL_SEED: SkillSeed[] = [
   {
     skill_id: "audiobook-text-prep-chunker",
     display_name: "Audiobook Chunker",
-    pipeline_order: 13,
+    pipeline_order: 10,
     phase: "output",
     blurb:
       "The hand-off step. Splits finished chapters into TTS-ready chunks (~1500–1800 chars, never splitting a sentence) plus the chunk manifest the audiobook repos consume.",
+  },
+  // ---- Archived: the v1 skills. The v2s are superior; v1s stay runnable and
+  // are lighter on tokens for quick, low-stakes passes. ----
+  {
+    skill_id: "book-reviewer",
+    display_name: "Book Reviewer",
+    pipeline_order: 11,
+    phase: "archived",
+    blurb:
+      "The lector (v1) — archived in favor of Book Reviewer v2. Still runnable and cheaper per pass; fine for a quick one-off review with no prior review context.",
+  },
+  {
+    skill_id: "manuscript-editing-planner",
+    display_name: "Editing Planner",
+    pipeline_order: 12,
+    phase: "archived",
+    blurb:
+      "The v1 planner — archived in favor of Editing Planner v2. Lighter on tokens for a simple single-chapter plan; lacks v2's stable IDs, dependency graph, and conflict detection.",
+  },
+  {
+    skill_id: "manuscript-writer",
+    display_name: "Manuscript Writer",
+    pipeline_order: 13,
+    phase: "archived",
+    blurb:
+      "The v1 writer — archived in favor of Manuscript Writer v2. Cheaper per pass, but without the voice fingerprint, precedent ledger, and self-diff voice gate.",
   },
 ];
 
@@ -122,4 +131,5 @@ export const PHASE_LABELS: Record<SkillSeed["phase"], string> = {
   generation: "Generation",
   revision: "Revision",
   output: "Output",
+  archived: "Archived",
 };
