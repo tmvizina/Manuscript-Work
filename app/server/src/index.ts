@@ -12,6 +12,7 @@ import skillRoutes from "./routes/skills.js";
 import claudeRoutes from "./routes/claude.js";
 import ragRoutes from "./routes/rag.js";
 import helpRoutes from "./routes/help.js";
+import worldRoutes from "./routes/world.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -76,6 +77,7 @@ skillRoutes(app, db);
 claudeRoutes(app, db);
 ragRoutes(app, db);
 helpRoutes(app);
+worldRoutes(app);
 
 app.listen({ port: PORT, host: "0.0.0.0" }).then(() => {
   app.log.info(

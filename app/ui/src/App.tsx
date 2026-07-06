@@ -5,6 +5,7 @@ import TopBar from "./components/TopBar";
 import ChaptersPage from "./pages/ChaptersPage";
 import SkillPage from "./pages/SkillPage";
 import RagPage from "./pages/RagPage";
+import WorldPage from "./pages/WorldPage";
 import HelpIndexPage from "./pages/HelpIndexPage";
 import HelpSectionPage from "./pages/HelpSectionPage";
 
@@ -50,6 +51,8 @@ export default function App() {
     page = <SkillPage key={id} skillId={id} bridgeOk={!!health?.bridge?.ok} />;
   } else if (route === "/rag") {
     page = <RagPage />;
+  } else if (route === "/world" || route.startsWith("/world/")) {
+    page = <WorldPage path={route === "/world" ? "" : decodeURI(route.slice("/world/".length))} />;
   } else if (route === "/help") {
     page = <HelpIndexPage />;
   } else if (route.startsWith("/help/")) {

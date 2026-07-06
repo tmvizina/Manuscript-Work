@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "start": "tsx src/index.ts",
+    "preview:rbdw": "BW_PORT=8324 BW_DATA_DIR=/tmp/bw-preview-data MANUSCRIPT_ROOT=$HOME/RiderProjects/RoadBeneathDragonsWings tsx src/index.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
