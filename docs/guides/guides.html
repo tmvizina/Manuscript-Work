@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Repo Guides — Book Writer (Manuscript-Work)</title>
+<style>
+  :root{
+    --ink:#22303f; --ink-soft:#4a5a6a; --parchment:#faf6ef; --panel:#ffffff;
+    --navy:#1e2f4d; --copper:#b0713a; --gold:#8a6d2f; --line:#e3dccd;
+    --code-bg:#f1ede3; --code-ink:#5b4426; --accent:#2e5077;
+    --hover-bg:#f0e9db; --row-alt:#faf7f0; --quote-bg:#fdf9f1;
+    --tip-bg:#eef3f8; --tip-border:#ccd9e6; --rule-bg:#fbf1e8; --rule-border:#e8cfae;
+    --kbd-bg:#ffffff; --kbd-border:#c9c2b2; --pre-bg:#1e2f4d; --pre-ink:#e8e4d8;
+    --th-bg:#1e2f4d; --th-ink:#f3efe6; --faint:#9a9078; --shadow:rgba(30,47,77,.05);
+  }
+  html[data-theme="dark"]{
+    --ink:#d8d3c6; --ink-soft:#a39d8e; --parchment:#14171d; --panel:#1d222b;
+    --navy:#a9c1e8; --copper:#d09a5f; --gold:#c9a84c; --line:#323845;
+    --code-bg:#2a2f3a; --code-ink:#e0b98a; --accent:#8fb4dd;
+    --hover-bg:#262b36; --row-alt:#222732; --quote-bg:#252a35;
+    --tip-bg:#1f2a38; --tip-border:#31435a; --rule-bg:#2e2620; --rule-border:#54422e;
+    --kbd-bg:#2a2f3a; --kbd-border:#4a5160; --pre-bg:#101319; --pre-ink:#d8d4c8;
+    --th-bg:#2b3547; --th-ink:#e8e8e0; --faint:#7a7466; --shadow:rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Charter,Georgia,'Times New Roman',serif;background:var(--parchment);color:var(--ink);line-height:1.65;font-size:17px;transition:background .25s,color .25s}
+  .layout{display:flex;max-width:1200px;margin:0 auto}
+  nav{width:270px;flex-shrink:0;position:sticky;top:0;align-self:flex-start;height:100vh;overflow-y:auto;padding:2.2rem 1.4rem;border-right:1px solid var(--line)}
+  nav h1{font-size:1.02rem;color:var(--navy);margin:0 0 .2rem;letter-spacing:.02em}
+  nav .sub{font-size:.8rem;color:var(--ink-soft);font-style:italic;margin-bottom:1.4rem}
+  nav a{display:block;color:var(--ink-soft);text-decoration:none;font-size:.9rem;padding:.28rem .55rem;border-radius:6px;border-left:3px solid transparent}
+  nav a:hover{background:var(--hover-bg);color:var(--navy)}
+  nav a.h2{margin-left:.8rem;font-size:.82rem}
+  nav a.top{font-weight:700;color:var(--navy);margin-top:.9rem;border-left-color:var(--copper)}
+  main{flex:1;min-width:0;padding:2.5rem 3rem 5rem}
+  header.page h1{font-family:Charter,Georgia,serif;color:var(--navy);font-size:2rem;margin:0 0 .3rem}
+  header.page p{color:var(--ink-soft);font-style:italic;margin:0 0 .5rem}
+  .meta{font-size:.8rem;color:var(--faint);margin-bottom:2.4rem}
+  section.guide{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:2.2rem 2.6rem;margin-bottom:2.6rem;box-shadow:0 2px 10px var(--shadow);transition:background .25s}
+  section.guide>h1{color:var(--navy);font-size:1.55rem;margin-top:0;border-bottom:2px solid var(--copper);padding-bottom:.5rem}
+  h2{color:var(--navy);font-size:1.2rem;margin-top:2rem}
+  h3{color:var(--accent);font-size:1.02rem;margin-top:1.5rem}
+  em.lede{color:var(--ink-soft)}
+  table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.93rem}
+  th{background:var(--th-bg);color:var(--th-ink);text-align:left;padding:.5rem .8rem;font-weight:600}
+  td{padding:.5rem .8rem;border-bottom:1px solid var(--line);vertical-align:top}
+  tr:nth-child(even) td{background:var(--row-alt)}
+  code{font-family:'SF Mono',Menlo,Consolas,monospace;font-size:.83em;background:var(--code-bg);padding:.12em .4em;border-radius:4px;color:var(--code-ink)}
+  pre{background:var(--pre-bg);color:var(--pre-ink);padding:1rem 1.2rem;border-radius:10px;overflow-x:auto;font-size:.84rem;line-height:1.5}
+  pre code{background:none;color:inherit;padding:0}
+  blockquote{border-left:4px solid var(--copper);margin:1.2rem 0;padding:.6rem 1.2rem;background:var(--quote-bg);border-radius:0 8px 8px 0;color:var(--ink)}
+  ul,ol{padding-left:1.5rem}
+  li{margin:.35rem 0}
+  .tip{background:var(--tip-bg);border:1px solid var(--tip-border);border-radius:10px;padding:.8rem 1.1rem;margin:1.2rem 0;font-size:.93rem}
+  .tip b{color:var(--accent)}
+  .rule{background:var(--rule-bg);border:1px solid var(--rule-border);border-radius:10px;padding:.8rem 1.1rem;margin:1.2rem 0;font-size:.93rem}
+  .rule b{color:var(--copper)}
+  kbd{background:var(--kbd-bg);border:1px solid var(--kbd-border);border-bottom-width:3px;border-radius:5px;padding:.05em .45em;font-size:.82em;font-family:inherit}
+  footer{color:var(--faint);font-size:.8rem;text-align:center;padding-bottom:3rem}
+  .theme-toggle{position:fixed;top:1rem;right:1.2rem;z-index:20;font-family:inherit;font-size:.82rem;color:var(--ink-soft);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:.35rem .9rem;cursor:pointer;box-shadow:0 2px 8px var(--shadow)}
+  .theme-toggle:hover{color:var(--navy);border-color:var(--copper)}
+  @media(max-width:860px){.layout{flex-direction:column}nav{position:static;width:100%;height:auto;border-right:none;border-bottom:1px solid var(--line)}main{padding:1.5rem 1.2rem}section.guide{padding:1.4rem 1.2rem}}
+</style>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle light/dark mode">☀ Light mode</button>
+<div class="layout">
+<nav>
+  <h1>Repo Guides</h1>
+  <div class="sub">Book Writer — Manuscript-Work</div>
+  <a class="top" href="workflow.html" style="border-left-color:var(--gold)">▶ Interactive workflow map</a>
+  <a class="top" href="#commands">1 · Command Reference</a>
+  <a class="h2" href="#cmd-generation">Generation half</a>
+  <a class="h2" href="#cmd-revision">Revision half</a>
+  <a class="h2" href="#cmd-output">Output</a>
+  <a class="top" href="#syncing">2 · Syncing Skills &amp; Commands</a>
+  <a class="h2" href="#sync-places">Where things live</a>
+  <a class="h2" href="#sync-recipes">Everyday recipes</a>
+  <a class="h2" href="#sync-gotchas">Gotchas</a>
+  <a class="top" href="#creating">3 · Creating Your Own Skills</a>
+  <a class="h2" href="#create-anatomy">Anatomy of a skill</a>
+  <a class="h2" href="#create-steps">Step-by-step</a>
+  <a class="h2" href="#create-ideas">Ideas for next skills</a>
+  <a class="top" href="#git">4 · Git in JetBrains (Beginner)</a>
+  <a class="h2" href="#git-routine">The daily routine</a>
+  <a class="h2" href="#git-branches">Branches</a>
+  <a class="h2" href="#git-fixes">Fixing mistakes</a>
+  <a class="h2" href="#git-cheat">Cheat sheet</a>
+</nav>
+<main>
+<header class="page">
+  <h1>Repo Guides</h1>
+  <p>Skills, commands, syncing, and version control — collected for easy reading.</p>
+  <div class="meta">Generated 2026-07-06 from the markdown files in <code>docs/guides/</code>. The .md files are the editable source; regenerate this page after editing them.</div>
+</header>
+
+<!-- ============ 1. COMMAND REFERENCE ============ -->
+<section class="guide" id="commands">
+<h1>1 · Command Reference — Skills Mapped to Slash Commands</h1>
+<p>Every skill in this repo's <code>skills/</code> folder now has a matching slash command in <code>.claude/commands/</code>. Type <kbd>/</kbd> in Claude Code inside this repo and they appear in the menu. Each command invokes its skill, and if the skill isn't installed on the machine, falls back to reading the skill file straight out of <code>skills/</code> — so the commands work on any computer that has this repo, with nothing extra installed.</p>
+
+<h2 id="cmd-generation">Generation half — idea → first draft (in pipeline order)</h2>
+<table>
+<tr><th style="width:30%">Command</th><th style="width:8%">Stage</th><th>What it does</th></tr>
+<tr><td><code>/world-notes-seeder</code></td><td>pre</td><td><b>New.</b> Intake handwritten/raw world notes and seed the <code>world/</code> memory system — run <i>before</i> the outline goes in, so the whole pipeline starts with background knowledge.</td></tr>
+<tr><td><code>/outline-enhancer</code></td><td>0</td><td>The dramaturg. Deepens a human sketch into an enriched outline (OB-NNN beats) and seeds/augments <code>world/</code> characters, threads, and arcs.</td></tr>
+<tr><td><code>/story-arc-reviewer</code></td><td>0.5</td><td>The arc gate. Turns proposed arcs into confirmation questions (AQ-NNN) for the author, records answers as canon, emits the validated outline.</td></tr>
+<tr><td><code>/manuscript-planner</code></td><td>1</td><td>Converts the validated outline into a writer-ready generation guide: chapter targets, scene briefs, thread beats.</td></tr>
+<tr><td><code>/manuscript-writer</code></td><td>2</td><td>The writer — drafts/edits per the plan, deciding Implement / Push back / Suggest-only per item.</td></tr>
+</table>
+
+<h2 id="cmd-revision">Revision half — draft → clean manuscript</h2>
+<table>
+<tr><th style="width:38%">Command</th><th>What it does</th></tr>
+<tr><td><code>/book-reviewer</code></td><td>The lector (v1). Manuscript, chapter, continuity, and motif review with severity-labeled findings.</td></tr>
+<tr><td><code>/book-reviewer-v2</code></td><td>Enhanced lector — stable RV-NNN IDs, <code>world/</code> awareness, delta-review and sign-off modes.</td></tr>
+<tr><td><code>/manuscript-editing-planner</code></td><td>Turns a review into a structured editing plan (v1).</td></tr>
+<tr><td><code>/manuscript-editing-planner-v2</code></td><td>Enhanced planner — EP-NNN items, dependency graph, conflict detection, risk register.</td></tr>
+<tr><td><code>/manuscript-writer-v2</code></td><td>Enhanced writer — voice fingerprint, precedent ledger, self-diff voice gate before commit.</td></tr>
+<tr><td><code>/chapter-title-cleanup</code></td><td>Audits, renumbers, and standardizes chapter titles and filenames. Never touches prose.</td></tr>
+</table>
+
+<h2>The publisher's gate — is the book ready?</h2>
+<table>
+<tr><th style="width:38%">Command</th><th>What it does</th></tr>
+<tr><td><code>/publishing-executive</code></td><td>The last gate before "ship it" (an agent, not a skill). Reads the ENTIRE manuscript and renders one verdict: ✅ GREENLIGHT or ↩️ RETURN FOR REVISION with prioritized review assignments handed back to <code>/book-reviewer-v2</code>. Judges at altitude only — never line-edits.</td></tr>
+</table>
+
+<h2 id="cmd-output">Output — manuscript → hand-off</h2>
+<table>
+<tr><th style="width:38%">Command</th><th>What it does</th></tr>
+<tr><td><code>/novel-formatting</code></td><td>Cleans and standardizes the manuscript files into novel-ready text.</td></tr>
+<tr><td><code>/audiobook-text-prep-chunker</code></td><td>Chunks the formatted text into TTS-ready segments + manifest — the contract the audiobook repos consume.</td></tr>
+</table>
+
+<div class="tip"><b>Passing instructions:</b> anything you type after the command becomes the request, e.g. <code>/book-reviewer-v2 chapters 20–25 only, delta against the June review</code>. Typing a plain request without a command also works — Claude picks the right skill. The commands exist so you don't have to remember what's available: type <kbd>/</kbd> and browse.</div>
+<div class="tip"><b>Personal vs. project commands:</b> you may also have personal commands in <code>~/.claude/commands/</code> on a given machine. Those live on that machine only. The ones in the repo travel with the repo; if a name exists in both places, Claude Code shows both, labeled by source.</div>
+</section>
+
+<!-- ============ 2. SYNCING ============ -->
+<section class="guide" id="syncing">
+<h1>2 · Syncing Skills and Commands Across Machines</h1>
+<p>You work on more than one computer, and Claude Code looks for skills and commands in a few different places. The short version: <b>the repo is the suitcase; each machine unpacks it.</b></p>
+
+<h2 id="sync-places">The three places things live</h2>
+<table>
+<tr><th>Location</th><th>What it is</th><th>Travels with the repo?</th></tr>
+<tr><td><code>skills/</code> (in this repo)</td><td>The <b>versioned master copies</b> of every skill. Source of truth for sharing between machines.</td><td>✅ Yes — just files in git</td></tr>
+<tr><td><code>.claude/commands/</code> (in this repo)</td><td>The slash commands. Picked up <b>automatically</b> on any machine as soon as the repo is cloned/pulled. Zero installation.</td><td>✅ Yes</td></tr>
+<tr><td><code>~/.claude/skills/</code> (on each machine)</td><td>The <b>live, installed</b> skills — what Claude Code actually loads when a skill triggers.</td><td>❌ No — per machine</td></tr>
+</table>
+<p>There is also <code>~/.claude/commands/</code> (personal commands on each machine) for commands you want everywhere regardless of project. Project-specific ones belong in the repo.</p>
+
+<blockquote><b>The golden rule:</b> edit the live copy in <code>~/.claude/skills/</code>, then copy it into the repo's <code>skills/</code> folder and commit. The repo copy is for versioning and moving between machines; the live copy is what actually runs.</blockquote>
+
+<h2 id="sync-recipes">Everyday sync recipes</h2>
+<h3>After editing a skill locally (push it into the repo)</h3>
+<pre><code>cp -R ~/.claude/skills/world-notes-seeder/ \
+      ~/RiderProjects/Manuscript-Work/skills/world-notes-seeder/</code></pre>
+<p>Then commit and push (in Rider: Commit tool window → tick the files → Commit and Push — see the git guide below).</p>
+
+<h3>Setting up a new machine from the repo</h3>
+<p>Pull the repo first, then copy every skill from <code>skills/</code> into the live folder:</p>
+<pre><code># from the repo root
+for d in skills/*/; do
+  cp -R "$d" ~/.claude/skills/"$(basename "$d")"/
+done</code></pre>
+<p>Commands need <b>no step at all</b> — <code>.claude/commands/</code> works the moment the repo is on disk.</p>
+
+<h3>Checking whether the two copies have drifted</h3>
+<pre><code>diff -r ~/.claude/skills/world-notes-seeder \
+        ~/RiderProjects/Manuscript-Work/skills/world-notes-seeder</code></pre>
+<p>No output = perfectly in sync.</p>
+
+<h2>What syncs automatically vs. what doesn't</h2>
+<ul>
+<li><b>Automatic (via git pull):</b> everything in the repo — <code>skills/</code>, <code>.claude/commands/</code>, <code>README.md</code>, <code>samples/</code>, these guides.</li>
+<li><b>Manual (the copy step above):</b> getting <code>skills/</code> into <code>~/.claude/skills/</code> on each machine, and pushing live-skill edits back into <code>skills/</code>.</li>
+<li><b>Never synced:</b> <code>~/.claude/settings.json</code>, API keys, machine-specific paths. Each machine keeps its own.</li>
+</ul>
+
+<h2 id="sync-gotchas">Gotchas</h2>
+<ol>
+<li><b>Editing only the repo copy does nothing until you copy it live.</b> If a skill "isn't picking up your changes," check that <code>~/.claude/skills/&lt;name&gt;/SKILL.md</code> actually has the edit.</li>
+<li><b>Editing only the live copy means other machines never see it.</b> If it matters, push it into <code>skills/</code> and commit.</li>
+<li><b>Duplicate command names:</b> if the same name exists personally and in the repo, both appear in the <kbd>/</kbd> menu, labeled by source. Delete the personal one if the project one supersedes it.</li>
+<li><b>Restart the Claude Code session</b> after installing new skills — the skill list is read at session start.</li>
+<li><b>Sibling repos may carry their own copies of shared skills</b> (this ecosystem was split from one POC tree). When you improve a shared skill, decide which repo owns it and sync the others from there — don't let three copies drift three ways.</li>
+</ol>
+</section>
+
+<!-- ============ 3. CREATING SKILLS ============ -->
+<section class="guide" id="creating">
+<h1>3 · Creating Your Own Claude Skills</h1>
+<p>A skill is nothing more than <b>a folder with a <code>SKILL.md</code> file in it</b> — written instructions Claude reads when a matching task comes up. Everything in this repo's <code>skills/</code> folder (the dramaturg, the lector, the writer, the chunker) is exactly that. If you can describe a job in writing, you can make a skill for it.</p>
+
+<h2>When to make a skill</h2>
+<p>Make one when you notice yourself <b>re-explaining the same job</b> to Claude across sessions:</p>
+<ul>
+<li>"Deepen my rough outline, but don't invent answers to open questions" → that became <code>outline-enhancer</code>.</li>
+<li>"Chunk this chapter the way we always do, 1500–1800 chars, never splitting sentences" → <code>audiobook-text-prep-chunker</code>.</li>
+<li>"Take my handwritten notes and file them into the world folder" → <code>world-notes-seeder</code>.</li>
+</ul>
+<div class="rule"><b>The pattern:</b> repeated task + specific rules you'd otherwise repeat = skill.</div>
+
+<h2 id="create-anatomy">Anatomy of a skill</h2>
+<pre><code>skills/my-new-skill/
+├── SKILL.md          ← required — the instructions
+├── reference/        ← optional — extra docs Claude reads only when needed
+├── templates/        ← optional — output templates to copy from
+└── scripts/          ← optional — Python/shell scripts the skill runs</code></pre>
+<p><code>SKILL.md</code> starts with a <b>frontmatter block</b> (between <code>---</code> lines), then the instructions:</p>
+<pre><code>---
+name: my-new-skill
+description: One or two sentences saying WHAT it does and WHEN to
+  use it. This is the ONLY part Claude sees before deciding to use
+  the skill — write it like a good book-jacket blurb. Include the
+  words you'd actually say when asking for it. Say what it does NOT do.
+argument-hint: "[what to type after the command]"
+---
+
+# My New Skill
+
+You are the [role]. Your job is to [job].
+
+## Workflow
+1. First, read ...
+2. Then, produce ...
+
+## Hard rules
+1. Never ...
+2. Always ...</code></pre>
+
+<h2>The three things that make a skill good</h2>
+<ol>
+<li><b>The description is the trigger.</b> Claude reads only the description when deciding whether the skill applies. Put the phrases you'd naturally say into it ("seed the world folder", "here are my handwritten notes"). If a skill isn't firing when it should, the fix is almost always a better description.</li>
+<li><b>Keep <code>SKILL.md</code> under ~500 lines.</b> If it grows past that, move detail into <code>reference/</code> files and tell the skill when to read them. Claude then loads detail only when needed — <i>progressive disclosure</i>.</li>
+<li><b>Write hard rules for the failure modes you've seen.</b> The best lines in this repo's skills came from things going wrong once: "never guess at handwriting," "mark it campaign-pending rather than inventing an answer," "never broadly rewrite." When a skill misbehaves, add a rule.</li>
+</ol>
+
+<h2 id="create-steps">Step-by-step: making one</h2>
+<ol>
+<li>Create the folder: <code>mkdir -p ~/.claude/skills/my-new-skill</code> — then ask Claude: <i>"Create a skill at <code>~/.claude/skills/my-new-skill/SKILL.md</code> that does X, following the format of <code>skills/world-notes-seeder/SKILL.md</code>."</i> (There's also a built-in <code>skill-creator</code> skill that will interview you and build it properly.)</li>
+<li>Start a fresh Claude Code session and try it on a real task.</li>
+<li>When it gets something wrong, edit <code>SKILL.md</code> — usually adding a rule or example — and try again. Skills improve by iteration, not up-front perfection.</li>
+<li>When it works, copy it into the repo and commit so it's versioned and reaches your other machines:
+<pre><code>cp -R ~/.claude/skills/my-new-skill ~/RiderProjects/Manuscript-Work/skills/</code></pre></li>
+<li>Optionally give it a slash command: create <code>.claude/commands/my-new-skill.md</code> in the repo, copying the format of any existing file there.</li>
+</ol>
+
+<h2 id="create-ideas">Ideas shaped like this pipeline's needs</h2>
+<ul>
+<li><b>session-notes-to-canon</b> — after a D&amp;D session, intake what happened at the table and resolve the matching campaign-pending items in <code>world/</code>.</li>
+<li><b>blurb-writer</b> — back-cover copy and shop descriptions grounded in <code>world/</code> without spoilers.</li>
+<li><b>continuity-quizzer</b> — quizzes <i>you</i> on canon before you draft, to catch drift early.</li>
+<li><b>sample-pack-refresher</b> — regenerates the <code>samples/</code> artifacts whenever a skill's output format changes, so the documented contract never goes stale.</li>
+</ul>
+
+<h2>Rules of thumb</h2>
+<ul>
+<li><b>One skill = one job.</b> A skill that reviews <i>and</i> rewrites will do both badly — that's why the lector and the writer are separate stages here.</li>
+<li><b>Say what the skill must NOT do.</b> The "does NOT" sentences prevent the wrong skill from firing.</li>
+<li><b>Steal from your own shelf:</b> every skill in <code>skills/</code> is a working example. Copy the closest one and adapt.</li>
+</ul>
+</section>
+
+<!-- ============ 4. GIT IN JETBRAINS ============ -->
+<section class="guide" id="git">
+<h1>4 · Git in JetBrains (Rider) — A Beginner's Guide</h1>
+<p><em class="lede">For someone who has never used git and doesn't want to learn the command line.</em></p>
+
+<h2>What git actually is</h2>
+<p>Git is a <b>save-point system for your files</b> — like save slots in a video game, but for the whole project at once. Every time you make a "commit," git takes a snapshot of everything. You can look back at any old snapshot, see exactly what changed and when, and restore any file to how it was. Nothing you commit is ever truly lost.</p>
+<p>Two more words you'll see constantly:</p>
+<ul>
+<li><b>Push</b> = upload your save-points to GitHub (the online copy). Until you push, your commits exist only on this computer.</li>
+<li><b>Pull</b> = download save-points from GitHub that were made elsewhere (your other computer, or Claude working in the cloud).</li>
+</ul>
+<div class="rule"><b>That's 90% of git:</b> commit (save), push (upload), pull (download).</div>
+
+<h2 id="git-routine">The daily routine (three steps)</h2>
+<h3>1. When you sit down: Pull</h3>
+<p>Click the <b>blue down-arrow</b> in the toolbar at the top of Rider (or menu: <b>Git → Pull</b>). This grabs anything new from GitHub — for example, work done on the other computer. Do this <i>before</i> you start changing things.</p>
+<h3>2. While you work: just work</h3>
+<p>Edit files normally. Rider quietly tracks every change — you don't have to do anything. Changed files show in a different color in the file list (blue = modified, green = brand new).</p>
+<h3>3. When you finish something: Commit, then Push</h3>
+<ol>
+<li>Open the <b>Commit</b> window — the checkmark icon in the left sidebar (or menu: <b>Git → Commit</b>).</li>
+<li>You'll see a list of every file you changed. <b>Tick the boxes</b> for the ones that belong together. (You don't have to commit everything at once.)</li>
+<li>Click any file in the list to see a <b>before/after view</b> of exactly what changed. This is the best feature in the whole system — always glance at it.</li>
+<li>Type a short message describing what you did, in plain English: <i>"Fixed Chapter 12 opening scene"</i> or <i>"Added world notes for the northern factions."</i> Future-you will read these messages, so make them honest and human.</li>
+<li>Click <b>Commit and Push…</b> (the dropdown next to Commit). That saves the snapshot <i>and</i> uploads it in one go.</li>
+</ol>
+
+<h2 id="git-branches">Branches — the "safe copy" trick</h2>
+<p>A <b>branch</b> is a parallel save-file. You make one when you're about to try something you might regret — a big revision pass, an experiment — so the main version stays untouched until you're happy.</p>
+<ul>
+<li>The branch you're on is shown in the <b>bottom-right corner</b> of Rider (it says <code>main</code> or a working name like <code>pass/world-seed-june</code>).</li>
+<li>Click that name → <b>New Branch</b> → give it a name → OK. You're now working on the copy.</li>
+<li>To go back: click the name again, pick the branch you want, choose <b>Checkout</b>. Your files instantly change to match that branch. (Nothing is lost — the other branch keeps its own state.)</li>
+<li>When a branch's work is done, it gets <b>merged</b> into <code>main</code> — in this repo that's usually done through a <b>pull request</b> on GitHub, which lets you review the changes as a whole first. If any of that feels fiddly, it's fine to hand it to Claude.</li>
+</ul>
+<div class="rule"><b>Good habit for this repo: don't commit directly on <code>main</code>.</b> Make a branch, commit there, and open a pull request. If the bottom-right corner says <code>main</code>, make a branch first.</div>
+
+<h2>Looking at history</h2>
+<p>Click the <b>Git</b> tab at the bottom of Rider (or menu: <b>Git → Show Git Log</b>). You'll see every commit ever made — who, when, what message — and clicking one shows exactly which lines changed in which files. This is how you answer "what happened to this chapter last week?"</p>
+
+<h2 id="git-fixes">Fixing mistakes</h2>
+<ul>
+<li><b>"I messed up a file and want it back how it was":</b> right-click the file → <b>Git → Rollback</b>. It returns to the last committed version. (This throws away your uncommitted edits to that file — that's the point — so be sure.)</li>
+<li><b>"I want to see an old version of a file":</b> right-click the file → <b>Git → Show History</b>, click any date, and you can read or restore that version.</li>
+<li><b>"I committed but wrote the wrong message / forgot a file":</b> in the Commit window tick <b>Amend</b> and commit again; it repairs the last commit instead of making a new one. (Only if you haven't pushed yet.)</li>
+</ul>
+
+<h2>When scary dialogs appear</h2>
+<ul>
+<li><b>"Merge conflict"</b> — you and the other computer changed the same lines, and git wants a human to pick. Rider shows a <b>Merge</b> button that opens a three-column view: yours on the left, theirs on the right, result in the middle. Click the arrows to accept the pieces you want. If it's confusing, close it and ask Claude to resolve it — this is a normal thing to hand off.</li>
+<li><b>"Push rejected"</b> — GitHub has commits you don't have yet. Just Pull first, then Push again.</li>
+<li><b>Anything else you don't understand</b> — click Cancel (it's almost always safe), and ask. Git very rarely destroys anything; nearly every mistake is recoverable.</li>
+</ul>
+
+<h2 id="git-cheat">Cheat sheet</h2>
+<table>
+<tr><th>I want to…</th><th>Do this in Rider</th></tr>
+<tr><td>Get the latest work</td><td>Blue down-arrow (Pull)</td></tr>
+<tr><td>Save my work</td><td>Checkmark icon → tick files → message → <b>Commit and Push</b></td></tr>
+<tr><td>See what I've changed</td><td>Commit window — click any file</td></tr>
+<tr><td>Start something risky</td><td>Bottom-right branch name → <b>New Branch</b></td></tr>
+<tr><td>See the project's history</td><td><b>Git</b> tab at the bottom</td></tr>
+<tr><td>Undo my edits to one file</td><td>Right-click file → <b>Git → Rollback</b></td></tr>
+<tr><td>Panic</td><td>Cancel the dialog, ask Claude</td></tr>
+</table>
+</section>
+
+<footer>Generated from <code>docs/guides/*.md</code> · Book Writer (Manuscript-Work) · 2026-07-06</footer>
+</main>
+</div>
+<script>
+(function(){
+  var root = document.documentElement;
+  var btn = document.getElementById('themeToggle');
+  var stored = null;
+  try { stored = localStorage.getItem('guides-theme'); } catch(e){}
+  if (stored === 'light' || stored === 'dark') root.dataset.theme = stored;
+  function label(){ btn.textContent = root.dataset.theme === 'dark' ? '☀ Light mode' : '☾ Dark mode'; }
+  btn.addEventListener('click', function(){
+    root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+    try { localStorage.setItem('guides-theme', root.dataset.theme); } catch(e){}
+    label();
+  });
+  label();
+})();
+</script>
+</body>
+</html>

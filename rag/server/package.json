@@ -1,0 +1,13 @@
+{
+  "name": "dragonwings-canon-query",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Side-by-side canon query: ChromaDB RAG vs naive whole-file pull, with token costs",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "gpt-tokenizer": "^2.9.0"
+  }
+}

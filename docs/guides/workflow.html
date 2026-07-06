@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book-Generation Workflow — Book Writer (Manuscript-Work)</title>
+<style>
+  :root{
+    --ink:#22303f; --ink-soft:#4a5a6a; --parchment:#faf6ef; --panel:#ffffff;
+    --navy:#1e2f4d; --copper:#b0713a; --gold:#8a6d2f; --line:#e3dccd;
+    --code-bg:#f1ede3; --code-ink:#5b4426; --accent:#2e5077;
+    --hover-bg:#f0e9db; --quote-bg:#fdf9f1; --kbd-bg:#fff; --kbd-border:#c9c2b2;
+    --faint:#9a9078; --shadow:rgba(30,47,77,.07);
+    --human:#7a4a9e; --human-bg:#f3ecf9; --gate:#a83a3a; --gate-bg:#fbeeee;
+    --loop:#2e6e4e; --loop-bg:#eaf5ef; --support:#8a6d2f; --support-bg:#f8f3e4;
+    --active:#2e5077; --active-glow:rgba(46,80,119,.25); --dim:.38;
+    --cost:#b0713a; --cost-track:#eee5d2; --rag:#2e6e4e;
+  }
+  html[data-theme="dark"]{
+    --ink:#d8d3c6; --ink-soft:#a39d8e; --parchment:#14171d; --panel:#1d222b;
+    --navy:#a9c1e8; --copper:#d09a5f; --gold:#c9a84c; --line:#323845;
+    --code-bg:#2a2f3a; --code-ink:#e0b98a; --accent:#8fb4dd;
+    --hover-bg:#262b36; --quote-bg:#252a35; --kbd-bg:#2a2f3a; --kbd-border:#4a5160;
+    --faint:#7a7466; --shadow:rgba(0,0,0,.35);
+    --human:#c9a5ec; --human-bg:#2c2338; --gate:#e08585; --gate-bg:#33211f;
+    --loop:#8fd1ae; --loop-bg:#1d2f26; --support:#c9a84c; --support-bg:#2c2718;
+    --active:#8fb4dd; --active-glow:rgba(143,180,221,.28);
+    --cost:#d09a5f; --cost-track:#2a2f3a; --rag:#8fd1ae;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Charter,Georgia,'Times New Roman',serif;background:var(--parchment);color:var(--ink);line-height:1.55;font-size:16px;transition:background .25s,color .25s}
+  header.page{max-width:1200px;margin:0 auto;padding:2rem 2rem .5rem}
+  header.page h1{color:var(--navy);font-size:1.7rem;margin:0 0 .25rem}
+  header.page p{color:var(--ink-soft);font-style:italic;margin:0}
+  .costkey{font-size:.8rem;color:var(--faint);margin:.5rem 0 0}
+  .legend{display:flex;flex-wrap:wrap;gap:.6rem;margin:1rem 0 0;font-size:.78rem}
+  .legend span{display:inline-flex;align-items:center;gap:.35rem;padding:.15rem .6rem;border-radius:999px;border:1px solid var(--line);color:var(--ink-soft)}
+  .dot{width:.6em;height:.6em;border-radius:50%;display:inline-block}
+  .swatch{width:1.1em;height:.5em;border-radius:3px;display:inline-block}
+  .layout{display:flex;gap:1.6rem;max-width:1200px;margin:0 auto;padding:1.2rem 2rem 4rem;align-items:flex-start}
+  .pipe{flex:1;min-width:0}
+  .band-label{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin:.9rem 0 .45rem;display:flex;align-items:center;gap:.6rem}
+  .band-label::after{content:"";flex:1;height:1px;background:var(--line)}
+  .card{position:relative;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:.65rem .95rem;margin:.35rem 0;cursor:pointer;box-shadow:0 1px 6px var(--shadow);transition:transform .12s,opacity .25s,box-shadow .2s}
+  .card:hover{transform:translateX(4px)}
+  .card.active{box-shadow:0 0 0 2px var(--active),0 4px 18px var(--active-glow)}
+  .walking .card:not(.active){opacity:var(--dim)}
+  .card h3{margin:0;font-size:1rem;color:var(--navy);display:flex;align-items:center;gap:.55rem;flex-wrap:wrap}
+  .card .blurb{margin:.15rem 0 0;font-size:.85rem;color:var(--ink-soft)}
+  .chip{font-size:.68rem;font-weight:700;letter-spacing:.05em;background:var(--accent);color:var(--parchment);border-radius:6px;padding:.1rem .45rem;font-family:Menlo,Consolas,monospace}
+  .badge{font-size:.66rem;font-weight:600;border-radius:999px;padding:.08rem .5rem;letter-spacing:.03em}
+  .badge.human{color:var(--human);background:var(--human-bg);border:1px solid var(--human)}
+  .badge.gate{color:var(--gate);background:var(--gate-bg);border:1px solid var(--gate)}
+  .badge.loop{color:var(--loop);background:var(--loop-bg);border:1px solid var(--loop)}
+  .badge.opt{color:var(--faint);border:1px solid var(--line)}
+  .card.human-card{border-left-color:var(--human)}
+  .card.gate-card{border-left-color:var(--gate)}
+  .card.artifact{border-left-color:var(--gold);background:var(--quote-bg)}
+  .card.support-card{border-left-color:var(--support)}
+  /* per-card cost meter */
+  .costwrap{margin:.45rem 0 0;font-size:.72rem;color:var(--faint)}
+  .costrow{display:flex;align-items:center;gap:.5rem;margin:.12rem 0}
+  .costrow .tag{width:4.2em;flex-shrink:0;font-family:Menlo,Consolas,monospace;font-size:.66rem;letter-spacing:.03em}
+  .costrow .tag.pro-tag{color:var(--human)}
+  .costbar{flex:0 0 130px;height:.5em;background:var(--cost-track);border-radius:99px;overflow:hidden}
+  .costbar .fill{height:100%;background:var(--cost);border-radius:99px}
+  .costbar.rag .fill{background:var(--rag)}
+  .costrow .lbl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .arrow{text-align:center;color:var(--faint);font-size:.95rem;line-height:1;margin:.05rem 0;user-select:none}
+  .loopnote{display:flex;justify-content:center;margin:.25rem 0}
+  .loopnote span{font-size:.75rem;color:var(--loop);background:var(--loop-bg);border:1px dashed var(--loop);border-radius:999px;padding:.15rem .8rem}
+  .gatefork{display:flex;gap:.6rem;justify-content:center;margin:.25rem 0;font-size:.75rem}
+  .gatefork span{border-radius:999px;padding:.15rem .8rem}
+  .gatefork .go{color:var(--loop);background:var(--loop-bg);border:1px solid var(--loop)}
+  .gatefork .ret{color:var(--gate);background:var(--gate-bg);border:1px dashed var(--gate)}
+  /* cost chart */
+  .chart{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:1rem 1.2rem;margin:.5rem 0}
+  .chart-row{display:flex;align-items:center;gap:.7rem;margin:.42rem 0;cursor:pointer;border-radius:6px;padding:.1rem .3rem}
+  .chart-row:hover{background:var(--hover-bg)}
+  .chart-name{width:200px;flex-shrink:0;font-size:.8rem;color:var(--ink);text-align:right}
+  .chart-bars{flex:1;min-width:0}
+  .chart-bar{height:.62em;background:var(--cost-track);border-radius:99px;overflow:hidden;margin:.14rem 0}
+  .chart-bar .fill{height:100%;background:var(--cost);border-radius:99px}
+  .chart-bar.rag .fill{background:var(--rag)}
+  .chart-lbl{font-size:.7rem;color:var(--faint);width:170px;flex-shrink:0;line-height:1.25}
+  .chart-note{font-size:.76rem;color:var(--faint);margin:.7rem 0 0;line-height:1.5}
+  /* detail panel */
+  .detail{width:390px;flex-shrink:0;position:sticky;top:1rem;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.2rem 1.4rem;box-shadow:0 2px 12px var(--shadow);max-height:calc(100vh - 2rem);overflow-y:auto}
+  .detail h2{margin:.1rem 0 .4rem;color:var(--navy);font-size:1.15rem}
+  .detail .kicker{font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+  .detail p{font-size:.9rem;margin:.5rem 0}
+  .detail dl{margin:.6rem 0;font-size:.85rem}
+  .detail dt{font-weight:700;color:var(--accent);margin-top:.55rem;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase}
+  .detail dt.cost-dt{color:var(--cost)}
+  .detail dt.rag-dt{color:var(--rag)}
+  .detail dd{margin:.15rem 0 0}
+  code{font-family:'SF Mono',Menlo,Consolas,monospace;font-size:.82em;background:var(--code-bg);padding:.1em .4em;border-radius:4px;color:var(--code-ink)}
+  .cmd{display:inline-block;margin-top:.2rem;font-family:Menlo,Consolas,monospace;font-size:.8rem;background:var(--code-bg);color:var(--code-ink);border-radius:6px;padding:.2rem .6rem}
+  .stepper{display:flex;gap:.5rem;margin:0 0 1rem}
+  .stepper button{font-family:inherit;font-size:.82rem;color:var(--ink-soft);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:.35rem .8rem;cursor:pointer}
+  .stepper button:hover{color:var(--navy);border-color:var(--copper)}
+  .stepper button.primary{color:var(--parchment);background:var(--accent);border-color:var(--accent)}
+  .theme-toggle{position:fixed;top:1rem;right:1.2rem;z-index:20;font-family:inherit;font-size:.82rem;color:var(--ink-soft);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:.35rem .9rem;cursor:pointer;box-shadow:0 2px 8px var(--shadow)}
+  .theme-toggle:hover{color:var(--navy);border-color:var(--copper)}
+  .backlink{font-size:.8rem;color:var(--accent);text-decoration:none}
+  @media(max-width:900px){.layout{flex-direction:column}.detail{position:static;width:100%;max-height:none}.chart-name{width:120px}.chart-lbl{width:120px}}
+</style>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle light/dark mode">☀ Light mode</button>
+<header class="page">
+  <h1>Book-Generation Workflow</h1>
+  <p>From handwritten notes and a human outline to a finished, chunked manuscript — click any stage, or walk the pipeline.</p>
+  <p class="costkey">Cost bars are <b>relative token cost for one full-book job</b>, estimated for a ~40-chapter / ~250k-word book (≈330k tokens of prose). Output tokens are weighted heavier than input (~5× price). Green bars show the same job done <b>RAG-aware</b> — pulling canon and passages from the Canon RAG index instead of re-reading whole files.</p>
+  <p class="costkey"><b>"Pro windows"</b> convert each job into Claude Pro plan terms. Anthropic publishes no exact numbers — officially your included usage just "resets every five hours" and is shared across claude.ai and Claude Code. Community measurements (mid-2026) put Pro at roughly <b>45–90k weighted tokens per 5-hour window</b> (~10–45 Claude Code prompts), with weekly caps on top, and <b>no Opus access in Claude Code on Pro</b> — Opus also burns usage ~5× faster where available. Treat every window figure below as a rough planning estimate, not a promise.</p>
+  <div class="legend">
+    <span><span class="dot" style="background:var(--accent)"></span> machine stage</span>
+    <span><span class="dot" style="background:var(--human)"></span> human / human gate</span>
+    <span><span class="dot" style="background:var(--gate)"></span> publisher's gate</span>
+    <span><span class="dot" style="background:var(--gold)"></span> artifact</span>
+    <span><span class="dot" style="background:var(--support)"></span> always-on support</span>
+    <span><span class="swatch" style="background:var(--cost)"></span> relative cost</span>
+    <span><span class="swatch" style="background:var(--rag)"></span> RAG-aware cost</span>
+    <span style="margin-left:auto"><a class="backlink" href="guides.html">← repo guides</a></span>
+  </div>
+</header>
+<div class="layout">
+  <div class="pipe" id="pipe"></div>
+  <aside class="detail" id="detail">
+    <div class="stepper">
+      <button class="primary" id="walkBtn">▶ Walk the pipeline</button>
+      <button id="prevBtn">← Prev</button>
+      <button id="nextBtn">Next →</button>
+    </div>
+    <div id="detailBody">
+      <div class="kicker">Welcome</div>
+      <h2>How to read this map</h2>
+      <p>The pipeline runs top to bottom. <b>Click any card</b> for its full role — what it reads, writes, the IDs it emits, its <b>relative token cost</b>, and the slash command that runs it.</p>
+      <p>The copper bar on each card is that stage's relative cost for a full-book job; a green bar underneath is the same job done <b>RAG-aware</b>. The heaviest runs are the ones that must hold the whole book: the <b>publishing executive</b>, a <b>full review pass</b>, and (in aggregate, because it writes the whole book) the <b>first draft</b>.</p>
+      <p>Or press <b>▶ Walk the pipeline</b> and step through the whole journey. The ranked cost chart at the bottom compares every stage side by side.</p>
+    </div>
+  </aside>
+</div>
+<script>
+// cost.score / cost.rag.score: relative 0-100 (100 = the priciest full-book run).
+// Estimates assume a ~40-chapter, ~250k-word book (≈330k tokens of prose); output weighted ~5x input.
+const STAGES = [
+ {id:"notes", band:"INPUTS — WHAT THE HUMAN BRINGS", chip:"you", kind:"artifact", title:"Handwritten world notes", badges:["HUMAN"],
+  blurb:"Notebook pages, scans, typed fragments — everything you know about the world before there's a story.",
+  cost:null,
+  detail:{role:"Author's raw worldbuilding", does:"The world as it exists in your head and your notebooks: characters, places, factions, magic, history. It doesn't need to be organized — that's the next stage's job.", reads:"—", writes:"photos / scans / .txt / .rtf / .docx", ids:"—", human:"Entirely yours.", cmd:null,
+  costText:"Free — it's paper.", ragText:null,
+  note:"Optional but powerful: everything seeded from these notes becomes background knowledge for every stage below."}},
+ {id:"seeder", band:null, chip:"pre", kind:"machine", title:"world-notes-seeder", badges:[],
+  blurb:"The canon intake clerk — transcribes your notes faithfully and files them into the world/ memory system.",
+  cost:{score:10, label:"~20–60k tok / batch", pro:"~½–1 window / batch", rag:{score:8, label:"reconcile by query"}},
+  detail:{role:"Canon intake clerk", does:"Transcribes each note verbatim (never guessing at handwriting — unreadable words become [illegible] + a question for you), classifies facts into the world/ buckets, assigns stable IDs, logs conflicts instead of overwriting, and emits a seeding report with open questions.", reads:"your handwritten/typed notes (+ existing world/, if any)", writes:"world/ canon files + world/_intake/<date>/seeding-report.md", ids:"CHAR-NNN, THR-NNN (opened); TBD / [speculation] / campaign-pending markers", human:"Answers the open-questions list; resolves TBDs.", cmd:"/world-notes-seeder ~/Downloads/world-notes/",
+  costText:"Cheap. Cost scales with the size of the notes batch, not the book — reading images of handwriting is the main spend.", ragText:"Mild win: on later batches, reconcile new facts against canon by querying the index (\"what does canon say about the silver dragon?\") instead of re-reading every world/ file.",
+  note:"Run BEFORE the outline goes in, so the dramaturg starts with a populated world instead of an empty folder."}},
+ {id:"sketch", band:null, chip:"you", kind:"artifact", title:"Human sketch / outline", badges:["HUMAN"],
+  blurb:"A premise, a rough outline, or a beat sheet — the only mandatory human-authored input.",
+  cost:null,
+  detail:{role:"The story seed", does:"The idea in whatever shape it arrived: three paragraphs of premise, a bulleted outline, a beat sheet from your campaign. Rough is fine — deepening it is the dramaturg's job, not yours.", reads:"—", writes:"a sketch file (or pasted text)", ids:"—", human:"Entirely yours.", cmd:null,
+  costText:"Free — it's yours.", ragText:null,
+  note:"This is the only artifact the pipeline cannot start without."}},
+ {id:"enhancer", band:"GENERATION HALF — IDEA → FIRST DRAFT", chip:"0", kind:"machine", title:"outline-enhancer", badges:[],
+  blurb:"The dramaturg — deepens the sketch into an enriched outline and seeds/augments world/ memory.",
+  cost:{score:8, label:"~20–50k tok", pro:"~¼–½ window", rag:{score:6, label:"canon context by query"}},
+  detail:{role:"The dramaturg", does:"Deepens your seed into a structured, enriched outline: analyzes the implied story arc, opens character threads, fills structural gaps, surfaces the threads worth planting / growing / harvesting. Augments the world/ the seeder built — never contradicts it. Anything it can't resolve is marked campaign-pending, not invented.", reads:"human sketch + existing world/ (your seeded canon)", writes:"outline/enriched-outline.md + seeded/augmented world/", ids:"OB-NNN beats; CHAR-NNN / THR-NNN / ARC-NNN entries", human:"None yet — your checkpoint is next.", cmd:"/outline-enhancer outline/my-sketch.md",
+  costText:"Cheap. The sketch is small; the spend is loading existing world/ for context plus writing the enriched outline.", ragText:"Mild win on a well-seeded world: fetch only the canon relevant to the sketch's beats by query, instead of loading the whole world/ tree.",
+  note:"First machine stage of the pipeline proper."}},
+ {id:"arcgate", band:null, chip:"0.5", kind:"human", title:"story-arc-reviewer", badges:["HUMAN GATE"],
+  blurb:"The arc gate — asks YOU the questions needed to confirm arc direction before anything downstream runs.",
+  cost:{score:3, label:"~10–25k tok — cheapest agent", pro:"≲¼ window", rag:null},
+  detail:{role:"The arc gate (human checkpoint)", does:"Turns the enhancer's proposed arcs and open questions into concrete confirmation questions for the author, records your answers as canon in world/, resolves campaign-pending directions only when you decide them, and hands a validated outline down the line. It is not an autonomous approver — nothing proceeds on assumption.", reads:"enriched outline + world/ arcs & threads", writes:"outline/arc-confirmation-questions.md + outline/validated-outline.md + updated world/", ids:"AQ-NNN questions; AC confirmation log", human:"You answer the arc questions. The pipeline waits for you.", cmd:"/story-arc-reviewer",
+  costText:"The cheapest agent in the pipeline — it reads one outline and a thread map, and its output is questions. The expensive part is your thinking, not tokens.", ragText:"Not worth wiring — the inputs are already tiny.",
+  note:"The deliberate human checkpoint between 'machine proposes' and 'machine builds'."}},
+ {id:"planner", band:null, chip:"1", kind:"machine", title:"manuscript-planner", badges:[],
+  blurb:"Turns the validated outline into a writer-ready generation guide: chapter targets, scene briefs, thread beats.",
+  cost:{score:15, label:"~50–90k tok (brief per chapter)", pro:"~1–2 windows", rag:{score:11, label:"anchors by query"}},
+  detail:{role:"The generation planner", does:"Converts the validated outline into the generation guide the writer drafts from: chapter targets, per-chapter scene briefs, PLANT/GROW/HARVEST thread beats, and voice/continuity anchors pulled from world/. Plans NEW prose — distinct from the editing planner, which plans revisions.", reads:"validated outline + world/ canon", writes:"generation guide .md (overall + per-chapter briefs + JSON index)", ids:"GP-YYYY-MM-DD-NNN items", human:"Review the guide if you like; it's the writer's marching orders.", cmd:"/manuscript-planner",
+  costText:"Moderate: input is small (outline + canon) but it writes a brief for every one of ~40 chapters, so output adds up.", ragText:"Modest win: pull the voice/continuity anchors for each chapter by query rather than holding all of world/ in context for the whole planning run.",
+  note:"Last stop before prose exists."}},
+ {id:"draft", band:null, chip:"2", kind:"machine", title:"manuscript-writer — FIRST DRAFT", badges:[],
+  blurb:"Generates the first draft, chapter by chapter, from the generation guide — grounded in world/ canon.",
+  cost:{score:90, label:"~330k OUT + ~300k in · ~40 runs", pro:"~25–45 windows total (≈1 / chapter)", rag:{score:70, label:"−30% input; output can't shrink"}},
+  detail:{role:"The writer (generation mode)", does:"Generates the first draft from the generation guide: each chapter built from its scene brief and thread beats, voices held to the voice bible, continuity held to the ledger. The same skill later executes editing plans in revision mode.", reads:"generation guide + world/ canon", writes:"manuscript chapter .txt files (the first draft)", ids:"—", human:"Read your book! Your reactions feed the revision half.", cmd:"/manuscript-writer draft from the generation guide",
+  costText:"The biggest aggregate spend in the pipeline — but spread over ~40 chapter runs, not one sitting. It's output-dominated: the book itself (~330k tokens) comes OUT of the model, and output tokens cost ~5× input. Each run also reloads canon + recent chapters for continuity.", ragText:"Real win on the input side: fetch the canon each scene actually needs (1–3k tokens per query) instead of re-reading world/ and prior chapters every run — roughly a third off the input bill. The prose output itself cannot be RAG'd away; someone has to write the book.",
+  note:"The generation half runs once per book/arc. Everything below is iterative."}},
+ {id:"review", band:"REVISION LOOP — DRAFT → SETTLED PROSE (iterate until clean)", chip:"3", kind:"machine", title:"book-reviewer / book-reviewer-v2", badges:["LOOP"],
+  blurb:"The lector — reads the manuscript and produces severity-labeled findings (v2: stable RV-NNN IDs).",
+  cost:{score:85, label:"full pass: ~350k+ in / 1 job", pro:"full: ~5–9 windows · delta+RAG: ~1", rag:{score:25, label:"delta + RAG: ~60–90k"}},
+  detail:{role:"The lector", does:"Reads the manuscript and produces a review report: continuity, motif/repetition audits, character arcs, pacing, audiobook readiness. v2 adds stable finding IDs, world/-memory grounding, campaign-pending awareness, delta-review (won't re-flag resolved items) and sign-off modes. v2 is the recommended default for real passes.", reads:"manuscript .txt + world/ + prior reviews", writes:"review report .md", ids:"RV-NNN findings; MUST FIX / SHOULD FIX / CONSIDER severities", human:"Skim the findings — you are the final authority on every one.", cmd:"/book-reviewer-v2 full pass, or scoped",
+  costText:"One of the two heaviest runs: a full pass must actually read all ~330k tokens of prose plus world/ plus prior reviews — often in chunked sittings with overlap, which adds re-read cost on top.", ragText:"The big RAG win in the pipeline — for every pass AFTER the first. The first full read is irreducible (a reviewer who hasn't read the book isn't a reviewer). But subsequent passes should be v2 delta-reviews: re-read only changed chapters, and answer continuity questions (\"where else is Hazirawn described?\") by querying the index instead of re-reading the corpus. That turns a ~350k re-read into a ~60–90k pass.",
+  note:"Also the executor of the publishing-executive's returned review assignments."}},
+ {id:"editplan", band:null, chip:"4", kind:"machine", title:"manuscript-editing-planner / -v2", badges:["LOOP"],
+  blurb:"Turns the review into an ordered editing plan (v2: dependencies, conflicts, risk register).",
+  cost:{score:30, label:"~60–120k tok / pass", pro:"~1–2 windows / pass", rag:{score:18, label:"pull only cited passages"}},
+  detail:{role:"The editing planner", does:"Converts reviewer findings into a structured editing plan: book-structure recommendations, chapter-split proposals, per-chapter edit plans. v2 emits plan IDs that reference the RV findings, plus a dependency graph, conflict detection when two items touch the same passage, risk register, and effort estimates.", reads:"review report + world/", writes:"editing plan .md (overall + per-chapter)", ids:"EP-NNN items referencing RV-NNN", human:"Approve or reorder the plan if you care about sequence.", cmd:"/manuscript-editing-planner-v2",
+  costText:"Moderate: the review report is compact, but planning well means re-reading the chapters the findings touch to scope each item.", ragText:"Good win: for each RV finding, pull just the passage it cites (plus the canon it depends on) by query, instead of loading whole chapters. Nearly halves a typical pass.",
+  note:"Plans revisions — the mirror of stage 1, which plans new prose."}},
+ {id:"revise", band:null, chip:"5", kind:"machine", title:"manuscript-writer / -v2 — EDITS", badges:["LOOP"],
+  blurb:"Executes the plan per finding — Implement / Push back / Suggest-only — then the loop repeats until prose settles.",
+  cost:{score:35, label:"~80–150k tok / pass", pro:"~2–3 windows / pass", rag:{score:24, label:"−30% via targeted pulls"}},
+  detail:{role:"The writer (revision mode)", does:"Triages every plan item: Implement (does it), Push back (argues, with reasons), or Suggest-only (drafts a proposal for your approval — never applied silently). v2 adds a voice fingerprint, precedent ledger, and a self-diff voice gate that demotes drifting edits before commit. Never broadly rewrites.", reads:"editing plan + manuscript + world/", writes:"revised manuscript .txt + suggestions sidecar + decisions log", ids:"decisions logged against EP-NNN / RV-NNN", human:"Rule on push-backs and suggested rewrites.", cmd:"/manuscript-writer-v2 execute the current plan",
+  costText:"Moderate per pass: reads the chapters the plan touches in full context (edits need surrounding prose), writes targeted changes plus the decisions log. Multiply by the number of passes the loop takes.", ragText:"Solid win: canon lookups per edit (\"what color are Skwerker's scales in canon?\") come from the index at 1–3k tokens instead of a world/ reload per chapter.",
+  note:"Loop back to Review (3) until a pass comes back clean — then face the gate."}},
+ {id:"pubexec", band:"THE PUBLISHER'S GATE", chip:"gate", kind:"gate", title:"publishing-executive", badges:["GATE"],
+  blurb:"Reads the ENTIRE book and renders one verdict: ✅ GREENLIGHT or ↩️ RETURN FOR REVISION with scoped assignments.",
+  cost:{score:100, label:"~400k+ tok · 1 sitting · Opus rates", pro:"NOT on Pro — no Opus in Claude Code; Max/API only (~25–50-window equivalent)", rag:null},
+  detail:{role:"The publishing executive (agent)", does:"An acquisitions-style read of the whole manuscript, in order, at altitude only: premise & hook, story architecture, book-scale pacing, character arcs, stakes, theme, ending, voice consistency, reader-noticeable continuity, market & audiobook readiness. Renders exactly one verdict — no fence-sitting. A RETURN commissions prioritized, scoped review assignments (P0/P1/P2) that route back to the reviewer; fine-detail issues never trigger a RETURN. Never edits — it has no Edit tool by design.", reads:"the ENTIRE manuscript + world/ + prior reviews", writes:"reviews/<date>-publisher-verdict.md (the Verdict Memo)", ids:"R1, R2… review assignments with Greenlight Conditions", human:"You read the memo — and you remain the true final authority.", cmd:"/publishing-executive Book 1",
+  costText:"The single priciest run in the pipeline, by design: the entire book end-to-end (~330k tokens of prose) plus world/ plus prior reviews, in one sitting — and it runs on Opus, whose per-token rates are a multiple of the default model's. Budget for it like a milestone, not a routine step: run it when the revision loop believes it's done, not after every pass.", ragText:"Deliberately NO RAG shortcut. Its one source of authority is having actually read the whole book — \"a verdict from a partial read is malpractice.\" RAG retrieval would hand it excerpts, which is exactly the failure mode it exists to prevent. At most, RAG assists incidental continuity spot-checks during the read; the full read itself is irreducible.",
+  note:"GREENLIGHT flows down to output; RETURN loops back to the reviewer with its assignment list."}},
+ {id:"titles", band:"OUTPUT — SETTLED PROSE → HAND-OFF", chip:"±", kind:"machine", title:"chapter-title-cleanup", badges:["AS NEEDED"],
+  blurb:"Audits, renumbers, and standardizes chapter/part titles and filenames — never touches prose.",
+  cost:{score:4, label:"~10k tok — titles only", pro:"≲¼ window", rag:null},
+  detail:{role:"The title auditor", does:"Runs whenever numbering or titles drift (chapter inserts, splits, renames): audits consistency, fixes numbering cascades, standardizes file names, and produces a title map.", reads:"chapter files / titles", writes:"title audit + title map JSON + renamed files", ids:"—", human:"Approve renames.", cmd:"/chapter-title-cleanup",
+  costText:"Trivial — it reads titles and file names, not prose.", ragText:"Not relevant.",
+  note:"Optional hygiene stage — run any time, most useful before formatting."}},
+ {id:"format", band:null, chip:"6", kind:"machine", title:"novel-formatting", badges:[],
+  cost:{score:28, label:"~40–80k tok (script-assisted)", pro:"~1 window", rag:null},
+  blurb:"Formats the settled manuscript into clean, consistent, novel-ready text.",
+  detail:{role:"The formatter", does:"Standardizes headings, scene breaks, and paragraph spacing into clean novel-ready Markdown/plain text, preserving prose, chapter order, and audiobook readability.", reads:"manuscript .txt", writes:"compiled/formatted manuscript", ids:"—", human:"—", cmd:"/novel-formatting",
+  costText:"Would be huge if the model re-emitted the whole book — kept moderate because the work is mechanical: targeted edits and scripted normalization rather than full re-generation. If a formatting run is re-writing every file wholesale, that's a smell.", ragText:"Not relevant — formatting is structural, not canonical.",
+  note:"No prose changes — presentation only."}},
+ {id:"chunk", band:null, chip:"7", kind:"machine", title:"audiobook-text-prep-chunker", badges:[],
+  cost:{score:1, label:"≈0 — a Python script does it", pro:"≈0 — doesn't touch your window", rag:null},
+  blurb:"Splits the finished text into TTS-ready chunks and builds the manifest — the hand-off contract.",
+  detail:{role:"The chunker", does:"Splits finished chapter .txt into ~1500–1800-char chunks (hard max 2000, never splitting a sentence) and builds the chunk manifest with placeholders for downstream generation, validation, and repair tracking. Text-prep only — no audio is generated here.", reads:"formatted chapter .txt", writes:"chunks/chXX_NNNN.txt + chunk_manifest.json / .pretty.json", ids:"chunk ids chXX_NNNN", human:"—", cmd:"/audiobook-text-prep-chunker",
+  costText:"Near-zero: the chunking is done by the bundled Python script; the model only orchestrates and sanity-checks. The cheapest way to process 330k tokens is to not send them to a model.", ragText:"Not relevant.",
+  note:"Chunking is the last step of writing, not the first step of audio."}},
+ {id:"handoff", band:null, chip:"✓", kind:"artifact", title:"FINISHED MANUSCRIPT + hand-off pack", badges:[],
+  cost:null,
+  blurb:"Greenlit book, formatted chapters, chunks + manifest — consumed by the audiobook, image, and print repos.",
+  detail:{role:"The deliverable", does:"A publisher-greenlit manuscript, formatted chapter files, and the chunk + manifest pair — the documented contract the sibling repos read: the Local Audiobook Generator, the Cloud Audiobook Repairer, and (from the manuscript itself) the image-prompt and print pipelines.", reads:"—", writes:"—", ids:"—", human:"Ship it.", cmd:null,
+  costText:"Paid for. Everything downstream (audio, images, print) has its own budget in the sibling repos.", ragText:null,
+  note:"End of this repo's scope. Audio, images, and print live in the sibling repos."}},
+ {id:"world", band:"ALWAYS-ON SUPPORT — READ BY EVERY STAGE", chip:"∞", kind:"support", title:"world/ memory system", badges:[],
+  cost:null,
+  blurb:"The shared canon: characters, threads, arcs, voice bible, continuity ledger. Seeded up top, read by everything.",
+  detail:{role:"The single source of truth", does:"One file per character (CHAR-NNN), a thread map (THR-NNN with plant/grow/harvest + campaign-pending), an arc map (ARC-NNN), a voice bible, and a continuity ledger. The seeder and enhancer write it; the arc gate updates it with your confirmations; every downstream skill reads it as canon. If a fact isn't here, it's TBD — nobody invents.", reads:"written by seeder / enhancer / arc gate; updated when canon shifts", writes:"read as canon by planner, writer, reviewer, publishing executive", ids:"CHAR / THR / ARC / OB (stable, never renumbered) · AQ / GP / RV / EP (dated events)", human:"You resolve TBDs and own every canon decision.", cmd:null,
+  costText:"Not a run — a tax on every run: a mature world/ is 30–60k tokens, and every stage that full-loads it pays that on every invocation. Across a 40-chapter drafting run plus review loops, canon reloads alone can rival the cost of reading the book. This overhead is precisely the line item the Canon RAG exists to cut.", ragText:"This is what RAG replaces: a 1–3k-token targeted answer instead of a 30–60k full load, per lookup.",
+  note:"Lives in the manuscript repo — project-specific canon, not shipped with this toolkit."}},
+ {id:"rag", band:null, chip:"∞", kind:"support", title:"Canon RAG (rag/)", badges:[],
+  cost:null,
+  blurb:"ChromaDB semantic index over world/ + all chapters — fast canon lookups without re-reading the book.",
+  detail:{role:"The canon search engine", does:"A semantic index (local MiniLM embeddings, no API key) over the shared canon and every chapter, with a query CLI, a warm JSON-lines worker, and a demo page comparing RAG retrieval against naive keyword search — token cost shown per answer. Any stage that needs 'what does canon say about X?' can query it instead of re-reading the corpus.", reads:"world/ .md + chapter .txt (point RAG_REPO_ROOT at your manuscript repo)", writes:"rag/chroma_db/ index (rebuild with ingest.py --rebuild after edits)", ids:"—", human:"Re-run ingest after canon or chapter edits.", cmd:null,
+  costText:"The economics: ingest costs $0 in API tokens (embeddings run locally on ONNX MiniLM), and each query returns ~1–3k tokens of exactly-relevant context versus 10–50k for a naive whole-file pull. The bundled demo page shows the two costs side by side for every answer, so you can see the spread on your own corpus. Where it pays: writer drafting/revision, delta reviews, editing-plan scoping, seeding reconciliation. Where it deliberately doesn't: the publishing executive's full read.", ragText:null,
+  note:"Setup: python3 -m venv .venv → pip install -r rag/requirements.txt → ingest.py --rebuild → server: npm start (port 3123)."}}
+];
+
+const pipe = document.getElementById('pipe');
+const detailBody = document.getElementById('detailBody');
+let current = -1, walking = false;
+
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+
+function costMeter(c){
+  if (!c) return '';
+  let html = `<div class="costwrap"><div class="costrow"><span class="tag">cost</span><span class="costbar"><span class="fill" style="width:${c.score}%"></span></span><span class="lbl">${esc(c.label)}</span></div>`;
+  if (c.rag) html += `<div class="costrow"><span class="tag">w/ RAG</span><span class="costbar rag"><span class="fill" style="width:${c.rag.score}%"></span></span><span class="lbl">${esc(c.rag.label)}</span></div>`;
+  if (c.pro) html += `<div class="costrow"><span class="tag pro-tag">Pro</span><span class="lbl">${esc(c.pro)}</span></div>`;
+  html += '</div>';
+  return html;
+}
+
+STAGES.forEach((s, i) => {
+  if (s.band) {
+    const label = document.createElement('div');
+    label.className = 'band-label';
+    label.textContent = s.band;
+    pipe.appendChild(label);
+  } else if (i > 0) {
+    const arrow = document.createElement('div');
+    arrow.className = 'arrow';
+    arrow.textContent = '▼';
+    pipe.appendChild(arrow);
+  }
+  const card = document.createElement('div');
+  card.className = 'card' + (s.kind==='human'?' human-card':'') + (s.kind==='gate'?' gate-card':'') + (s.kind==='artifact'?' artifact':'') + (s.kind==='support'?' support-card':'');
+  card.id = 'card-' + s.id;
+  const badges = s.badges.map(b => {
+    const cls = b.includes('GATE') && s.kind==='gate' ? 'gate' : (b==='HUMAN'||b==='HUMAN GATE') ? 'human' : b==='LOOP' ? 'loop' : 'opt';
+    return `<span class="badge ${cls}">${b}</span>`;
+  }).join('');
+  card.innerHTML = `<h3><span class="chip">${esc(s.chip)}</span> ${esc(s.title)} ${badges}</h3><div class="blurb">${esc(s.blurb)}</div>${costMeter(s.cost)}`;
+  card.addEventListener('click', () => select(i, false));
+  pipe.appendChild(card);
+  if (s.id === 'revise') {
+    const loop = document.createElement('div');
+    loop.className = 'loopnote';
+    loop.innerHTML = '<span>↺ iterate: back to Review (3) until a pass comes back clean</span>';
+    pipe.appendChild(loop);
+  }
+  if (s.id === 'pubexec') {
+    const fork = document.createElement('div');
+    fork.className = 'gatefork';
+    fork.innerHTML = '<span class="go">✅ GREENLIGHT → continue below</span><span class="ret">↩️ RETURN → assignments back to Review (3)</span>';
+    pipe.appendChild(fork);
+  }
+});
+
+// ranked cost chart
+(function(){
+  const label = document.createElement('div');
+  label.className = 'band-label';
+  label.textContent = 'COST AT A GLANCE — RELATIVE TOKENS PER FULL-BOOK JOB (COPPER = STANDARD · GREEN = RAG-AWARE)';
+  pipe.appendChild(label);
+  const chart = document.createElement('div');
+  chart.className = 'chart';
+  const ranked = STAGES.map((s,i)=>({s,i})).filter(x => x.s.cost).sort((a,b)=> b.s.cost.score - a.s.cost.score);
+  ranked.forEach(({s,i}) => {
+    const row = document.createElement('div');
+    row.className = 'chart-row';
+    let bars = `<div class="chart-bar"><div class="fill" style="width:${s.cost.score}%"></div></div>`;
+    if (s.cost.rag) bars += `<div class="chart-bar rag"><div class="fill" style="width:${s.cost.rag.score}%"></div></div>`;
+    row.innerHTML = `<div class="chart-name">${esc(s.title.replace(/ — .*/,''))}</div><div class="chart-bars">${bars}</div><div class="chart-lbl">${esc(s.cost.label)}${s.cost.rag ? '<br>'+esc(s.cost.rag.label) : ''}${s.cost.pro ? '<br><span style="color:var(--human)">Pro: '+esc(s.cost.pro)+'</span>' : ''}</div>`;
+    row.addEventListener('click', () => select(i, true));
+    chart.appendChild(row);
+  });
+  const note = document.createElement('div');
+  note.className = 'chart-note';
+  note.innerHTML = 'Rough relative estimates for a ~40-chapter / ~250k-word book (≈330k tokens of prose), output tokens weighted ~5× input. The three heavyweights differ in shape: the <b>publishing executive</b> is one massive sitting at Opus rates with no legitimate shortcut; a <b>full review</b> is the same read but only ONCE — every later pass should be a delta + RAG pass (green bar); the <b>first draft</b> is the largest aggregate because the whole book comes out of the model, spread across ~40 runs. Where no green bar appears, RAG is either irrelevant (mechanical stages) or deliberately rejected (the gate must read everything).';
+  chart.appendChild(note);
+  pipe.appendChild(chart);
+
+  // plan-budget summary
+  const planLabel = document.createElement('div');
+  planLabel.className = 'band-label';
+  planLabel.textContent = 'WHAT A WHOLE BOOK COSTS IN PLAN TERMS (ROUGH ESTIMATES — ANTHROPIC PUBLISHES NO EXACT NUMBERS)';
+  pipe.appendChild(planLabel);
+  const plan = document.createElement('div');
+  plan.className = 'chart';
+  plan.innerHTML = `
+    <table style="border-collapse:collapse;width:100%;font-size:.85rem">
+      <tr><th style="text-align:left;padding:.35rem .6rem;color:var(--accent)">Plan</th><th style="text-align:left;padding:.35rem .6rem;color:var(--accent)">Per 5-hour window (community-measured)</th><th style="text-align:left;padding:.35rem .6rem;color:var(--accent)">This pipeline on it</th></tr>
+      <tr><td style="padding:.35rem .6rem;border-top:1px solid var(--line)"><b>Pro</b></td><td style="padding:.35rem .6rem;border-top:1px solid var(--line)">~45–90k weighted tokens (~10–45 prompts); weekly cap ~40–80 Sonnet-hours; <b>no Opus in Claude Code</b></td><td style="padding:.35rem .6rem;border-top:1px solid var(--line)">Everything except the publisher's gate. A full book ≈ <b>45–70 windows</b>: draft ~25–45, one full review ~5–9, 2–3 revision loops ~6–12, plans/format/misc ~5. With ~6 windows/day of steady use, roughly <b>2–4 weeks of Pro sessions</b> — the weekly cap is the real ceiling.</td></tr>
+      <tr><td style="padding:.35rem .6rem;border-top:1px solid var(--line)"><b>Max 5×</b></td><td style="padding:.35rem .6rem;border-top:1px solid var(--line)">≈5× Pro per window; Opus available (~15–35 Opus-hours/week; Opus burns ~5× faster)</td><td style="padding:.35rem .6rem;border-top:1px solid var(--line)">The full book fits in <b>~9–14 windows</b> (days, not weeks), and the publishing-executive verdict becomes possible — budget it as a large slice of a week's Opus allowance.</td></tr>
+      <tr><td style="padding:.35rem .6rem;border-top:1px solid var(--line)"><b>Max 20×</b></td><td style="padding:.35rem .6rem;border-top:1px solid var(--line)">≈20× Pro per window; more Opus (~24–40 Opus-hours/week)</td><td style="padding:.35rem .6rem;border-top:1px solid var(--line)">Whole pipeline including the gate runs comfortably; a full book is <b>a handful of windows</b>. API pay-as-you-go is the alternative for one-off Opus verdicts without a plan upgrade.</td></tr>
+    </table>
+    <div class="chart-note">Sources: Anthropic's official docs confirm only the mechanics (included usage resets every 5 hours; one shared pool across claude.ai + Claude Code; overflow billable as usage credits at API rates). The per-window token figures and weekly hour ranges are community measurements as of mid-2026 and shift as Anthropic tunes limits — recheck before planning a big run. The RAG-aware green bars are how you stretch any plan: they cut exactly the canon-reload tokens that burn windows fastest.</div>`;
+  pipe.appendChild(plan);
+})();
+
+function select(i, scroll) {
+  current = i;
+  const s = STAGES[i];
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+  const card = document.getElementById('card-' + s.id);
+  card.classList.add('active');
+  if (scroll) card.scrollIntoView({behavior:'smooth', block:'center'});
+  const d = s.detail;
+  detailBody.innerHTML = `
+    <div class="kicker">${esc(d.role)}</div>
+    <h2><span class="chip">${esc(s.chip)}</span> ${esc(s.title)}</h2>
+    <p>${esc(d.does)}</p>
+    ${s.cost ? costMeter(s.cost) : ''}
+    <dl>
+      <dt>Reads</dt><dd>${esc(d.reads)}</dd>
+      <dt>Writes</dt><dd>${esc(d.writes)}</dd>
+      <dt>IDs</dt><dd>${esc(d.ids)}</dd>
+      <dt>Your part</dt><dd>${esc(d.human)}</dd>
+      ${d.costText ? `<dt class="cost-dt">Relative cost</dt><dd>${esc(d.costText)}</dd>` : ''}
+      ${d.ragText ? `<dt class="rag-dt">RAG-aware alternative</dt><dd>${esc(d.ragText)}</dd>` : ''}
+      ${s.cost && s.cost.pro ? `<dt style="color:var(--human)">On a Claude Pro plan</dt><dd>${esc(s.cost.pro)} <span style="color:var(--faint)">(of the 5-hour allotment — rough community estimate, shared with all your other Claude use)</span></dd>` : ''}
+      ${d.cmd ? `<dt>Run it</dt><dd><span class="cmd">${esc(d.cmd)}</span></dd>` : ''}
+    </dl>
+    <p style="color:var(--ink-soft);font-size:.85rem"><i>${esc(d.note)}</i></p>`;
+}
+
+function setWalking(on) {
+  walking = on;
+  document.body.classList.toggle('walking', on);
+  document.getElementById('walkBtn').textContent = on ? '■ Stop walking' : '▶ Walk the pipeline';
+}
+document.getElementById('walkBtn').addEventListener('click', () => {
+  if (walking) { setWalking(false); return; }
+  setWalking(true);
+  select(0, true);
+});
+document.getElementById('nextBtn').addEventListener('click', () => {
+  if (!walking) setWalking(true);
+  select(Math.min(current + 1, STAGES.length - 1), true);
+});
+document.getElementById('prevBtn').addEventListener('click', () => {
+  if (!walking) setWalking(true);
+  select(Math.max(current - 1, 0), true);
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowDown' || e.key === 'ArrowRight') { e.preventDefault(); document.getElementById('nextBtn').click(); }
+  if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') { e.preventDefault(); document.getElementById('prevBtn').click(); }
+  if (e.key === 'Escape') setWalking(false);
+});
+
+(function(){
+  var root = document.documentElement;
+  var btn = document.getElementById('themeToggle');
+  var stored = null;
+  try { stored = localStorage.getItem('guides-theme'); } catch(e){}
+  if (stored === 'light' || stored === 'dark') root.dataset.theme = stored;
+  function label(){ btn.textContent = root.dataset.theme === 'dark' ? '☀ Light mode' : '☾ Dark mode'; }
+  btn.addEventListener('click', function(){
+    root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+    try { localStorage.setItem('guides-theme', root.dataset.theme); } catch(e){}
+    label();
+  });
+  label();
+})();
+</script>
+</body>
+</html>

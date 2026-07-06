@@ -5,3 +5,11 @@ __pycache__/
 
 # local demo/run output
 /tmp-*/
+
+# book-writer app
+node_modules/
+app/ui/dist/
+app/server/data/
+rag/chroma_db/
+rag/.venv/
+.idea/

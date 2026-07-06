@@ -1,0 +1,4 @@
+.venv/
+chroma_db/
+server/node_modules/
+__pycache__/
