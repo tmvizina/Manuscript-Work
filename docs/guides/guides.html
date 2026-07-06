@@ -69,6 +69,7 @@
 <nav>
   <h1>Repo Guides</h1>
   <div class="sub">Book Writer — Manuscript-Work</div>
+  <a class="top" href="workflow.html" style="border-left-color:var(--gold)">▶ Interactive workflow map</a>
   <a class="top" href="#commands">1 · Command Reference</a>
   <a class="h2" href="#cmd-generation">Generation half</a>
   <a class="h2" href="#cmd-revision">Revision half</a>
@@ -118,6 +119,12 @@
 <tr><td><code>/manuscript-editing-planner-v2</code></td><td>Enhanced planner — EP-NNN items, dependency graph, conflict detection, risk register.</td></tr>
 <tr><td><code>/manuscript-writer-v2</code></td><td>Enhanced writer — voice fingerprint, precedent ledger, self-diff voice gate before commit.</td></tr>
 <tr><td><code>/chapter-title-cleanup</code></td><td>Audits, renumbers, and standardizes chapter titles and filenames. Never touches prose.</td></tr>
+</table>
+
+<h2>The publisher's gate — is the book ready?</h2>
+<table>
+<tr><th style="width:38%">Command</th><th>What it does</th></tr>
+<tr><td><code>/publishing-executive</code></td><td>The last gate before "ship it" (an agent, not a skill). Reads the ENTIRE manuscript and renders one verdict: ✅ GREENLIGHT or ↩️ RETURN FOR REVISION with prioritized review assignments handed back to <code>/book-reviewer-v2</code>. Judges at altitude only — never line-edits.</td></tr>
 </table>
 
 <h2 id="cmd-output">Output — manuscript → hand-off</h2>

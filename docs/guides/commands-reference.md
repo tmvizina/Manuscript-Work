@@ -2,6 +2,8 @@
 
 Every skill in this repo's `skills/` folder now has a matching slash command in `.claude/commands/`. Type `/` in Claude Code inside this repo and they appear in the menu. Each command invokes its skill, and if the skill isn't installed on the machine, falls back to reading the skill file straight out of `skills/` — so the commands work on any computer that has this repo, with nothing extra installed.
 
+> **See the whole pipeline visually:** open [`workflow.html`](workflow.html) — an interactive map of every stage from handwritten notes to the finished hand-off. Click any stage or walk the pipeline step by step.
+
 ## Generation half — idea → first draft (in pipeline order)
 
 | Command | Stage | What it does |
@@ -22,6 +24,12 @@ Every skill in this repo's `skills/` folder now has a matching slash command in 
 | `/manuscript-editing-planner-v2` | Enhanced planner — EP-NNN items, dependency graph, conflict detection, risk register. |
 | `/manuscript-writer-v2` | Enhanced writer — voice fingerprint, precedent ledger, self-diff voice gate before commit. |
 | `/chapter-title-cleanup` | Audits, renumbers, and standardizes chapter titles and filenames. Never touches prose. |
+
+## The publisher's gate — is the book ready?
+
+| Command | What it does |
+|---|---|
+| `/publishing-executive` | The last gate before "ship it" (an agent, not a skill). Reads the ENTIRE manuscript and renders one verdict: ✅ GREENLIGHT or ↩️ RETURN FOR REVISION with prioritized review assignments handed back to `/book-reviewer-v2`. Judges at altitude only — never line-edits. |
 
 ## Output — manuscript → hand-off
 

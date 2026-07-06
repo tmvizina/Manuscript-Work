@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book-Generation Workflow — Book Writer (Manuscript-Work)</title>
+<style>
+  :root{
+    --ink:#22303f; --ink-soft:#4a5a6a; --parchment:#faf6ef; --panel:#ffffff;
+    --navy:#1e2f4d; --copper:#b0713a; --gold:#8a6d2f; --line:#e3dccd;
+    --code-bg:#f1ede3; --code-ink:#5b4426; --accent:#2e5077;
+    --hover-bg:#f0e9db; --quote-bg:#fdf9f1; --kbd-bg:#fff; --kbd-border:#c9c2b2;
+    --faint:#9a9078; --shadow:rgba(30,47,77,.07);
+    --human:#7a4a9e; --human-bg:#f3ecf9; --gate:#a83a3a; --gate-bg:#fbeeee;
+    --loop:#2e6e4e; --loop-bg:#eaf5ef; --support:#8a6d2f; --support-bg:#f8f3e4;
+    --active:#2e5077; --active-glow:rgba(46,80,119,.25); --dim:.38;
+  }
+  html[data-theme="dark"]{
+    --ink:#d8d3c6; --ink-soft:#a39d8e; --parchment:#14171d; --panel:#1d222b;
+    --navy:#a9c1e8; --copper:#d09a5f; --gold:#c9a84c; --line:#323845;
+    --code-bg:#2a2f3a; --code-ink:#e0b98a; --accent:#8fb4dd;
+    --hover-bg:#262b36; --quote-bg:#252a35; --kbd-bg:#2a2f3a; --kbd-border:#4a5160;
+    --faint:#7a7466; --shadow:rgba(0,0,0,.35);
+    --human:#c9a5ec; --human-bg:#2c2338; --gate:#e08585; --gate-bg:#33211f;
+    --loop:#8fd1ae; --loop-bg:#1d2f26; --support:#c9a84c; --support-bg:#2c2718;
+    --active:#8fb4dd; --active-glow:rgba(143,180,221,.28);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Charter,Georgia,'Times New Roman',serif;background:var(--parchment);color:var(--ink);line-height:1.55;font-size:16px;transition:background .25s,color .25s}
+  header.page{max-width:1200px;margin:0 auto;padding:2rem 2rem .5rem}
+  header.page h1{color:var(--navy);font-size:1.7rem;margin:0 0 .25rem}
+  header.page p{color:var(--ink-soft);font-style:italic;margin:0}
+  .legend{display:flex;flex-wrap:wrap;gap:.6rem;margin:1rem 0 0;font-size:.78rem}
+  .legend span{display:inline-flex;align-items:center;gap:.35rem;padding:.15rem .6rem;border-radius:999px;border:1px solid var(--line);color:var(--ink-soft)}
+  .dot{width:.6em;height:.6em;border-radius:50%;display:inline-block}
+  .layout{display:flex;gap:1.6rem;max-width:1200px;margin:0 auto;padding:1.2rem 2rem 4rem;align-items:flex-start}
+  .pipe{flex:1;min-width:0}
+  .band{margin:0 0 .4rem}
+  .band-label{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin:.9rem 0 .45rem;display:flex;align-items:center;gap:.6rem}
+  .band-label::after{content:"";flex:1;height:1px;background:var(--line)}
+  .card{position:relative;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:.65rem .95rem;margin:.35rem 0;cursor:pointer;box-shadow:0 1px 6px var(--shadow);transition:transform .12s,opacity .25s,box-shadow .2s}
+  .card:hover{transform:translateX(4px)}
+  .card.active{box-shadow:0 0 0 2px var(--active),0 4px 18px var(--active-glow)}
+  .walking .card:not(.active){opacity:var(--dim)}
+  .card h3{margin:0;font-size:1rem;color:var(--navy);display:flex;align-items:center;gap:.55rem;flex-wrap:wrap}
+  .card .blurb{margin:.15rem 0 0;font-size:.85rem;color:var(--ink-soft)}
+  .chip{font-size:.68rem;font-weight:700;letter-spacing:.05em;background:var(--accent);color:var(--parchment);border-radius:6px;padding:.1rem .45rem;font-family:Menlo,Consolas,monospace}
+  .badge{font-size:.66rem;font-weight:600;border-radius:999px;padding:.08rem .5rem;letter-spacing:.03em}
+  .badge.human{color:var(--human);background:var(--human-bg);border:1px solid var(--human)}
+  .badge.gate{color:var(--gate);background:var(--gate-bg);border:1px solid var(--gate)}
+  .badge.loop{color:var(--loop);background:var(--loop-bg);border:1px solid var(--loop)}
+  .badge.opt{color:var(--faint);border:1px solid var(--line)}
+  .card.human-card{border-left-color:var(--human)}
+  .card.gate-card{border-left-color:var(--gate)}
+  .card.artifact{border-left-color:var(--gold);background:var(--quote-bg)}
+  .card.support-card{border-left-color:var(--support)}
+  .arrow{text-align:center;color:var(--faint);font-size:.95rem;line-height:1;margin:.05rem 0;user-select:none}
+  .loopnote{display:flex;justify-content:center;margin:.25rem 0}
+  .loopnote span{font-size:.75rem;color:var(--loop);background:var(--loop-bg);border:1px dashed var(--loop);border-radius:999px;padding:.15rem .8rem}
+  .gatefork{display:flex;gap:.6rem;justify-content:center;margin:.25rem 0;font-size:.75rem}
+  .gatefork span{border-radius:999px;padding:.15rem .8rem}
+  .gatefork .go{color:var(--loop);background:var(--loop-bg);border:1px solid var(--loop)}
+  .gatefork .ret{color:var(--gate);background:var(--gate-bg);border:1px dashed var(--gate)}
+  .support{margin-top:1.4rem}
+  /* detail panel */
+  .detail{width:390px;flex-shrink:0;position:sticky;top:1rem;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.2rem 1.4rem;box-shadow:0 2px 12px var(--shadow);max-height:calc(100vh - 2rem);overflow-y:auto}
+  .detail h2{margin:.1rem 0 .4rem;color:var(--navy);font-size:1.15rem}
+  .detail .kicker{font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+  .detail p{font-size:.9rem;margin:.5rem 0}
+  .detail dl{margin:.6rem 0;font-size:.85rem}
+  .detail dt{font-weight:700;color:var(--accent);margin-top:.55rem;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase}
+  .detail dd{margin:.15rem 0 0}
+  code{font-family:'SF Mono',Menlo,Consolas,monospace;font-size:.82em;background:var(--code-bg);padding:.1em .4em;border-radius:4px;color:var(--code-ink)}
+  .cmd{display:inline-block;margin-top:.2rem;font-family:Menlo,Consolas,monospace;font-size:.8rem;background:var(--code-bg);color:var(--code-ink);border-radius:6px;padding:.2rem .6rem}
+  .stepper{display:flex;gap:.5rem;margin:0 0 1rem}
+  .stepper button{font-family:inherit;font-size:.82rem;color:var(--ink-soft);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:.35rem .8rem;cursor:pointer}
+  .stepper button:hover{color:var(--navy);border-color:var(--copper)}
+  .stepper button.primary{color:var(--parchment);background:var(--accent);border-color:var(--accent)}
+  .theme-toggle{position:fixed;top:1rem;right:1.2rem;z-index:20;font-family:inherit;font-size:.82rem;color:var(--ink-soft);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:.35rem .9rem;cursor:pointer;box-shadow:0 2px 8px var(--shadow)}
+  .theme-toggle:hover{color:var(--navy);border-color:var(--copper)}
+  .backlink{font-size:.8rem;color:var(--accent);text-decoration:none}
+  @media(max-width:900px){.layout{flex-direction:column}.detail{position:static;width:100%;max-height:none}}
+</style>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle light/dark mode">☀ Light mode</button>
+<header class="page">
+  <h1>Book-Generation Workflow</h1>
+  <p>From handwritten notes and a human outline to a finished, chunked manuscript — click any stage, or walk the pipeline.</p>
+  <div class="legend">
+    <span><span class="dot" style="background:var(--accent)"></span> machine stage</span>
+    <span><span class="dot" style="background:var(--human)"></span> human / human gate</span>
+    <span><span class="dot" style="background:var(--gate)"></span> publisher's gate</span>
+    <span><span class="dot" style="background:var(--gold)"></span> artifact</span>
+    <span><span class="dot" style="background:var(--support)"></span> always-on support</span>
+    <span style="margin-left:auto"><a class="backlink" href="guides.html">← repo guides</a></span>
+  </div>
+</header>
+<div class="layout">
+  <div class="pipe" id="pipe"></div>
+  <aside class="detail" id="detail">
+    <div class="stepper">
+      <button class="primary" id="walkBtn">▶ Walk the pipeline</button>
+      <button id="prevBtn">← Prev</button>
+      <button id="nextBtn">Next →</button>
+    </div>
+    <div id="detailBody">
+      <div class="kicker">Welcome</div>
+      <h2>How to read this map</h2>
+      <p>The pipeline runs top to bottom. <b>Click any card</b> for its full role — what it reads, what it writes, the IDs it emits, and the slash command that runs it.</p>
+      <p>Or press <b>▶ Walk the pipeline</b> and step through the whole journey from handwritten notes to the finished hand-off, one stage at a time.</p>
+      <p>Purple stages need <b>you</b>. The red stage is the <b>publisher's gate</b> — the last decision before the book ships.</p>
+    </div>
+  </aside>
+</div>
+<script>
+const STAGES = [
+ {id:"notes", band:"INPUTS — WHAT THE HUMAN BRINGS", chip:"you", kind:"artifact", title:"Handwritten world notes", badges:["HUMAN"],
+  blurb:"Notebook pages, scans, typed fragments — everything you know about the world before there's a story.",
+  detail:{role:"Author's raw worldbuilding", does:"The world as it exists in your head and your notebooks: characters, places, factions, magic, history. It doesn't need to be organized — that's the next stage's job.", reads:"—", writes:"photos / scans / .txt / .rtf / .docx", ids:"—", human:"Entirely yours.", cmd:null,
+  note:"Optional but powerful: everything seeded from these notes becomes background knowledge for every stage below."}},
+ {id:"seeder", band:null, chip:"pre", kind:"machine", title:"world-notes-seeder", badges:[],
+  blurb:"The canon intake clerk — transcribes your notes faithfully and files them into the world/ memory system.",
+  detail:{role:"Canon intake clerk", does:"Transcribes each note verbatim (never guessing at handwriting — unreadable words become [illegible] + a question for you), classifies facts into the world/ buckets, assigns stable IDs, logs conflicts instead of overwriting, and emits a seeding report with open questions.", reads:"your handwritten/typed notes (+ existing world/, if any)", writes:"world/ canon files + world/_intake/<date>/seeding-report.md", ids:"CHAR-NNN, THR-NNN (opened); TBD / [speculation] / campaign-pending markers", human:"Answers the open-questions list; resolves TBDs.", cmd:"/world-notes-seeder ~/Downloads/world-notes/",
+  note:"Run BEFORE the outline goes in, so the dramaturg starts with a populated world instead of an empty folder."}},
+ {id:"sketch", band:null, chip:"you", kind:"artifact", title:"Human sketch / outline", badges:["HUMAN"],
+  blurb:"A premise, a rough outline, or a beat sheet — the only mandatory human-authored input.",
+  detail:{role:"The story seed", does:"The idea in whatever shape it arrived: three paragraphs of premise, a bulleted outline, a beat sheet from your campaign. Rough is fine — deepening it is the dramaturg's job, not yours.", reads:"—", writes:"a sketch file (or pasted text)", ids:"—", human:"Entirely yours.", cmd:null,
+  note:"This is the only artifact the pipeline cannot start without."}},
+ {id:"enhancer", band:"GENERATION HALF — IDEA → FIRST DRAFT", chip:"0", kind:"machine", title:"outline-enhancer", badges:[],
+  blurb:"The dramaturg — deepens the sketch into an enriched outline and seeds/augments world/ memory.",
+  detail:{role:"The dramaturg", does:"Deepens your seed into a structured, enriched outline: analyzes the implied story arc, opens character threads, fills structural gaps, surfaces the threads worth planting / growing / harvesting. Augments the world/ the seeder built — never contradicts it. Anything it can't resolve is marked campaign-pending, not invented.", reads:"human sketch + existing world/ (your seeded canon)", writes:"outline/enriched-outline.md + seeded/augmented world/", ids:"OB-NNN beats; CHAR-NNN / THR-NNN / ARC-NNN entries", human:"None yet — your checkpoint is next.", cmd:"/outline-enhancer outline/my-sketch.md",
+  note:"First machine stage of the pipeline proper."}},
+ {id:"arcgate", band:null, chip:"0.5", kind:"human", title:"story-arc-reviewer", badges:["HUMAN GATE"],
+  blurb:"The arc gate — asks YOU the questions needed to confirm arc direction before anything downstream runs.",
+  detail:{role:"The arc gate (human checkpoint)", does:"Turns the enhancer's proposed arcs and open questions into concrete confirmation questions for the author, records your answers as canon in world/, resolves campaign-pending directions only when you decide them, and hands a validated outline down the line. It is not an autonomous approver — nothing proceeds on assumption.", reads:"enriched outline + world/ arcs & threads", writes:"outline/arc-confirmation-questions.md + outline/validated-outline.md + updated world/", ids:"AQ-NNN questions; AC confirmation log", human:"You answer the arc questions. The pipeline waits for you.", cmd:"/story-arc-reviewer",
+  note:"The deliberate human checkpoint between 'machine proposes' and 'machine builds'."}},
+ {id:"planner", band:null, chip:"1", kind:"machine", title:"manuscript-planner", badges:[],
+  blurb:"Turns the validated outline into a writer-ready generation guide: chapter targets, scene briefs, thread beats.",
+  detail:{role:"The generation planner", does:"Converts the validated outline into the generation guide the writer drafts from: chapter targets, per-chapter scene briefs, PLANT/GROW/HARVEST thread beats, and voice/continuity anchors pulled from world/. Plans NEW prose — distinct from the editing planner, which plans revisions.", reads:"validated outline + world/ canon", writes:"generation guide .md (overall + per-chapter briefs + JSON index)", ids:"GP-YYYY-MM-DD-NNN items", human:"Review the guide if you like; it's the writer's marching orders.", cmd:"/manuscript-planner",
+  note:"Last stop before prose exists."}},
+ {id:"draft", band:null, chip:"2", kind:"machine", title:"manuscript-writer — FIRST DRAFT", badges:[],
+  blurb:"Generates the first draft, chapter by chapter, from the generation guide — grounded in world/ canon.",
+  detail:{role:"The writer (generation mode)", does:"Generates the first draft from the generation guide: each chapter built from its scene brief and thread beats, voices held to the voice bible, continuity held to the ledger. The same skill later executes editing plans in revision mode.", reads:"generation guide + world/ canon", writes:"manuscript chapter .txt files (the first draft)", ids:"—", human:"Read your book! Your reactions feed the revision half.", cmd:"/manuscript-writer draft from the generation guide",
+  note:"The generation half runs once per book/arc. Everything below is iterative."}},
+ {id:"review", band:"REVISION LOOP — DRAFT → SETTLED PROSE (iterate until clean)", chip:"3", kind:"machine", title:"book-reviewer / book-reviewer-v2", badges:["LOOP"],
+  blurb:"The lector — reads the manuscript and produces severity-labeled findings (v2: stable RV-NNN IDs).",
+  detail:{role:"The lector", does:"Reads the manuscript and produces a review report: continuity, motif/repetition audits, character arcs, pacing, audiobook readiness. v2 adds stable finding IDs, world/-memory grounding, campaign-pending awareness, delta-review (won't re-flag resolved items) and sign-off modes. v2 is the recommended default for real passes.", reads:"manuscript .txt + world/ + prior reviews", writes:"review report .md", ids:"RV-NNN findings; MUST FIX / SHOULD FIX / CONSIDER severities", human:"Skim the findings — you are the final authority on every one.", cmd:"/book-reviewer-v2 full pass, or scoped",
+  note:"Also the executor of the publishing-executive's returned review assignments."}},
+ {id:"editplan", band:null, chip:"4", kind:"machine", title:"manuscript-editing-planner / -v2", badges:["LOOP"],
+  blurb:"Turns the review into an ordered editing plan (v2: dependencies, conflicts, risk register).",
+  detail:{role:"The editing planner", does:"Converts reviewer findings into a structured editing plan: book-structure recommendations, chapter-split proposals, per-chapter edit plans. v2 emits plan IDs that reference the RV findings, plus a dependency graph, conflict detection when two items touch the same passage, risk register, and effort estimates.", reads:"review report + world/", writes:"editing plan .md (overall + per-chapter)", ids:"EP-NNN items referencing RV-NNN", human:"Approve or reorder the plan if you care about sequence.", cmd:"/manuscript-editing-planner-v2",
+  note:"Plans revisions — the mirror of stage 1, which plans new prose."}},
+ {id:"revise", band:null, chip:"5", kind:"machine", title:"manuscript-writer / -v2 — EDITS", badges:["LOOP"],
+  blurb:"Executes the plan per finding — Implement / Push back / Suggest-only — then the loop repeats until prose settles.",
+  detail:{role:"The writer (revision mode)", does:"Triages every plan item: Implement (does it), Push back (argues, with reasons), or Suggest-only (drafts a proposal for your approval — never applied silently). v2 adds a voice fingerprint, precedent ledger, and a self-diff voice gate that demotes drifting edits before commit. Never broadly rewrites.", reads:"editing plan + manuscript + world/", writes:"revised manuscript .txt + suggestions sidecar + decisions log", ids:"decisions logged against EP-NNN / RV-NNN", human:"Rule on push-backs and suggested rewrites.", cmd:"/manuscript-writer-v2 execute the current plan",
+  note:"Loop back to Review (3) until a pass comes back clean — then face the gate."}},
+ {id:"pubexec", band:"THE PUBLISHER'S GATE", chip:"gate", kind:"gate", title:"publishing-executive", badges:["GATE"],
+  blurb:"Reads the ENTIRE book and renders one verdict: ✅ GREENLIGHT or ↩️ RETURN FOR REVISION with scoped assignments.",
+  detail:{role:"The publishing executive (agent)", does:"An acquisitions-style read of the whole manuscript, in order, at altitude only: premise & hook, story architecture, book-scale pacing, character arcs, stakes, theme, ending, voice consistency, reader-noticeable continuity, market & audiobook readiness. Renders exactly one verdict — no fence-sitting. A RETURN commissions prioritized, scoped review assignments (P0/P1/P2) that route back to the reviewer; fine-detail issues never trigger a RETURN. Never edits — it has no Edit tool by design.", reads:"the ENTIRE manuscript + world/ + prior reviews", writes:"reviews/<date>-publisher-verdict.md (the Verdict Memo)", ids:"R1, R2… review assignments with Greenlight Conditions", human:"You read the memo — and you remain the true final authority.", cmd:"/publishing-executive Book 1",
+  note:"GREENLIGHT flows down to output; RETURN loops back to the reviewer with its assignment list."}},
+ {id:"titles", band:"OUTPUT — SETTLED PROSE → HAND-OFF", chip:"±", kind:"machine", title:"chapter-title-cleanup", badges:["AS NEEDED"],
+  blurb:"Audits, renumbers, and standardizes chapter/part titles and filenames — never touches prose.",
+  detail:{role:"The title auditor", does:"Runs whenever numbering or titles drift (chapter inserts, splits, renames): audits consistency, fixes numbering cascades, standardizes file names, and produces a title map.", reads:"chapter files / titles", writes:"title audit + title map JSON + renamed files", ids:"—", human:"Approve renames.", cmd:"/chapter-title-cleanup",
+  note:"Optional hygiene stage — run any time, most useful before formatting."}},
+ {id:"format", band:null, chip:"6", kind:"machine", title:"novel-formatting", badges:[],
+  blurb:"Formats the settled manuscript into clean, consistent, novel-ready text.",
+  detail:{role:"The formatter", does:"Standardizes headings, scene breaks, and paragraph spacing into clean novel-ready Markdown/plain text, preserving prose, chapter order, and audiobook readability.", reads:"manuscript .txt", writes:"compiled/formatted manuscript", ids:"—", human:"—", cmd:"/novel-formatting",
+  note:"No prose changes — presentation only."}},
+ {id:"chunk", band:null, chip:"7", kind:"machine", title:"audiobook-text-prep-chunker", badges:[],
+  blurb:"Splits the finished text into TTS-ready chunks and builds the manifest — the hand-off contract.",
+  detail:{role:"The chunker", does:"Splits finished chapter .txt into ~1500–1800-char chunks (hard max 2000, never splitting a sentence) and builds the chunk manifest with placeholders for downstream generation, validation, and repair tracking. Text-prep only — no audio is generated here.", reads:"formatted chapter .txt", writes:"chunks/chXX_NNNN.txt + chunk_manifest.json / .pretty.json", ids:"chunk ids chXX_NNNN", human:"—", cmd:"/audiobook-text-prep-chunker",
+  note:"Chunking is the last step of writing, not the first step of audio."}},
+ {id:"handoff", band:null, chip:"✓", kind:"artifact", title:"FINISHED MANUSCRIPT + hand-off pack", badges:[],
+  blurb:"Greenlit book, formatted chapters, chunks + manifest — consumed by the audiobook, image, and print repos.",
+  detail:{role:"The deliverable", does:"A publisher-greenlit manuscript, formatted chapter files, and the chunk + manifest pair — the documented contract the sibling repos read: the Local Audiobook Generator, the Cloud Audiobook Repairer, and (from the manuscript itself) the image-prompt and print pipelines.", reads:"—", writes:"—", ids:"—", human:"Ship it.", cmd:null,
+  note:"End of this repo's scope. Audio, images, and print live in the sibling repos."}},
+ {id:"world", band:"ALWAYS-ON SUPPORT — READ BY EVERY STAGE", chip:"∞", kind:"support", title:"world/ memory system", badges:[],
+  blurb:"The shared canon: characters, threads, arcs, voice bible, continuity ledger. Seeded up top, read by everything.",
+  detail:{role:"The single source of truth", does:"One file per character (CHAR-NNN), a thread map (THR-NNN with plant/grow/harvest + campaign-pending), an arc map (ARC-NNN), a voice bible, and a continuity ledger. The seeder and enhancer write it; the arc gate updates it with your confirmations; every downstream skill reads it as canon. If a fact isn't here, it's TBD — nobody invents.", reads:"written by seeder / enhancer / arc gate; updated when canon shifts", writes:"read as canon by planner, writer, reviewer, publishing executive", ids:"CHAR / THR / ARC / OB (stable, never renumbered) · AQ / GP / RV / EP (dated events)", human:"You resolve TBDs and own every canon decision.", cmd:null,
+  note:"Lives in the manuscript repo — project-specific canon, not shipped with this toolkit."}},
+ {id:"rag", band:null, chip:"∞", kind:"support", title:"Canon RAG (rag/)", badges:[],
+  blurb:"ChromaDB semantic index over world/ + all chapters — fast canon lookups without re-reading the book.",
+  detail:{role:"The canon search engine", does:"A semantic index (local MiniLM embeddings, no API key) over the shared canon and every chapter, with a query CLI, a warm JSON-lines worker, and a demo page comparing RAG retrieval against naive keyword search — token cost shown per answer. Any stage that needs 'what does canon say about X?' can query it instead of re-reading the corpus.", reads:"world/ .md + chapter .txt (point RAG_REPO_ROOT at your manuscript repo)", writes:"rag/chroma_db/ index (rebuild with ingest.py --rebuild after edits)", ids:"—", human:"Re-run ingest after canon or chapter edits.", cmd:null,
+  note:"Setup: python3 -m venv .venv → pip install -r rag/requirements.txt → ingest.py --rebuild → server: npm start (port 3123)."}}
+];
+
+const pipe = document.getElementById('pipe');
+const detailBody = document.getElementById('detailBody');
+let current = -1, walking = false;
+
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+
+STAGES.forEach((s, i) => {
+  if (s.band) {
+    const label = document.createElement('div');
+    label.className = 'band-label';
+    label.textContent = s.band;
+    pipe.appendChild(label);
+  } else if (i > 0) {
+    const prev = STAGES[i-1];
+    const arrow = document.createElement('div');
+    arrow.className = 'arrow';
+    arrow.textContent = '▼';
+    pipe.appendChild(arrow);
+  }
+  if (s.id === 'review') {
+    // nothing extra before the loop start
+  }
+  const card = document.createElement('div');
+  card.className = 'card' + (s.kind==='human'?' human-card':'') + (s.kind==='gate'?' gate-card':'') + (s.kind==='artifact'?' artifact':'') + (s.kind==='support'?' support-card':'');
+  card.id = 'card-' + s.id;
+  const badges = s.badges.map(b => {
+    const cls = b.includes('GATE') && s.kind==='gate' ? 'gate' : (b==='HUMAN'||b==='HUMAN GATE') ? 'human' : b==='LOOP' ? 'loop' : 'opt';
+    return `<span class="badge ${cls}">${b}</span>`;
+  }).join('');
+  card.innerHTML = `<h3><span class="chip">${esc(s.chip)}</span> ${esc(s.title)} ${badges}</h3><div class="blurb">${esc(s.blurb)}</div>`;
+  card.addEventListener('click', () => select(i, false));
+  pipe.appendChild(card);
+  if (s.id === 'revise') {
+    const loop = document.createElement('div');
+    loop.className = 'loopnote';
+    loop.innerHTML = '<span>↺ iterate: back to Review (3) until a pass comes back clean</span>';
+    pipe.appendChild(loop);
+  }
+  if (s.id === 'pubexec') {
+    const fork = document.createElement('div');
+    fork.className = 'gatefork';
+    fork.innerHTML = '<span class="go">✅ GREENLIGHT → continue below</span><span class="ret">↩️ RETURN → assignments back to Review (3)</span>';
+    pipe.appendChild(fork);
+  }
+});
+
+function select(i, scroll) {
+  current = i;
+  const s = STAGES[i];
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+  const card = document.getElementById('card-' + s.id);
+  card.classList.add('active');
+  if (scroll) card.scrollIntoView({behavior:'smooth', block:'center'});
+  const d = s.detail;
+  detailBody.innerHTML = `
+    <div class="kicker">${esc(d.role)}</div>
+    <h2><span class="chip">${esc(s.chip)}</span> ${esc(s.title)}</h2>
+    <p>${esc(d.does)}</p>
+    <dl>
+      <dt>Reads</dt><dd>${esc(d.reads)}</dd>
+      <dt>Writes</dt><dd>${esc(d.writes)}</dd>
+      <dt>IDs</dt><dd>${esc(d.ids)}</dd>
+      <dt>Your part</dt><dd>${esc(d.human)}</dd>
+      ${d.cmd ? `<dt>Run it</dt><dd><span class="cmd">${esc(d.cmd)}</span></dd>` : ''}
+    </dl>
+    <p style="color:var(--ink-soft);font-size:.85rem"><i>${esc(d.note)}</i></p>`;
+}
+
+function setWalking(on) {
+  walking = on;
+  document.body.classList.toggle('walking', on);
+  document.getElementById('walkBtn').textContent = on ? '■ Stop walking' : '▶ Walk the pipeline';
+}
+document.getElementById('walkBtn').addEventListener('click', () => {
+  if (walking) { setWalking(false); return; }
+  setWalking(true);
+  select(0, true);
+});
+document.getElementById('nextBtn').addEventListener('click', () => {
+  if (!walking) setWalking(true);
+  select(Math.min(current + 1, STAGES.length - 1), true);
+});
+document.getElementById('prevBtn').addEventListener('click', () => {
+  if (!walking) setWalking(true);
+  select(Math.max(current - 1, 0), true);
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowDown' || e.key === 'ArrowRight') { e.preventDefault(); document.getElementById('nextBtn').click(); }
+  if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') { e.preventDefault(); document.getElementById('prevBtn').click(); }
+  if (e.key === 'Escape') setWalking(false);
+});
+
+(function(){
+  var root = document.documentElement;
+  var btn = document.getElementById('themeToggle');
+  var stored = null;
+  try { stored = localStorage.getItem('guides-theme'); } catch(e){}
+  if (stored === 'light' || stored === 'dark') root.dataset.theme = stored;
+  function label(){ btn.textContent = root.dataset.theme === 'dark' ? '☀ Light mode' : '☾ Dark mode'; }
+  btn.addEventListener('click', function(){
+    root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+    try { localStorage.setItem('guides-theme', root.dataset.theme); } catch(e){}
+    label();
+  });
+  label();
+})();
+</script>
+</body>
+</html>

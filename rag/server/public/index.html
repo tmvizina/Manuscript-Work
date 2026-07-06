@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dragon Wings — Canon Query</title>
+<style>
+  :root {
+    --bg: #14151a; --panel: #1d1f27; --panel2: #23252f; --border: #2c2f3a;
+    --text: #e8e4da; --muted: #9a94a5; --copper: #c77b3f; --steel: #7f95b0;
+    --good: #7fbf7f; --bad: #d98080;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.5 -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    padding: 28px 32px 60px;
+  }
+  h1 { font-family: Georgia, "Times New Roman", serif; font-weight: 600; font-size: 26px; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 22px; font-size: 14px; }
+  .sub .chunks { color: var(--copper); }
+
+  form { display: flex; gap: 10px; margin-bottom: 14px; }
+  input[type=text] {
+    flex: 1; background: var(--panel); color: var(--text); border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px 14px; font-size: 16px; outline: none;
+  }
+  input[type=text]:focus { border-color: var(--copper); }
+  select, button {
+    background: var(--panel); color: var(--text); border: 1px solid var(--border);
+    border-radius: 8px; padding: 0 14px; font-size: 15px; cursor: pointer;
+  }
+  button.ask { background: var(--copper); border-color: var(--copper); color: #16110b; font-weight: 700; padding: 0 26px; }
+  button.ask:disabled { opacity: .55; cursor: wait; }
+
+  .summary {
+    display: none; align-items: center; gap: 18px; flex-wrap: wrap;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 16px; margin-bottom: 18px; font-size: 14px;
+  }
+  .summary b { font-size: 16px; }
+  .summary .savings { color: var(--good); font-weight: 700; }
+  .summary .tokenizer { color: var(--muted); margin-left: auto; font-size: 12px; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 980px) { .grid { grid-template-columns: 1fr; } }
+
+  .pane { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .pane header {
+    display: flex; align-items: baseline; gap: 12px; padding: 12px 16px;
+    border-bottom: 1px solid var(--border); background: var(--panel2);
+  }
+  .pane.rag header { border-top: 3px solid var(--copper); }
+  .pane.naive header { border-top: 3px solid var(--steel); }
+  .pane h2 { font-size: 16px; margin: 0; }
+  .pane .how { color: var(--muted); font-size: 12px; }
+  .pane .meta { margin-left: auto; display: flex; gap: 8px; align-items: baseline; white-space: nowrap; }
+
+  .chip {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px;
+    border: 1px solid var(--border); border-radius: 999px; padding: 2px 9px; color: var(--muted);
+  }
+  .chip.tok { color: var(--copper); border-color: color-mix(in srgb, var(--copper) 45%, var(--border)); }
+  .pane.naive .chip.tok { color: var(--steel); border-color: color-mix(in srgb, var(--steel) 45%, var(--border)); }
+  .chip.big { font-size: 13px; font-weight: 700; }
+
+  .results { padding: 12px 14px; display: flex; flex-direction: column; gap: 12px; min-height: 90px; }
+  .card { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+  .card .top { display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; }
+  .card .src { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+  .card .src .heading { color: var(--text); }
+  .card .top .chip { margin-left: auto; flex-shrink: 0; }
+  .card .body {
+    font-size: 13.5px; color: #cfcabf; white-space: pre-wrap; max-height: 170px; overflow-y: auto;
+    border-left: 2px solid var(--border); padding-left: 10px;
+  }
+  .card .note { font-size: 11.5px; color: var(--muted); margin-top: 6px; }
+  .empty, .loading { color: var(--muted); font-style: italic; padding: 8px 4px; }
+  .loading { animation: pulse 1.1s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity: .35; } }
+  .error { color: var(--bad); background: rgba(217,128,128,.08); border: 1px solid rgba(217,128,128,.35); border-radius: 8px; padding: 10px 12px; }
+</style>
+</head>
+<body>
+  <h1>The Road Beneath Dragon Wings — Canon Query</h1>
+  <p class="sub">One question, two parallel workers: <b style="color:var(--copper)">ChromaDB RAG</b> retrieval vs a <b style="color:var(--steel)">naive keyword pull</b> (grep the corpus, feed whole files). Token cost shown next to every answer. <span class="chunks" id="stats"></span></p>
+
+  <form id="form">
+    <input id="q" type="text" placeholder="e.g. What color dragon is Maereth, and what was left at her shrine?" autocomplete="off" autofocus>
+    <select id="k" title="results per worker">
+      <option>3</option><option selected>5</option><option>8</option><option>10</option>
+    </select>
+    <button class="ask" id="ask" type="submit">Ask</button>
+  </form>
+
+  <div class="summary" id="summary"></div>
+
+  <div class="grid">
+    <section class="pane rag">
+      <header>
+        <h2>ChromaDB RAG</h2><span class="how">semantic chunks</span>
+        <span class="meta" id="ragMeta"></span>
+      </header>
+      <div class="results" id="ragResults"><div class="empty">Ask something about the books.</div></div>
+    </section>
+    <section class="pane naive">
+      <header>
+        <h2>Naive pull</h2><span class="how">keyword grep &rarr; whole files</span>
+        <span class="meta" id="naiveMeta"></span>
+      </header>
+      <div class="results" id="naiveResults"><div class="empty">Ask something about the books.</div></div>
+    </section>
+  </div>
+
+<script>
+'use strict';
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = (n) => Number(n).toLocaleString('en-US');
+
+fetch('/api/stats').then(r => r.json()).then(s => {
+  if (s.rag && s.rag.chunks) $('stats').textContent = `Index: ${fmt(s.rag.chunks)} chunks.`;
+}).catch(() => {});
+
+function paneMeta(el, d) {
+  el.innerHTML = d.ok
+    ? `<span class="chip">${fmt(d.latency_ms)} ms</span><span class="chip tok big">&Sigma; ${fmt(d.total_tokens)} tok</span>`
+    : `<span class="chip">${fmt(d.latency_ms)} ms</span><span class="chip">failed</span>`;
+}
+
+function renderRag(d) {
+  paneMeta($('ragMeta'), d);
+  const box = $('ragResults');
+  if (!d.ok) { box.innerHTML = `<div class="error">${esc(d.error)}</div>`; return; }
+  if (!d.results.length) { box.innerHTML = '<div class="empty">No matches.</div>'; return; }
+  box.innerHTML = d.results.map(r => `
+    <div class="card">
+      <div class="top">
+        <span class="src">${esc(r.source)}${r.heading ? ` <span class="heading">&sect; ${esc(r.heading)}</span>` : ''} &middot; score ${r.score}</span>
+        <span class="chip tok">&asymp; ${fmt(r.tokens)} tok</span>
+      </div>
+      <div class="body">${esc(r.text)}</div>
+    </div>`).join('');
+}
+
+function renderNaive(d) {
+  paneMeta($('naiveMeta'), d);
+  const box = $('naiveResults');
+  if (!d.ok) { box.innerHTML = `<div class="error">${esc(d.error)}</div>`; return; }
+  if (!d.results.length) { box.innerHTML = '<div class="empty">No keyword matches.</div>'; return; }
+  box.innerHTML = d.results.map(r => `
+    <div class="card">
+      <div class="top">
+        <span class="src">${esc(r.source)} &middot; ${r.matched_terms}/${r.term_count} terms &middot; ${fmt(r.occurrences)} hits</span>
+        <span class="chip tok">whole file &asymp; ${fmt(r.tokens)} tok</span>
+      </div>
+      <div class="body">${esc(r.snippet)}</div>
+      <div class="note">naive context = the entire file above is fed to the model</div>
+    </div>`).join('');
+}
+
+function renderSummary(data) {
+  const s = $('summary');
+  if (!(data.rag.ok && data.naive.ok)) { s.style.display = 'none'; return; }
+  const pct = data.savings == null ? null : Math.round(data.savings * 1000) / 10;
+  s.innerHTML =
+    `<span>RAG context: <b style="color:var(--copper)">${fmt(data.rag.total_tokens)} tok</b></span>` +
+    `<span>Naive context: <b style="color:var(--steel)">${fmt(data.naive.total_tokens)} tok</b></span>` +
+    (pct == null ? '' : `<span class="savings">${pct > 0 ? pct + '% less context via RAG' : Math.abs(pct) + '% MORE context via RAG'}</span>`) +
+    `<span class="tokenizer">${esc(data.tokenizer)}</span>`;
+  s.style.display = 'flex';
+}
+
+$('form').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const q = $('q').value.trim();
+  if (!q) return;
+  $('ask').disabled = true;
+  $('ragResults').innerHTML = '<div class="loading">querying chroma&hellip;</div>';
+  $('naiveResults').innerHTML = '<div class="loading">grepping corpus&hellip;</div>';
+  $('summary').style.display = 'none';
+  try {
+    const r = await fetch('/api/query', {
+      method: 'POST',
+      headers: {'content-type': 'application/json'},
+      body: JSON.stringify({q, k: +$('k').value}),
+    });
+    const data = await r.json();
+    if (data.error) throw new Error(data.error);
+    renderRag(data.rag);
+    renderNaive(data.naive);
+    renderSummary(data);
+  } catch (e) {
+    $('ragResults').innerHTML = `<div class="error">${esc(e.message || e)}</div>`;
+    $('naiveResults').innerHTML = `<div class="error">${esc(e.message || e)}</div>`;
+  } finally {
+    $('ask').disabled = false;
+  }
+});
+</script>
+</body>
+</html>
