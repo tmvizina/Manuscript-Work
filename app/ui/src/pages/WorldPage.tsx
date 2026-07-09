@@ -20,6 +20,7 @@ function labelFor(dir: string): string {
 export default function WorldPage({ path }: { path: string }) {
   const [tree, setTree] = useState<any>(null);
   const [file, setFile] = useState<any>(null);
+  const [filter, setFilter] = useState("");
 
   useEffect(() => {
     api("/api/world").then(setTree).catch(() => setTree({ exists: false, groups: [] }));
@@ -66,7 +67,23 @@ export default function WorldPage({ path }: { path: string }) {
       </p>
       <div className="chapters-grid">
         <div className="chapter-list card">
-          {tree.groups.map((g: any) => (
+          <input
+            className="list-filter"
+            type="text"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            placeholder="Filter entries…"
+          />
+          {(() => {
+            const q = filter.trim().toLowerCase();
+            const groups = tree.groups
+              .map((g: any) => ({
+                ...g,
+                files: q ? g.files.filter((f: any) => f.name.replace(/-/g, " ").toLowerCase().includes(q)) : g.files,
+              }))
+              .filter((g: any) => g.files.length > 0);
+            if (groups.length === 0) return <p className="hint">No entries match "{filter}".</p>;
+            return groups.map((g: any) => (
             <div key={g.dir}>
               <div className="book-head">{labelFor(g.dir)}</div>
               {g.files.map((f: any) => (
@@ -82,7 +99,8 @@ export default function WorldPage({ path }: { path: string }) {
                 </button>
               ))}
             </div>
-          ))}
+            ));
+          })()}
         </div>
         <div>
           {!path && <p className="hint">Pick an entry from the left to read it.</p>}

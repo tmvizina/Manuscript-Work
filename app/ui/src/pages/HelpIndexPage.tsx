@@ -3,9 +3,14 @@ import { api } from "../lib/api";
 
 export default function HelpIndexPage() {
   const [sections, setSections] = useState<any[]>([]);
-  useEffect(() => {
-    api("/api/help").then((d) => setSections(d.sections)).catch(() => {});
-  }, []);
+  const [loadError, setLoadError] = useState(false);
+  const load = () => {
+    setLoadError(false);
+    api("/api/help")
+      .then((d) => setSections(d.sections))
+      .catch(() => setLoadError(true));
+  };
+  useEffect(load, []);
 
   return (
     <>
@@ -13,6 +18,14 @@ export default function HelpIndexPage() {
       <p className="sub">
         Each guide is its own short page — pick the one you need instead of scrolling a single giant document.
       </p>
+      {loadError && (
+        <p className="err">
+          Couldn't load the guides — is the server running?{" "}
+          <button className="btn ghost" onClick={load}>
+            Retry
+          </button>
+        </p>
+      )}
       <div className="help-grid">
         {sections.map((s, i) => (
           <a

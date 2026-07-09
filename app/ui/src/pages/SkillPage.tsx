@@ -1,18 +1,39 @@
 import { useEffect, useState } from "react";
+import { marked } from "marked";
 import { api, type RunSummary } from "../lib/api";
 import RunOutput from "../components/RunOutput";
 
-export default function SkillPage({ skillId, bridgeOk }: { skillId: string; bridgeOk: boolean }) {
+export default function SkillPage({ skillId, bridgeOk, ragOk }: { skillId: string; bridgeOk: boolean; ragOk: boolean }) {
   const [skill, setSkill] = useState<any>(null);
-  const [prompt, setPrompt] = useState("");
+  // Drafts survive navigating away mid-composition (prompts here run long).
+  const [prompt, setPromptState] = useState(() => sessionStorage.getItem(`bw-draft-${skillId}`) ?? "");
+  const setPrompt = (v: string) => {
+    setPromptState(v);
+    sessionStorage.setItem(`bw-draft-${skillId}`, v);
+  };
   const [variant, setVariant] = useState<"base" | "rag">("base");
   const [mode, setMode] = useState("acceptEdits");
   const [activeRun, setActiveRun] = useState<string | null>(null);
+  const [runDone, setRunDone] = useState(false);
   const [error, setError] = useState("");
 
-  const load = () => api(`/api/skills/${skillId}`).then(setSkill);
+  const load = () =>
+    api(`/api/skills/${skillId}`).then((s) => {
+      setSkill(s);
+      return s;
+    });
   useEffect(() => {
-    load().catch(() => setSkill({ missing: true }));
+    load()
+      .then((s) => {
+        // A run may still be in flight from before a reload or navigation —
+        // reattach to it (the server replays the event buffer on the SSE stream).
+        const latest = (s.runs as RunSummary[] | undefined)?.[0];
+        if (latest && (latest.status === "running" || latest.status === "queued")) {
+          setActiveRun((cur) => cur ?? latest.run_id);
+          setRunDone(false);
+        }
+      })
+      .catch(() => setSkill({ missing: true }));
   }, [skillId]);
 
   if (!skill) return <p className="hint">Loading…</p>;
@@ -25,6 +46,7 @@ export default function SkillPage({ skillId, bridgeOk }: { skillId: string; brid
         method: "POST",
         body: JSON.stringify({ skill_id: skillId, variant, prompt, permission_mode: mode }),
       });
+      setRunDone(false);
       setActiveRun(r.run_id);
     } catch (e: any) {
       setError(String(e.message ?? e));
@@ -32,6 +54,16 @@ export default function SkillPage({ skillId, bridgeOk }: { skillId: string; brid
   };
 
   const command = `/${skillId}${variant === "rag" ? "-rag" : ""}`;
+
+  // History rows store the full slash-command prompt; restore just the
+  // user's arguments (and the variant it ran with) into the run box.
+  const usePrompt = (r: RunSummary) => {
+    const text = r.prompt.replace(new RegExp(`^/${skillId}(?:-rag)?\\s*`), "");
+    setPrompt(text);
+    setVariant(r.variant === "rag" ? "rag" : "base");
+    document.getElementById("prompt")?.focus();
+    document.getElementById("prompt")?.scrollIntoView({ block: "center" });
+  };
 
   return (
     <>
@@ -51,12 +83,16 @@ export default function SkillPage({ skillId, bridgeOk }: { skillId: string; brid
 
       <div className="card runbox">
         <label className="hint" htmlFor="prompt">
-          Runs as <code>{command}</code> {skill.argument_hint && <>— arguments: {skill.argument_hint}</>}
+          Runs as <code>{command}</code> {skill.argument_hint && <>— arguments: {skill.argument_hint}</>} — ⌘/Ctrl+Enter
+          to run
         </label>
         <textarea
           id="prompt"
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && prompt.trim() && bridgeOk && (!activeRun || runDone)) run();
+          }}
           placeholder={`What should ${skill.display_name} do? e.g. ${skill.argument_hint || "describe the task"}`}
         />
         <div className="controls">
@@ -75,7 +111,7 @@ export default function SkillPage({ skillId, bridgeOk }: { skillId: string; brid
             <option value="default">default — edits require pre-approval</option>
             <option value="plan">plan — read-only planning</option>
           </select>
-          <button className="btn" onClick={run} disabled={!prompt.trim() || !bridgeOk || !!activeRun}>
+          <button className="btn" onClick={run} disabled={!prompt.trim() || !bridgeOk || (!!activeRun && !runDone)}>
             Run
           </button>
           {!bridgeOk && (
@@ -83,14 +119,25 @@ export default function SkillPage({ skillId, bridgeOk }: { skillId: string; brid
               Bridge offline — start it in an IDE terminal (<a href="#/help/bridge">Help → Claude Bridge</a>)
             </span>
           )}
+          {variant === "rag" && !ragOk && (
+            <span className="hint err">
+              RAG service offline — this run's canon lookups will fail (<a href="#/rag">check RAG</a>)
+            </span>
+          )}
           {error && <span className="err">{error}</span>}
         </div>
         {activeRun && (
           <RunOutput
+            key={activeRun}
             runId={activeRun}
             onFinished={() => {
-              setActiveRun(null);
+              // Keep the output on screen — vanishing mid-read is jarring.
+              setRunDone(true);
               load().catch(() => {});
+            }}
+            onClose={() => {
+              setActiveRun(null);
+              setRunDone(false);
             }}
           />
         )}
@@ -111,7 +158,17 @@ export default function SkillPage({ skillId, bridgeOk }: { skillId: string; brid
               </span>
             </summary>
             {r.error && <div className="run-result err">{r.error}</div>}
-            {r.result_text && <div className="run-result">{r.result_text}</div>}
+            {r.result_text && (
+              <div
+                className="run-result md help-body"
+                dangerouslySetInnerHTML={{ __html: marked.parse(r.result_text, { async: false }) as string }}
+              />
+            )}
+            <div className="run-actions">
+              <button className="btn ghost" onClick={() => usePrompt(r)} title="Copy this run's prompt back into the run box">
+                Use prompt
+              </button>
+            </div>
           </details>
         ))}
       </div>

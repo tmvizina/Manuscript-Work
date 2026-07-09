@@ -8,10 +8,14 @@ export default function Sidebar({
   route,
   items,
   phaseLabels,
+  error,
+  onRetry,
 }: {
   route: string;
   items: SidebarItem[];
   phaseLabels: Record<string, string>;
+  error?: boolean;
+  onRetry?: () => void;
 }) {
   const go = (path: string) => () => {
     location.hash = path;
@@ -20,10 +24,21 @@ export default function Sidebar({
 
   return (
     <nav className="sidebar">
-      <button className={`tab chapters-tab ${route === "/chapters" ? "active" : ""}`} onClick={go("/chapters")}>
+      <button
+        className={`tab chapters-tab ${route === "/chapters" || route.startsWith("/chapters/") ? "active" : ""}`}
+        onClick={go("/chapters")}
+      >
         <img src="/skill-art/chapters.svg" alt="" />
         View Chapter Texts
       </button>
+      {error && (
+        <div className="sidebar-note">
+          <p className="hint err">Couldn't load the skill list — is the server running?</p>
+          <button className="btn ghost" onClick={onRetry}>
+            Retry
+          </button>
+        </div>
+      )}
       {items.map((s) => {
         const phaseHead =
           s.phase !== lastPhase ? <div className="phase" key={`phase-${s.phase}`}>{phaseLabels[s.phase] ?? s.phase}</div> : null;
