@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api } from "../lib/api";
 
 export default function RagPage() {
@@ -10,11 +10,18 @@ export default function RagPage() {
   const [ingestJob, setIngestJob] = useState<any>(null);
   const [log, setLog] = useState<any[]>([]);
 
+  const pollRef = useRef<number | null>(null);
+
   const refresh = () => {
     api("/api/rag/health").then(setHealth).catch(() => setHealth({ ok: false }));
     api("/api/rag/queries").then((d) => setLog(d.queries)).catch(() => {});
   };
-  useEffect(refresh, []);
+  useEffect(() => {
+    refresh();
+    return () => {
+      if (pollRef.current !== null) clearInterval(pollRef.current);
+    };
+  }, []);
 
   const query = async () => {
     if (!q.trim()) return;
@@ -30,17 +37,33 @@ export default function RagPage() {
     }
   };
 
+  const stopPolling = () => {
+    if (pollRef.current !== null) clearInterval(pollRef.current);
+    pollRef.current = null;
+  };
+
   const rebuild = async () => {
-    const { job_id } = await api<{ job_id: string }>("/api/rag/ingest", { method: "POST" });
-    const poll = setInterval(async () => {
-      const job = await api(`/api/jobs/${job_id}`);
-      setIngestJob(job);
-      if (job.status === "done" || job.status === "error") {
-        clearInterval(poll);
-        refresh();
+    setIngestJob({ status: "running", message: "starting…" });
+    let job_id: string;
+    try {
+      ({ job_id } = await api<{ job_id: string }>("/api/rag/ingest", { method: "POST" }));
+    } catch (e: any) {
+      setIngestJob({ status: "error", error: String(e.message ?? e) });
+      return;
+    }
+    pollRef.current = window.setInterval(async () => {
+      try {
+        const job = await api(`/api/jobs/${job_id}`);
+        setIngestJob(job);
+        if (job.status === "done" || job.status === "error") {
+          stopPolling();
+          refresh();
+        }
+      } catch (e: any) {
+        stopPolling();
+        setIngestJob({ status: "error", error: String(e.message ?? e) });
       }
     }, 2000);
-    setIngestJob({ status: "running", message: "starting…" });
   };
 
   return (

@@ -22,17 +22,23 @@ export function useHashRoute(): string {
 export default function App() {
   const route = useHashRoute();
   const [sidebar, setSidebar] = useState<SkillSummary[]>([]);
+  const [sidebarError, setSidebarError] = useState(false);
   const [phaseLabels, setPhaseLabels] = useState<Record<string, string>>({});
   const [health, setHealth] = useState<any>(null);
 
-  useEffect(() => {
+  const loadSkills = () => {
+    setSidebarError(false);
     api("/api/skills")
       .then((d) => {
         setSidebar(d.sidebar ?? d.skills);
         setPhaseLabels(d.phase_labels ?? {});
       })
-      .catch(() => setSidebar([]));
-  }, []);
+      .catch(() => {
+        setSidebar([]);
+        setSidebarError(true);
+      });
+  };
+  useEffect(loadSkills, []);
 
   useEffect(() => {
     let alive = true;
@@ -58,13 +64,14 @@ export default function App() {
   } else if (route.startsWith("/help/")) {
     page = <HelpSectionPage key={route} slug={route.slice("/help/".length)} />;
   } else {
-    page = <ChaptersPage />;
+    const selected = route.startsWith("/chapters/") ? decodeURIComponent(route.slice("/chapters/".length)) : null;
+    page = <ChaptersPage selectedId={selected} />;
   }
 
   return (
     <div className="layout">
       <TopBar route={route} health={health} />
-      <Sidebar route={route} items={sidebar} phaseLabels={phaseLabels} />
+      <Sidebar route={route} items={sidebar} phaseLabels={phaseLabels} error={sidebarError} onRetry={loadSkills} />
       <main className="main">{page}</main>
     </div>
   );

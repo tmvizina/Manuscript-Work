@@ -95,6 +95,8 @@ code { font-family: var(--mono); font-size: 0.9em; background: var(--panel-2); p
   border-top: 1px solid var(--border); padding-top: 10px;
 }
 .sidebar .phase:first-of-type { border-top: 0; padding-top: 0; }
+.sidebar .sidebar-note { padding: 10px; }
+.sidebar .sidebar-note p { margin: 0 0 8px; }
 
 /* ---------- main ---------- */
 .main { overflow-y: auto; padding: 22px 28px 60px; }

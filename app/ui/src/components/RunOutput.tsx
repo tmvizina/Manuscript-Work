@@ -38,6 +38,12 @@ export default function RunOutput({ runId, onFinished }: { runId: string; onFini
   const [running, setRunning] = useState(true);
   const [elapsed, setElapsed] = useState(0);
   const boxRef = useRef<HTMLDivElement>(null);
+  const pinnedRef = useRef(true); // follow the stream only while the user is at the bottom
+
+  const onScroll = () => {
+    const el = boxRef.current;
+    if (el) pinnedRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 40;
+  };
 
   useEffect(() => {
     const t0 = Date.now();
@@ -62,14 +68,14 @@ export default function RunOutput({ runId, onFinished }: { runId: string; onFini
   }, [runId]);
 
   useEffect(() => {
-    boxRef.current?.scrollTo({ top: boxRef.current.scrollHeight });
+    if (pinnedRef.current) boxRef.current?.scrollTo({ top: boxRef.current.scrollHeight });
   }, [lines]);
 
   const cancel = () => fetch(`/api/claude/runs/${runId}/cancel`, { method: "POST" });
 
   return (
     <div className="output">
-      <div className="stream" ref={boxRef}>
+      <div className="stream" ref={boxRef} onScroll={onScroll}>
         {lines.length === 0 && <p className="hint">{running ? "Waiting for claude…" : "No output."}</p>}
         {lines.map((l, i) =>
           l.kind === "tool" ? (

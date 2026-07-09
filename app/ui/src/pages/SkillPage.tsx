@@ -10,9 +10,22 @@ export default function SkillPage({ skillId, bridgeOk }: { skillId: string; brid
   const [activeRun, setActiveRun] = useState<string | null>(null);
   const [error, setError] = useState("");
 
-  const load = () => api(`/api/skills/${skillId}`).then(setSkill);
+  const load = () =>
+    api(`/api/skills/${skillId}`).then((s) => {
+      setSkill(s);
+      return s;
+    });
   useEffect(() => {
-    load().catch(() => setSkill({ missing: true }));
+    load()
+      .then((s) => {
+        // A run may still be in flight from before a reload or navigation —
+        // reattach to it (the server replays the event buffer on the SSE stream).
+        const latest = (s.runs as RunSummary[] | undefined)?.[0];
+        if (latest && (latest.status === "running" || latest.status === "queued")) {
+          setActiveRun((cur) => cur ?? latest.run_id);
+        }
+      })
+      .catch(() => setSkill({ missing: true }));
   }, [skillId]);
 
   if (!skill) return <p className="hint">Loading…</p>;
