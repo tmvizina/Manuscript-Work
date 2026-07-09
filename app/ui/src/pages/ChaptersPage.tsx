@@ -3,39 +3,86 @@ import { api, type ChapterSummary } from "../lib/api";
 
 const BOOK_LABELS: Record<string, string> = { "book-1": "Book 1", "book-2": "Book 2", prequel: "Prequel" };
 
-export default function ChaptersPage() {
+export default function ChaptersPage({ selectedId }: { selectedId: string | null }) {
   const [chapters, setChapters] = useState<ChapterSummary[] | null>(null);
-  const [selected, setSelected] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState(false);
   const [chapter, setChapter] = useState<any>(null);
   const [busy, setBusy] = useState(false);
+  const [actionError, setActionError] = useState("");
+  const [filter, setFilter] = useState("");
 
-  const load = () => api("/api/chapters").then((d) => setChapters(d.chapters));
+  const load = () => {
+    setLoadError(false);
+    return api("/api/chapters")
+      .then((d) => setChapters(d.chapters))
+      .catch(() => {
+        setChapters([]);
+        setLoadError(true);
+      });
+  };
   useEffect(() => {
-    load().catch(() => setChapters([]));
+    load();
   }, []);
 
+  const select = (id: string | null) => {
+    location.hash = id ? `#/chapters/${encodeURIComponent(id)}` : "#/chapters";
+  };
+
   useEffect(() => {
-    if (!selected) return setChapter(null);
+    if (!selectedId) return setChapter(null);
     setChapter(null);
-    api(`/api/chapters/${encodeURIComponent(selected)}`).then(setChapter).catch(() => setChapter({ error: true }));
-  }, [selected]);
+    api(`/api/chapters/${encodeURIComponent(selectedId)}`).then(setChapter).catch(() => setChapter({ error: true }));
+  }, [selectedId]);
 
   const sync = async () => {
     setBusy(true);
+    setActionError("");
     try {
       await api("/api/chapters/sync", { method: "POST" });
       await load();
+    } catch (e: any) {
+      setActionError(`Sync failed: ${String(e.message ?? e)}`);
     } finally {
       setBusy(false);
     }
   };
 
   const refreshOne = async () => {
-    if (!selected) return;
-    setChapter(await api(`/api/chapters/${encodeURIComponent(selected)}?fresh=1`));
+    if (!selectedId) return;
+    setActionError("");
+    try {
+      setChapter(await api(`/api/chapters/${encodeURIComponent(selectedId)}?fresh=1`));
+    } catch (e: any) {
+      setActionError(`Refresh failed: ${String(e.message ?? e)}`);
+    }
   };
 
   if (chapters === null) return <p className="hint">Loading chapters…</p>;
+
+  if (loadError) {
+    return (
+      <>
+        <h1>Chapter Texts</h1>
+        <div className="empty">
+          <div className="glyph">⚠</div>
+          <p>
+            <strong>Couldn't load chapters.</strong> The server didn't respond — is it running?
+          </p>
+          <p>
+            <button
+              className="btn ghost"
+              onClick={() => {
+                setChapters(null);
+                load();
+              }}
+            >
+              Retry
+            </button>
+          </p>
+        </div>
+      </>
+    );
+  }
 
   if (chapters.length === 0) {
     return (
@@ -60,8 +107,11 @@ export default function ChaptersPage() {
     );
   }
 
-  const books = [...new Set(chapters.map((c) => c.book))];
-  const idx = chapters.findIndex((c) => c.chapter_id === selected);
+  const q = filter.trim().toLowerCase();
+  const visible = q ? chapters.filter((c) => `${c.number} ${c.title}`.toLowerCase().includes(q)) : chapters;
+  const books = [...new Set(visible.map((c) => c.book))];
+  // Prev/Next navigate the full list, independent of the filter.
+  const idx = chapters.findIndex((c) => c.chapter_id === selectedId);
 
   return (
     <>
@@ -71,18 +121,27 @@ export default function ChaptersPage() {
           {busy ? "Syncing…" : "Sync all"}
         </button>
       </div>
+      {actionError && <p className="err">{actionError}</p>}
       <div className="chapters-grid">
         <div className="chapter-list card">
+          <input
+            className="list-filter"
+            type="text"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            placeholder="Filter chapters…"
+          />
+          {visible.length === 0 && <p className="hint">No chapters match "{filter}".</p>}
           {books.map((book) => (
             <div key={book}>
               <div className="book-head">{BOOK_LABELS[book] ?? book}</div>
-              {chapters
+              {visible
                 .filter((c) => c.book === book)
                 .map((c) => (
                   <button
                     key={c.chapter_id}
-                    className={`item ${c.chapter_id === selected ? "active" : ""}`}
-                    onClick={() => setSelected(c.chapter_id)}
+                    className={`item ${c.chapter_id === selectedId ? "active" : ""}`}
+                    onClick={() => select(c.chapter_id)}
                   >
                     <span className="num">{c.number === 9999 ? "—" : c.number}</span>
                     <span>{c.title}</span>
@@ -93,8 +152,8 @@ export default function ChaptersPage() {
           ))}
         </div>
         <div>
-          {!selected && <p className="hint">Pick a chapter from the list to read it.</p>}
-          {selected && !chapter && <p className="hint">Loading…</p>}
+          {!selectedId && <p className="hint">Pick a chapter from the list to read it.</p>}
+          {selectedId && !chapter && <p className="hint">Loading…</p>}
           {chapter?.error && <p className="err">Failed to load chapter.</p>}
           {chapter && !chapter.error && (
             <>
@@ -102,13 +161,13 @@ export default function ChaptersPage() {
                 <h2>{chapter.title}</h2>
                 <span className="hint">{chapter.word_count.toLocaleString()} words</span>
                 <span className="spacer" style={{ flex: 1 }} />
-                <button className="btn ghost" disabled={idx <= 0} onClick={() => setSelected(chapters[idx - 1].chapter_id)}>
+                <button className="btn ghost" disabled={idx <= 0} onClick={() => select(chapters[idx - 1].chapter_id)}>
                   ← Prev
                 </button>
                 <button
                   className="btn ghost"
                   disabled={idx < 0 || idx >= chapters.length - 1}
-                  onClick={() => setSelected(chapters[idx + 1].chapter_id)}
+                  onClick={() => select(chapters[idx + 1].chapter_id)}
                 >
                   Next →
                 </button>

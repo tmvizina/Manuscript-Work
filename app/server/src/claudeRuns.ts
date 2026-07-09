@@ -20,6 +20,16 @@ export interface LiveRun {
 
 const live = new Map<string, LiveRun>();
 
+/** Resolve runs orphaned by a crash/restart: their LiveRun is gone, so the
+ * row would otherwise say 'running' forever. Call once at startup. */
+export function resolveOrphanedRuns(db: DB): number {
+  return db
+    .prepare(
+      "UPDATE claude_runs SET status = 'error', error = 'interrupted by server restart', finished_at = ? WHERE status IN ('queued','running')",
+    )
+    .run(nowIso()).changes;
+}
+
 export function getLiveRun(runId: string): LiveRun | undefined {
   return live.get(runId);
 }

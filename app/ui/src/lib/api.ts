@@ -48,6 +48,13 @@ export function streamRun(
   onDone: () => void,
 ): () => void {
   const es = new EventSource(`/api/claude/runs/${runId}/events`);
+  let finished = false;
+  const finish = () => {
+    if (finished) return;
+    finished = true;
+    es.close();
+    onDone();
+  };
   es.addEventListener("claude", (e) => {
     try {
       onEvent(JSON.parse((e as MessageEvent).data));
@@ -55,12 +62,28 @@ export function streamRun(
       /* ignore malformed lines */
     }
   });
-  es.addEventListener("done", () => {
-    es.close();
-    onDone();
-  });
+  es.addEventListener("done", finish);
+  let checking = false;
   es.onerror = () => {
-    // EventSource auto-reconnects; the server replays the buffer on reattach.
+    // EventSource auto-reconnects and the server replays the buffer on
+    // reattach — but if the server restarted, the live run is gone and the
+    // stream would never resolve. Check the run's real status and stop
+    // retrying once it's no longer active.
+    if (checking || finished) return;
+    checking = true;
+    api<{ status: string; error?: string | null }>(`/api/claude/runs/${runId}`)
+      .then((run) => {
+        if (run.status !== "running" && run.status !== "queued") {
+          if (run.status === "error") onEvent({ type: "bridge_error", error: run.error ?? "run failed" });
+          finish();
+        }
+      })
+      .catch(() => {
+        /* server unreachable — let EventSource keep retrying */
+      })
+      .finally(() => {
+        checking = false;
+      });
   };
   return () => es.close();
 }
