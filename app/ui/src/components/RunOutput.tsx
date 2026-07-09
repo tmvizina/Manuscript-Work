@@ -32,7 +32,15 @@ function describeEvent(o: any): Line | null {
   return null;
 }
 
-export default function RunOutput({ runId, onFinished }: { runId: string; onFinished: () => void }) {
+export default function RunOutput({
+  runId,
+  onFinished,
+  onClose,
+}: {
+  runId: string;
+  onFinished: () => void;
+  onClose: () => void;
+}) {
   const [lines, setLines] = useState<Line[]>([]);
   const [meta, setMeta] = useState<any>(null);
   const [running, setRunning] = useState(true);
@@ -120,6 +128,11 @@ export default function RunOutput({ runId, onFinished }: { runId: string; onFini
           </button>
         )}
         {running && cancelState === "failed" && <span className="err">cancel failed — try again</span>}
+        {!running && (
+          <button className="btn ghost" onClick={onClose}>
+            Close
+          </button>
+        )}
       </div>
     </div>
   );

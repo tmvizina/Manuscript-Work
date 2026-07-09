@@ -9,6 +9,7 @@ export default function ChaptersPage({ selectedId }: { selectedId: string | null
   const [chapter, setChapter] = useState<any>(null);
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState("");
+  const [filter, setFilter] = useState("");
 
   const load = () => {
     setLoadError(false);
@@ -106,7 +107,10 @@ export default function ChaptersPage({ selectedId }: { selectedId: string | null
     );
   }
 
-  const books = [...new Set(chapters.map((c) => c.book))];
+  const q = filter.trim().toLowerCase();
+  const visible = q ? chapters.filter((c) => `${c.number} ${c.title}`.toLowerCase().includes(q)) : chapters;
+  const books = [...new Set(visible.map((c) => c.book))];
+  // Prev/Next navigate the full list, independent of the filter.
   const idx = chapters.findIndex((c) => c.chapter_id === selectedId);
 
   return (
@@ -120,10 +124,18 @@ export default function ChaptersPage({ selectedId }: { selectedId: string | null
       {actionError && <p className="err">{actionError}</p>}
       <div className="chapters-grid">
         <div className="chapter-list card">
+          <input
+            className="list-filter"
+            type="text"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            placeholder="Filter chapters…"
+          />
+          {visible.length === 0 && <p className="hint">No chapters match "{filter}".</p>}
           {books.map((book) => (
             <div key={book}>
               <div className="book-head">{BOOK_LABELS[book] ?? book}</div>
-              {chapters
+              {visible
                 .filter((c) => c.book === book)
                 .map((c) => (
                   <button

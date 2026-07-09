@@ -4,10 +4,16 @@ import RunOutput from "../components/RunOutput";
 
 export default function SkillPage({ skillId, bridgeOk }: { skillId: string; bridgeOk: boolean }) {
   const [skill, setSkill] = useState<any>(null);
-  const [prompt, setPrompt] = useState("");
+  // Drafts survive navigating away mid-composition (prompts here run long).
+  const [prompt, setPromptState] = useState(() => sessionStorage.getItem(`bw-draft-${skillId}`) ?? "");
+  const setPrompt = (v: string) => {
+    setPromptState(v);
+    sessionStorage.setItem(`bw-draft-${skillId}`, v);
+  };
   const [variant, setVariant] = useState<"base" | "rag">("base");
   const [mode, setMode] = useState("acceptEdits");
   const [activeRun, setActiveRun] = useState<string | null>(null);
+  const [runDone, setRunDone] = useState(false);
   const [error, setError] = useState("");
 
   const load = () =>
@@ -23,6 +29,7 @@ export default function SkillPage({ skillId, bridgeOk }: { skillId: string; brid
         const latest = (s.runs as RunSummary[] | undefined)?.[0];
         if (latest && (latest.status === "running" || latest.status === "queued")) {
           setActiveRun((cur) => cur ?? latest.run_id);
+          setRunDone(false);
         }
       })
       .catch(() => setSkill({ missing: true }));
@@ -38,6 +45,7 @@ export default function SkillPage({ skillId, bridgeOk }: { skillId: string; brid
         method: "POST",
         body: JSON.stringify({ skill_id: skillId, variant, prompt, permission_mode: mode }),
       });
+      setRunDone(false);
       setActiveRun(r.run_id);
     } catch (e: any) {
       setError(String(e.message ?? e));
@@ -72,7 +80,7 @@ export default function SkillPage({ skillId, bridgeOk }: { skillId: string; brid
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && prompt.trim() && bridgeOk && !activeRun) run();
+            if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && prompt.trim() && bridgeOk && (!activeRun || runDone)) run();
           }}
           placeholder={`What should ${skill.display_name} do? e.g. ${skill.argument_hint || "describe the task"}`}
         />
@@ -92,7 +100,7 @@ export default function SkillPage({ skillId, bridgeOk }: { skillId: string; brid
             <option value="default">default — edits require pre-approval</option>
             <option value="plan">plan — read-only planning</option>
           </select>
-          <button className="btn" onClick={run} disabled={!prompt.trim() || !bridgeOk || !!activeRun}>
+          <button className="btn" onClick={run} disabled={!prompt.trim() || !bridgeOk || (!!activeRun && !runDone)}>
             Run
           </button>
           {!bridgeOk && (
@@ -104,10 +112,16 @@ export default function SkillPage({ skillId, bridgeOk }: { skillId: string; brid
         </div>
         {activeRun && (
           <RunOutput
+            key={activeRun}
             runId={activeRun}
             onFinished={() => {
-              setActiveRun(null);
+              // Keep the output on screen — vanishing mid-read is jarring.
+              setRunDone(true);
               load().catch(() => {});
+            }}
+            onClose={() => {
+              setActiveRun(null);
+              setRunDone(false);
             }}
           />
         )}
