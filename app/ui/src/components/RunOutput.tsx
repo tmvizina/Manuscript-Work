@@ -36,6 +36,7 @@ export default function RunOutput({ runId, onFinished }: { runId: string; onFini
   const [lines, setLines] = useState<Line[]>([]);
   const [meta, setMeta] = useState<any>(null);
   const [running, setRunning] = useState(true);
+  const [cancelState, setCancelState] = useState<"idle" | "busy" | "failed">("idle");
   const [elapsed, setElapsed] = useState(0);
   const boxRef = useRef<HTMLDivElement>(null);
   const pinnedRef = useRef(true); // follow the stream only while the user is at the bottom
@@ -71,7 +72,18 @@ export default function RunOutput({ runId, onFinished }: { runId: string; onFini
     if (pinnedRef.current) boxRef.current?.scrollTo({ top: boxRef.current.scrollHeight });
   }, [lines]);
 
-  const cancel = () => fetch(`/api/claude/runs/${runId}/cancel`, { method: "POST" });
+  const cancel = async () => {
+    setCancelState("busy");
+    try {
+      const res = await fetch(`/api/claude/runs/${runId}/cancel`, { method: "POST" });
+      // 409 = run already finished; the stream's done event will close things out.
+      if (!res.ok && res.status !== 409) throw new Error(`${res.status}`);
+    } catch {
+      setCancelState("failed");
+      return;
+    }
+    setCancelState("idle");
+  };
 
   return (
     <div className="output">
@@ -103,10 +115,11 @@ export default function RunOutput({ runId, onFinished }: { runId: string; onFini
           </>
         )}
         {running && (
-          <button className="btn danger" onClick={cancel}>
-            Cancel
+          <button className="btn danger" onClick={cancel} disabled={cancelState === "busy"}>
+            {cancelState === "busy" ? "Cancelling…" : "Cancel"}
           </button>
         )}
+        {running && cancelState === "failed" && <span className="err">cancel failed — try again</span>}
       </div>
     </div>
   );

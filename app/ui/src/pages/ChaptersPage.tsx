@@ -8,6 +8,7 @@ export default function ChaptersPage({ selectedId }: { selectedId: string | null
   const [loadError, setLoadError] = useState(false);
   const [chapter, setChapter] = useState<any>(null);
   const [busy, setBusy] = useState(false);
+  const [actionError, setActionError] = useState("");
 
   const load = () => {
     setLoadError(false);
@@ -34,9 +35,12 @@ export default function ChaptersPage({ selectedId }: { selectedId: string | null
 
   const sync = async () => {
     setBusy(true);
+    setActionError("");
     try {
       await api("/api/chapters/sync", { method: "POST" });
       await load();
+    } catch (e: any) {
+      setActionError(`Sync failed: ${String(e.message ?? e)}`);
     } finally {
       setBusy(false);
     }
@@ -44,7 +48,12 @@ export default function ChaptersPage({ selectedId }: { selectedId: string | null
 
   const refreshOne = async () => {
     if (!selectedId) return;
-    setChapter(await api(`/api/chapters/${encodeURIComponent(selectedId)}?fresh=1`));
+    setActionError("");
+    try {
+      setChapter(await api(`/api/chapters/${encodeURIComponent(selectedId)}?fresh=1`));
+    } catch (e: any) {
+      setActionError(`Refresh failed: ${String(e.message ?? e)}`);
+    }
   };
 
   if (chapters === null) return <p className="hint">Loading chapters…</p>;
@@ -108,6 +117,7 @@ export default function ChaptersPage({ selectedId }: { selectedId: string | null
           {busy ? "Syncing…" : "Sync all"}
         </button>
       </div>
+      {actionError && <p className="err">{actionError}</p>}
       <div className="chapters-grid">
         <div className="chapter-list card">
           {books.map((book) => (

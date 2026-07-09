@@ -5,6 +5,7 @@ import Fastify from "fastify";
 import fastifyStatic from "@fastify/static";
 import { CLAUDE_BRIDGE_URL, DATA_DIR, MANUSCRIPT_ROOT, PORT, RAG_URL, REPO_ROOT } from "./config.js";
 import { openDb } from "./db/db.js";
+import { resolveOrphanedRuns } from "./claudeRuns.js";
 import { syncChapters } from "./chapterSync.js";
 import { syncSkills } from "./skillSync.js";
 import chapterRoutes from "./routes/chapters.js";
@@ -17,6 +18,7 @@ import worldRoutes from "./routes/world.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const db = openDb(join(DATA_DIR, "bookwriter.db"));
+const orphaned = resolveOrphanedRuns(db);
 const skillSync = syncSkills(db);
 const chapterSync = syncChapters(db);
 
@@ -82,6 +84,7 @@ worldRoutes(app);
 app.listen({ port: PORT, host: "0.0.0.0" }).then(() => {
   app.log.info(
     `book-writer server on :${PORT} — skills: ${skillSync.synced} (missing SKILL.md: ${skillSync.missing.join(", ") || "none"}), ` +
-      `chapters: +${chapterSync.added} ~${chapterSync.updated} =${chapterSync.unchanged} (manuscript: ${MANUSCRIPT_ROOT})`,
+      `chapters: +${chapterSync.added} ~${chapterSync.updated} =${chapterSync.unchanged} (manuscript: ${MANUSCRIPT_ROOT})` +
+      (orphaned ? `, resolved ${orphaned} orphaned run(s)` : ""),
   );
 });

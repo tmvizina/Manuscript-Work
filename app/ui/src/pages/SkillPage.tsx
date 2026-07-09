@@ -64,12 +64,16 @@ export default function SkillPage({ skillId, bridgeOk }: { skillId: string; brid
 
       <div className="card runbox">
         <label className="hint" htmlFor="prompt">
-          Runs as <code>{command}</code> {skill.argument_hint && <>— arguments: {skill.argument_hint}</>}
+          Runs as <code>{command}</code> {skill.argument_hint && <>— arguments: {skill.argument_hint}</>} — ⌘/Ctrl+Enter
+          to run
         </label>
         <textarea
           id="prompt"
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && prompt.trim() && bridgeOk && !activeRun) run();
+          }}
           placeholder={`What should ${skill.display_name} do? e.g. ${skill.argument_hint || "describe the task"}`}
         />
         <div className="controls">

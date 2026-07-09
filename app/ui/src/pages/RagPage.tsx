@@ -84,8 +84,8 @@ export default function RagPage() {
             onKeyDown={(e) => e.key === "Enter" && query()}
             placeholder="Ask the canon… e.g. who is the protagonist's father?"
           />
-          <label className="hint">
-            k={k}
+          <label className="hint" title="How many matching chunks to retrieve">
+            results: {k}
             <input type="range" min={1} max={20} value={k} onChange={(e) => setK(Number(e.target.value))} />
           </label>
           <button className="btn" onClick={query} disabled={busy || !q.trim()}>
