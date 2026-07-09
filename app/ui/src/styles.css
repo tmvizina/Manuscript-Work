@@ -181,6 +181,9 @@ details.desc p { color: var(--muted); font-size: 0.9rem; max-width: 75ch; }
 .chip.running, .chip.queued { color: var(--accent); border-color: var(--accent); }
 .chip.rag { color: var(--accent); border-color: var(--accent); }
 .run-result { white-space: pre-wrap; background: var(--bg-deep); border-radius: 8px; padding: 10px 12px; margin-top: 8px; font-size: 0.9rem; }
+.run-result.md { white-space: normal; }
+.run-result.md > :first-child { margin-top: 0; }
+.run-result.md > :last-child { margin-bottom: 0; }
 .run-actions { margin-top: 8px; }
 .run-actions .btn { padding: 4px 10px; font-size: 0.8rem; }
 

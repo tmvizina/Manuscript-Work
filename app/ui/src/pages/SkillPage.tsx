@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { marked } from "marked";
 import { api, type RunSummary } from "../lib/api";
 import RunOutput from "../components/RunOutput";
 
@@ -157,7 +158,12 @@ export default function SkillPage({ skillId, bridgeOk, ragOk }: { skillId: strin
               </span>
             </summary>
             {r.error && <div className="run-result err">{r.error}</div>}
-            {r.result_text && <div className="run-result">{r.result_text}</div>}
+            {r.result_text && (
+              <div
+                className="run-result md help-body"
+                dangerouslySetInnerHTML={{ __html: marked.parse(r.result_text, { async: false }) as string }}
+              />
+            )}
             <div className="run-actions">
               <button className="btn ghost" onClick={() => usePrompt(r)} title="Copy this run's prompt back into the run box">
                 Use prompt
