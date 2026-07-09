@@ -52,10 +52,31 @@ export default function App() {
     };
   }, []);
 
+  // Keep an eye on in-flight runs so the top bar can show them from any page.
+  const [activeRuns, setActiveRuns] = useState<Array<{ run_id: string; skill_id: string | null }>>([]);
+  useEffect(() => {
+    let alive = true;
+    const poll = () =>
+      api("/api/claude/runs?limit=10")
+        .then((d) => {
+          if (!alive) return;
+          setActiveRuns(
+            (d.runs ?? []).filter((r: any) => r.status === "running" || r.status === "queued"),
+          );
+        })
+        .catch(() => alive && setActiveRuns([]));
+    poll();
+    const t = setInterval(poll, 10_000);
+    return () => {
+      alive = false;
+      clearInterval(t);
+    };
+  }, []);
+
   let page: JSX.Element;
   if (route.startsWith("/skill/")) {
     const id = decodeURIComponent(route.slice("/skill/".length));
-    page = <SkillPage key={id} skillId={id} bridgeOk={!!health?.bridge?.ok} />;
+    page = <SkillPage key={id} skillId={id} bridgeOk={!!health?.bridge?.ok} ragOk={!!health?.rag?.ok} />;
   } else if (route === "/rag") {
     page = <RagPage />;
   } else if (route === "/world" || route.startsWith("/world/")) {
@@ -73,7 +94,14 @@ export default function App() {
 
   return (
     <div className="layout">
-      <TopBar route={route} health={health} />
+      <TopBar
+        route={route}
+        health={health}
+        activeRuns={activeRuns.map((r) => ({
+          ...r,
+          skill_name: sidebar.find((s) => s.skill_id === r.skill_id)?.display_name ?? r.skill_id ?? "run",
+        }))}
+      />
       <Sidebar route={route} items={sidebar} phaseLabels={phaseLabels} error={sidebarError} onRetry={loadSkills} />
       <main className="main">{page}</main>
     </div>

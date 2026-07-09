@@ -181,6 +181,21 @@ details.desc p { color: var(--muted); font-size: 0.9rem; max-width: 75ch; }
 .chip.running, .chip.queued { color: var(--accent); border-color: var(--accent); }
 .chip.rag { color: var(--accent); border-color: var(--accent); }
 .run-result { white-space: pre-wrap; background: var(--bg-deep); border-radius: 8px; padding: 10px 12px; margin-top: 8px; font-size: 0.9rem; }
+.run-actions { margin-top: 8px; }
+.run-actions .btn { padding: 4px 10px; font-size: 0.8rem; }
+
+/* ---------- top-bar active-run indicator ---------- */
+.runchip {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 0.8rem; color: var(--accent); text-decoration: none;
+  border: 1px solid var(--accent); border-radius: 999px; padding: 3px 12px;
+}
+.runchip:hover { background: var(--accent-soft); }
+.runchip .pulse {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+  animation: runpulse 1.4s ease-in-out infinite;
+}
+@keyframes runpulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
 
 /* ---------- rag page ---------- */
 .rag-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }

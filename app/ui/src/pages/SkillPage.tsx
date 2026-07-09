@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { api, type RunSummary } from "../lib/api";
 import RunOutput from "../components/RunOutput";
 
-export default function SkillPage({ skillId, bridgeOk }: { skillId: string; bridgeOk: boolean }) {
+export default function SkillPage({ skillId, bridgeOk, ragOk }: { skillId: string; bridgeOk: boolean; ragOk: boolean }) {
   const [skill, setSkill] = useState<any>(null);
   // Drafts survive navigating away mid-composition (prompts here run long).
   const [prompt, setPromptState] = useState(() => sessionStorage.getItem(`bw-draft-${skillId}`) ?? "");
@@ -53,6 +53,16 @@ export default function SkillPage({ skillId, bridgeOk }: { skillId: string; brid
   };
 
   const command = `/${skillId}${variant === "rag" ? "-rag" : ""}`;
+
+  // History rows store the full slash-command prompt; restore just the
+  // user's arguments (and the variant it ran with) into the run box.
+  const usePrompt = (r: RunSummary) => {
+    const text = r.prompt.replace(new RegExp(`^/${skillId}(?:-rag)?\\s*`), "");
+    setPrompt(text);
+    setVariant(r.variant === "rag" ? "rag" : "base");
+    document.getElementById("prompt")?.focus();
+    document.getElementById("prompt")?.scrollIntoView({ block: "center" });
+  };
 
   return (
     <>
@@ -108,6 +118,11 @@ export default function SkillPage({ skillId, bridgeOk }: { skillId: string; brid
               Bridge offline — start it in an IDE terminal (<a href="#/help/bridge">Help → Claude Bridge</a>)
             </span>
           )}
+          {variant === "rag" && !ragOk && (
+            <span className="hint err">
+              RAG service offline — this run's canon lookups will fail (<a href="#/rag">check RAG</a>)
+            </span>
+          )}
           {error && <span className="err">{error}</span>}
         </div>
         {activeRun && (
@@ -143,6 +158,11 @@ export default function SkillPage({ skillId, bridgeOk }: { skillId: string; brid
             </summary>
             {r.error && <div className="run-result err">{r.error}</div>}
             {r.result_text && <div className="run-result">{r.result_text}</div>}
+            <div className="run-actions">
+              <button className="btn ghost" onClick={() => usePrompt(r)} title="Copy this run's prompt back into the run box">
+                Use prompt
+              </button>
+            </div>
           </details>
         ))}
       </div>

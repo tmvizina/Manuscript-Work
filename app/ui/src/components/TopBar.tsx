@@ -9,7 +9,21 @@ function Dot({ ok, label, title }: { ok: boolean | undefined; label: string; tit
   );
 }
 
-export default function TopBar({ route, health }: { route: string; health: any }) {
+export interface ActiveRun {
+  run_id: string;
+  skill_id: string | null;
+  skill_name: string;
+}
+
+export default function TopBar({
+  route,
+  health,
+  activeRuns = [],
+}: {
+  route: string;
+  health: any;
+  activeRuns?: ActiveRun[];
+}) {
   const [theme, setTheme] = useState(document.documentElement.dataset.theme === "light" ? "light" : "dark");
   const toggleTheme = () => {
     const next = theme === "dark" ? "light" : "dark";
@@ -34,6 +48,17 @@ export default function TopBar({ route, health }: { route: string; health: any }
         RAG
       </a>
       <span className="spacer" />
+      {activeRuns.length > 0 && (
+        <a
+          className="runchip"
+          href={activeRuns[0].skill_id ? `#/skill/${activeRuns[0].skill_id}` : undefined}
+          title="A claude run is in progress — click to watch it"
+        >
+          <span className="pulse" />
+          {activeRuns[0].skill_name}
+          {activeRuns.length > 1 && ` +${activeRuns.length - 1}`}
+        </a>
+      )}
       <span className="dots">
         <Dot ok={health?.bridge?.ok} label="bridge" title={health?.bridge?.ok ? `claude ${health.bridge.version}` : health?.bridge?.hint ?? "bridge unreachable — see Help → Claude Bridge"} />
         <Dot ok={health?.rag?.ok} label="rag" title={health?.rag?.ok ? `${health.rag.chunks} chunks indexed` : "rag service unreachable"} />
