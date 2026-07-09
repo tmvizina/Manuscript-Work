@@ -6,6 +6,7 @@ import ChaptersPage from "./pages/ChaptersPage";
 import SkillPage from "./pages/SkillPage";
 import RagPage from "./pages/RagPage";
 import WorldPage from "./pages/WorldPage";
+import ReviewsPage from "./pages/ReviewsPage";
 import HelpIndexPage from "./pages/HelpIndexPage";
 import HelpSectionPage from "./pages/HelpSectionPage";
 
@@ -59,6 +60,8 @@ export default function App() {
     page = <RagPage />;
   } else if (route === "/world" || route.startsWith("/world/")) {
     page = <WorldPage path={route === "/world" ? "" : decodeURI(route.slice("/world/".length))} />;
+  } else if (route === "/reviews" || route.startsWith("/reviews/")) {
+    page = <ReviewsPage path={route === "/reviews" ? "" : decodeURI(route.slice("/reviews/".length))} />;
   } else if (route === "/help") {
     page = <HelpIndexPage />;
   } else if (route.startsWith("/help/")) {

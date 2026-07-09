@@ -27,6 +27,9 @@ export default function TopBar({ route, health }: { route: string; health: any }
       <a className={`navlink ${route === "/world" || route.startsWith("/world/") ? "active" : ""}`} href="#/world">
         World
       </a>
+      <a className={`navlink ${route === "/reviews" || route.startsWith("/reviews/") ? "active" : ""}`} href="#/reviews">
+        Reviews
+      </a>
       <a className={`navlink ${route === "/rag" ? "active" : ""}`} href="#/rag">
         RAG
       </a>
