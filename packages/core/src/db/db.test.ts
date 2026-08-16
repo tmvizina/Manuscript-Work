@@ -1,9 +1,17 @@
 import Database from "better-sqlite3";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { basename, dirname, join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { getSetting, newId, nowIso, openDb, setSetting } from "./db.js";
+import {
+  DATABASE_SCHEMA_VERSION,
+  getSchemaVersion,
+  getSetting,
+  newId,
+  nowIso,
+  openDb,
+  setSetting,
+} from "./db.js";
 
 const temporaryDirectories: string[] = [];
 
@@ -23,6 +31,7 @@ function temporaryDatabase(): string {
 describe("shared database core", () => {
   it("creates additive project, provider, and agent-run tables", () => {
     const db = openDb(temporaryDatabase());
+    expect(getSchemaVersion(db)).toBe(DATABASE_SCHEMA_VERSION);
     const tables = db
       .prepare("SELECT name FROM sqlite_master WHERE type = 'table'")
       .all() as Array<{ name: string }>;
@@ -120,6 +129,109 @@ describe("shared database core", () => {
     expect(migrated.prepare("SELECT 1 FROM sqlite_master WHERE name = 'project_settings'").get()).toBeTruthy();
     expect(migrated.prepare("SELECT 1 FROM sqlite_master WHERE name = 'agent_runs'").get()).toBeTruthy();
     migrated.close();
+  });
+
+  it("backs up a legacy database before applying its first versioned migration", () => {
+    const dbPath = temporaryDatabase();
+    const legacy = new Database(dbPath);
+    legacy.exec(`
+      CREATE TABLE projects (
+        project_id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        root_path TEXT NOT NULL UNIQUE,
+        created_at TEXT NOT NULL
+      );
+      INSERT INTO projects(project_id, name, root_path, created_at)
+      VALUES ('legacy-project', 'Legacy', '/legacy', '2026-01-01T00:00:00Z');
+    `);
+    legacy.close();
+
+    const migrated = openDb(dbPath);
+    expect(getSchemaVersion(migrated)).toBe(DATABASE_SCHEMA_VERSION);
+    migrated.close();
+
+    const backupName = readdirSync(dirname(dbPath)).find((name) =>
+      name.startsWith(`${basename(dbPath)}.backup-`),
+    );
+    expect(backupName).toBeDefined();
+    const backup = new Database(join(dirname(dbPath), backupName as string));
+    expect(getSchemaVersion(backup)).toBe(0);
+    expect(backup.prepare("SELECT name FROM projects WHERE project_id = ?").get("legacy-project")).toMatchObject({
+      name: "Legacy",
+    });
+    expect(
+      (backup.pragma("table_info(projects)") as Array<{ name: string }>).some((column) => column.name === "updated_at"),
+    ).toBe(false);
+    backup.close();
+  });
+
+  it("includes committed WAL content in the standalone pre-migration backup", () => {
+    const dbPath = temporaryDatabase();
+    const legacy = new Database(dbPath);
+    legacy.pragma("journal_mode = WAL");
+    legacy.pragma("wal_autocheckpoint = 0");
+    legacy.exec("CREATE TABLE wal_probe(value TEXT); INSERT INTO wal_probe(value) VALUES ('committed-in-wal');");
+
+    const migrated = openDb(dbPath);
+    migrated.close();
+    legacy.close();
+
+    const backupName = readdirSync(dirname(dbPath)).find((name) =>
+      name.startsWith(`${basename(dbPath)}.backup-`),
+    );
+    expect(backupName).toBeDefined();
+    const backup = new Database(join(dirname(dbPath), backupName as string), { readonly: true });
+    expect(backup.prepare("SELECT value FROM wal_probe").get()).toMatchObject({ value: "committed-in-wal" });
+    expect(backup.pragma("integrity_check", { simple: true })).toBe("ok");
+    backup.close();
+  });
+
+  it("rolls back a failed migration and leaves the old version recoverable", () => {
+    const dbPath = temporaryDatabase();
+    const legacy = new Database(dbPath);
+    legacy.exec("CREATE TABLE keep_me(value TEXT); INSERT INTO keep_me(value) VALUES ('untouched');");
+    legacy.close();
+
+    expect(() =>
+      openDb(dbPath, {
+        schemaSql: "CREATE TABLE migration_probe(value TEXT); THIS IS NOT VALID SQL;",
+      }),
+    ).toThrow();
+
+    const unchanged = new Database(dbPath);
+    expect(getSchemaVersion(unchanged)).toBe(0);
+    expect(unchanged.prepare("SELECT value FROM keep_me").get()).toMatchObject({ value: "untouched" });
+    expect(unchanged.prepare("SELECT name FROM sqlite_master WHERE name = 'migration_probe'").get()).toBeUndefined();
+    unchanged.close();
+
+    const backupName = readdirSync(dirname(dbPath)).find((name) =>
+      name.startsWith(`${basename(dbPath)}.backup-`),
+    );
+    expect(backupName).toBeDefined();
+  });
+
+  it("refuses a database newer than the bundled migration set", () => {
+    const dbPath = temporaryDatabase();
+    const newer = new Database(dbPath);
+    newer.pragma(`user_version = ${DATABASE_SCHEMA_VERSION + 1}`);
+    newer.close();
+
+    expect(() => openDb(dbPath)).toThrow(/newer than this application supports/);
+
+    const unchanged = new Database(dbPath);
+    expect(getSchemaVersion(unchanged)).toBe(DATABASE_SCHEMA_VERSION + 1);
+    unchanged.close();
+    expect(readdirSync(dirname(dbPath)).some((name) => name.startsWith(`${basename(dbPath)}.backup-`))).toBe(false);
+  });
+
+  it("rejects a current-version database whose required schema is missing", () => {
+    const dbPath = temporaryDatabase();
+    const damaged = new Database(dbPath);
+    damaged.exec("CREATE TABLE settings(key TEXT PRIMARY KEY, value TEXT NOT NULL);");
+    damaged.pragma(`user_version = ${DATABASE_SCHEMA_VERSION}`);
+    damaged.close();
+
+    expect(() => openDb(dbPath)).toThrow(/Database schema 1 is invalid/);
   });
 
   it("generates compact prefixed identifiers", () => {

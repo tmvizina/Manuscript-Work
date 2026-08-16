@@ -5,9 +5,12 @@ desktop. It describes the existing server/UI processes; it does not claim a
 performance result and it does not replace the app's source or package
 configuration.
 
+For the clean-runner packaging path and artifact compatibility notes, see
+[Windows release and compatibility](windows-release.md).
+
 ## Prerequisites
 
-- Windows PowerShell and Node.js. CI uses Node 20.x; record the exact local
+- Windows PowerShell and Node.js. Release CI uses Node 22.x; record the exact local
   versions when collecting a baseline.
 - The repository checked out locally.
 - A manuscript checkout, if one is being used through `MANUSCRIPT_ROOT`.

@@ -5,6 +5,7 @@ export interface DesktopUserDataPaths {
   userData: string;
   logs: string;
   data: string;
+  backups: string;
   projects: string;
 }
 
@@ -22,6 +23,7 @@ export function getUserDataPaths(userData: string): DesktopUserDataPaths {
     userData: root,
     logs: join(root, "logs"),
     data: join(root, "data"),
+    backups: join(root, "backups"),
     projects: join(root, "projects"),
   };
 }

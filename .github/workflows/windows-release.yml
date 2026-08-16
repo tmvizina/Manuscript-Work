@@ -1,0 +1,114 @@
+name: Windows x64 release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-release-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  package:
+    name: Build and qualify Windows x64 installer
+    runs-on: windows-2022
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.14.0
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install workspace dependencies
+        run: npm.cmd ci --no-audit --no-fund
+
+      - name: Typecheck all workspaces
+        run: npm.cmd run typecheck
+
+      - name: Run tests
+        run: npm.cmd test
+
+      - name: Build all workspaces
+        run: npm.cmd run build
+
+      - name: Package per-user x64 NSIS installer
+        working-directory: app/desktop
+        run: npm.cmd run package
+        env:
+          # Never discover an unrelated runner certificate. An approved
+          # certificate must be supplied explicitly through protected secrets.
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+          CSC_LINK: ${{ secrets.WINDOWS_CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CSC_KEY_PASSWORD }}
+
+      - name: Audit packaged production contents
+        working-directory: app/desktop
+        run: npm.cmd run audit:package
+
+      - name: Test install, repair-reinstall, and preserving uninstall
+        shell: pwsh
+        run: ./test/packaging/windows-installer-lifecycle.ps1
+        env:
+          REQUIRE_VALID_SIGNATURE: ${{ github.ref_type == 'tag' && '1' || '0' }}
+
+      - name: Enforce signing for tagged releases
+        shell: pwsh
+        run: |
+          $installer = Get-ChildItem -LiteralPath 'dist\desktop' -Filter '*.exe' -File |
+            Where-Object { $_.Name -notmatch '(?i)uninstaller' } |
+            Select-Object -First 1
+          if (-not $installer) { throw 'Installer was not found for signature verification.' }
+          $signature = Get-AuthenticodeSignature -LiteralPath $installer.FullName
+          "Installer signature status: $($signature.Status)" | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+          if ($env:GITHUB_REF_TYPE -eq 'tag' -and $signature.Status -ne 'Valid') {
+            throw 'Tagged releases must have a valid Authenticode signature. Configure WINDOWS_CSC_LINK and WINDOWS_CSC_KEY_PASSWORD.'
+          }
+
+      - name: Create installer SHA-256 manifest
+        shell: pwsh
+        run: |
+          $outputDirectory = Join-Path $env:GITHUB_WORKSPACE 'dist\desktop'
+          if (-not (Test-Path -LiteralPath $outputDirectory -PathType Container)) {
+            throw "Expected electron-builder output directory was not found: $outputDirectory"
+          }
+
+          $installers = @(
+            Get-ChildItem -LiteralPath $outputDirectory -Filter '*.exe' -File |
+              Where-Object { $_.Name -notmatch '(?i)uninstaller' }
+          )
+          if ($installers.Count -ne 1) {
+            $found = ($installers | ForEach-Object Name) -join ', '
+            throw "Expected exactly one installer executable; found $($installers.Count): $found"
+          }
+
+          $installer = $installers[0]
+          $hash = (Get-FileHash -LiteralPath $installer.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+          $hashPath = "$($installer.FullName).sha256"
+          "$hash *$($installer.Name)" | Set-Content -LiteralPath $hashPath -Encoding ascii
+
+          @(
+            '### Windows x64 package'
+            "- Installer: ``$($installer.Name)``"
+            "- SHA-256: ``$hash``"
+            '- Signing: see the signature status reported above; tagged releases require Valid Authenticode'
+          ) | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+
+      - name: Upload installer and checksum
+        uses: actions/upload-artifact@v4
+        with:
+          name: book-writer-windows-x64
+          if-no-files-found: error
+          path: |
+            dist/desktop/*.exe
+            dist/desktop/*.exe.sha256
+          retention-days: 30

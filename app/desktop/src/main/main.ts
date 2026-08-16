@@ -41,11 +41,13 @@ function configureUserDataPaths(): DesktopUserDataPaths {
   const paths = getUserDataPaths(app.getPath("userData"));
   mkdirSync(paths.logs, { recursive: true });
   mkdirSync(paths.data, { recursive: true });
+  mkdirSync(paths.backups, { recursive: true });
   mkdirSync(paths.projects, { recursive: true });
   app.setAppLogsPath(paths.logs);
   console.info(`[desktop] userData=${paths.userData}`);
   console.info(`[desktop] logs=${paths.logs}`);
   console.info(`[desktop] data=${paths.data}`);
+  console.info(`[desktop] backups=${paths.backups}`);
   console.info(`[desktop] projects=${paths.projects}`);
   return paths;
 }
@@ -210,7 +212,7 @@ if (!hasSingleInstanceLock) {
   void app.whenReady()
     .then(async () => {
       const paths = configureUserDataPaths();
-      desktopRuntime = new NativeDesktopRuntime(join(paths.data, "book-writer.db"));
+      desktopRuntime = new NativeDesktopRuntime(join(paths.data, "book-writer.db"), { databaseBackupDirectory: paths.backups });
       await createMainWindow(desktopRuntime);
     })
     .catch((error: unknown) => {

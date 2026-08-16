@@ -23,6 +23,14 @@ files:
   - '!node_modules/@book-writer/core/tsconfig*.json'
   - '!node_modules/better-sqlite3/src{,/**/*}'
   - '!node_modules/better-sqlite3/deps{,/**/*}'
+  # better-sqlite3 uses these only to download/build a native binary. The
+  # Electron ABI binary is rebuilt before packaging and is the only runtime
+  # artifact the installed app needs besides bindings/file-uri-to-path.
+  - '!node_modules/{prebuild-install,detect-libc,expand-template,github-from-package,minimist,mkdirp-classic,napi-build-utils,node-abi,semver,pump,end-of-stream,once,wrappy,rc,deep-extend,ini,strip-json-comments,simple-get,decompress-response,mimic-response,simple-concat,tar-fs,chownr,tar-stream,bl,buffer,base64-js,ieee754,fs-constants,inherits,readable-stream,string_decoder,safe-buffer,util-deprecate,tunnel-agent}{,/**/*}'
+  - '!node_modules/**/*.md'
+  - '!node_modules/**/.nycrc'
+  - '!node_modules/**/test*.js'
+  - '!node_modules/**/{test,tests,fixtures}{,/**/*}'
 extraResources:
   - from: ../ui/dist
     to: ui

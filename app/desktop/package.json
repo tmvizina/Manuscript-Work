@@ -1,6 +1,7 @@
 {
   "name": "book-writer-desktop",
   "version": "0.1.0",
+  "description": "A local-first manuscript planning, drafting, and review desktop application.",
   "private": true,
   "type": "module",
   "main": "dist/main/main.js",
@@ -13,13 +14,16 @@
     "build": "npm.cmd run typecheck && npm.cmd run build:core && npm.cmd run build:main && npm.cmd run build:preload",
     "dev": "npm.cmd --prefix ../ui run build && npm.cmd run build && electron .",
     "start": "npm.cmd run build && electron .",
-    "package": "npm.cmd --prefix ../ui run build && npm.cmd run build && npm.cmd run rebuild:electron && electron-builder --config electron-builder.yml",
-    "package:dir": "npm.cmd --prefix ../ui run build && npm.cmd run build && npm.cmd run rebuild:electron && electron-builder --config electron-builder.yml --dir"
+    "package": "npm.cmd --prefix ../ui run build && npm.cmd run build && npm.cmd run rebuild:electron && electron-builder --config electron-builder.yml && npm.cmd run detach:package && npm.cmd run audit:package",
+    "package:dir": "npm.cmd --prefix ../ui run build && npm.cmd run build && npm.cmd run rebuild:electron && electron-builder --config electron-builder.yml --dir && npm.cmd run detach:package && npm.cmd run audit:package",
+    "detach:package": "node ../../test/packaging/detach-native-modules.mjs",
+    "audit:package": "node ../../test/packaging/audit-package.mjs"
   },
   "dependencies": {
     "@book-writer/core": "0.1.0"
   },
   "devDependencies": {
+    "@electron/asar": "^3.4.1",
     "@electron/rebuild": "^4.2.0",
     "@types/node": "^22.0.0",
     "electron": "36.9.5",

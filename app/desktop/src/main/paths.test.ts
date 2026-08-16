@@ -10,6 +10,7 @@ describe("desktop path policy", () => {
       userData: root,
       logs: join(root, "logs"),
       data: join(root, "data"),
+      backups: join(root, "backups"),
       projects: join(root, "projects"),
     });
   });

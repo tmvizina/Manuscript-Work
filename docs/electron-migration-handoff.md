@@ -415,8 +415,27 @@ in Claude's own visible terminal, the production native runner completed the
 exact-output synthetic prompt with `P4_SMOKE_OK` and normalized start, text, and
 completion events. No credentials or terminal input were captured by Book Writer.
 
-1. Begin Phase 5 with database backup/transactional migration and installer
-   lifecycle recovery.
+Phase 5 repository implementation is complete. The per-user x64 NSIS installer
+uses the production allow-list and defaults to preserving user data; assisted
+uninstall exposes an unchecked explicit remove-data choice. Database upgrades
+hold an immediate writer reservation across an integrity-checked, fsynced,
+atomically published backup and the transactional versioned migration. Backups
+include committed WAL state, use names that cannot collide with incomplete files,
+and are reopened for integrity validation before publication. Current-version
+databases receive integrity and required-schema checks on every open.
+
+Mutable database, backup, log, settings, and provider state is rooted below
+Electron `userData`. The clean Windows release workflow typechecks, tests, builds,
+audits ASAR/UI/unpacked contents, exercises install/repair/uninstall preservation,
+enforces Authenticode for tagged releases, produces SHA-256 sidecars, and uploads
+the installer plus hash. Local Windows validation built
+`Book Writer-0.1.0-x64.exe`, audited 82 ASAR entries, passed 139 tests, and passed
+the scoped install, repair-reinstall, and preserving-uninstall lifecycle twice.
+Manual clean-VM assisted UI, actual prior-version upgrade, and remove-data checks
+remain final Phase 7 release qualification; they are not represented as completed
+evidence until a release candidate and clean qualification machine exist.
+
+1. Begin Phase 6 measurement and low-end performance work.
 2. Decide whether RAG becomes an embedded native index or remains an optional
    external compatibility service; do not disguise semantic RAG as literal search.
 3. Add embedded provider payloads only if release engineering later documents the
@@ -436,8 +455,9 @@ completion events. No credentials or terminal input were captured by Book Writer
   exact artifacts, redistribution terms, signatures, update cadence, installer-size
   impact, and revocation response remain Phase 4 release gates. Never embed an
   unverified or unmaintained arbitrary download.
-- Code signing, certificate ownership, distribution location, and update policy
-  have not yet been selected.
+- Tagged release packaging fails closed without a valid explicitly supplied code
+  signing certificate. Certificate ownership, distribution location, and update
+  policy still require owner selection before non-family distribution.
 - Performance budgets are initial targets, not measured results. Baseline and
   release numbers must identify hardware, data set, commit, and cold/warm state.
 - The server compatibility path should be removed from packaged production only

@@ -70,6 +70,7 @@ export interface NativeDesktopRuntimeOptions {
   runner?: ProviderRunner;
   providerDiscovery?: ProviderDiscovery;
   providerAuthentication?: ProviderAuthentication;
+  databaseBackupDirectory?: string;
 }
 
 function notFound(entity: string, operation: string): never {
@@ -134,7 +135,7 @@ export class NativeDesktopRuntime implements DesktopRuntime {
   private readonly providerAuthentication: ProviderAuthentication;
 
   constructor(dbPath: string, options: NativeDesktopRuntimeOptions = {}) {
-    this.db = openDb(dbPath);
+    this.db = openDb(dbPath, options.databaseBackupDirectory ? { backupDirectory: options.databaseBackupDirectory } : {});
     this.providerDiscovery = options.providerDiscovery ?? new ProviderDiscovery();
     this.providerAuthentication = options.providerAuthentication ?? new ProviderAuthentication({ discovery: this.providerDiscovery });
     resolveOrphanedAgentRuns(this.db);

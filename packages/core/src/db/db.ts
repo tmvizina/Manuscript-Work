@@ -1,36 +1,170 @@
 import Database from "better-sqlite3";
-import { mkdirSync, readFileSync } from "node:fs";
-import { dirname } from "node:path";
+import {
+  closeSync,
+  existsSync,
+  fsyncSync,
+  mkdirSync,
+  openSync,
+  readFileSync,
+  renameSync,
+  statSync,
+  unlinkSync,
+  writeFileSync,
+} from "node:fs";
+import { basename, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { randomUUID } from "node:crypto";
 
 const schemaPath = fileURLToPath(new URL("./schema.sql", import.meta.url));
 
+/**
+ * The schema shipped in this release is the first version tracked through
+ * SQLite's user_version pragma.  Existing databases have user_version 0 and
+ * are treated as the legacy baseline by migration 1.
+ */
+export const DATABASE_SCHEMA_VERSION = 1;
+/** Backwards-friendly aliases for hosts that prefer a shorter name. */
+export const CURRENT_SCHEMA_VERSION = DATABASE_SCHEMA_VERSION;
+export const SCHEMA_VERSION = DATABASE_SCHEMA_VERSION;
+
 export type DB = Database.Database;
+
+export interface DatabaseBackupOptions {
+  /** Write a backup to this exact path. The file must not already exist. */
+  path?: string;
+  /** Directory for an automatically named, timestamped backup. */
+  directory?: string;
+}
 
 export interface OpenDbOptions {
   /** Override the bundled schema for an embedding host that owns the file. */
   schemaSql?: string;
-}
-
-/** Open a shared Book Writer database and apply only additive schema changes. */
-export function openDb(dbPath: string, options: OpenDbOptions = {}): DB {
-  mkdirSync(dirname(dbPath), { recursive: true });
-  const db = new Database(dbPath);
-  db.pragma("journal_mode = WAL");
-  db.pragma("foreign_keys = ON");
-  const schema = options.schemaSql ?? readFileSync(schemaPath, "utf-8");
-  db.exec(schema);
-  migrate(db);
-  return db;
+  /** Configure where the pre-migration backup is written. */
+  backup?: DatabaseBackupOptions;
+  /** Convenience alias for backup.path. */
+  backupPath?: string;
+  /** Convenience alias for backup.directory. */
+  backupDirectory?: string;
 }
 
 /**
- * Additive migrations for databases created by an earlier app version.
- * CREATE TABLE IF NOT EXISTS in the bundled schema handles missing tables;
- * the column checks keep partially migrated databases usable as well.
+ * Open a shared Book Writer database and apply versioned schema migrations.
+ *
+ * A persistent database that needs an upgrade is serialized to a distinct
+ * backup file before any schema-changing SQL runs. Each migration is then
+ * executed in one SQLite transaction; a failed migration leaves the original
+ * database at its previous schema version and keeps the backup for recovery.
  */
-function migrate(db: DB): void {
+export function openDb(dbPath: string, options: OpenDbOptions = {}): DB {
+  const persistent = isPersistentDatabasePath(dbPath);
+  const existedBeforeOpen = persistent && existingDatabaseFile(dbPath);
+  if (persistent) mkdirSync(dirname(dbPath), { recursive: true });
+
+  let db: DB | undefined;
+  try {
+    db = new Database(dbPath);
+    db.pragma("foreign_keys = ON");
+
+    const schemaVersion = getSchemaVersion(db);
+    if (schemaVersion > DATABASE_SCHEMA_VERSION) {
+      throw new Error(
+        `Database schema version ${schemaVersion} is newer than this application supports (${DATABASE_SCHEMA_VERSION})`,
+      );
+    }
+
+    const schema = options.schemaSql ?? readFileSync(schemaPath, "utf-8");
+    if (schemaVersion < DATABASE_SCHEMA_VERSION) {
+      // Hold the write reservation across both snapshot and migration. This
+      // prevents another process from committing after the recovery point was
+      // captured but before the schema transaction completes.
+      db.exec("BEGIN IMMEDIATE");
+      try {
+        assertDatabaseIntegrity(db, "source database");
+        if (existedBeforeOpen) {
+          const backupPath = resolveBackupPath(dbPath, options);
+          createDatabaseBackup(db, backupPath, dbPath);
+        }
+        applyPendingMigrations(db, schema);
+        db.exec("COMMIT");
+      } catch (error) {
+        if (db.inTransaction) db.exec("ROLLBACK");
+        throw error;
+      }
+      // Keep the old journal mode until the migration commits. Changing the
+      // mode itself can update the database header, so it must not precede
+      // the pre-upgrade snapshot.
+    }
+
+    assertDatabaseIntegrity(db, "database");
+    assertCurrentSchema(db);
+
+    // WAL is a connection/database setting, not part of the schema. Apply it
+    // only after a migration has committed so a failed upgrade leaves the
+    // source database untouched apart from SQLite's normal rollback journal.
+    db.pragma("journal_mode = WAL");
+    return db;
+  } catch (error) {
+    if (db?.open) db.close();
+    throw error;
+  }
+}
+
+/**
+ * Read the version recorded in SQLite's user_version header.
+ */
+export function getSchemaVersion(db: DB): number {
+  const version = db.pragma("user_version", { simple: true });
+  if (typeof version !== "number" || !Number.isInteger(version) || version < 0) {
+    throw new Error(`Invalid database schema version: ${String(version)}`);
+  }
+  return version;
+}
+
+type Migration = (db: DB, schemaSql: string) => void;
+
+/**
+ * Versioned migrations. Migration 1 establishes the current shared schema
+ * and repairs the additive columns used by partially migrated legacy files.
+ * Future migrations should be appended with their own version number rather
+ * than changing an already-applied migration.
+ */
+const migrations: Readonly<Record<number, Migration>> = {
+  1: (db, schemaSql) => {
+    db.exec(schemaSql);
+    migrateLegacyColumns(db);
+  },
+};
+
+/** Apply all pending migrations atomically. */
+export function migrate(db: DB, schemaSql = readFileSync(schemaPath, "utf-8")): void {
+  const fromVersion = getSchemaVersion(db);
+  if (fromVersion > DATABASE_SCHEMA_VERSION) {
+    throw new Error(
+      `Database schema version ${fromVersion} is newer than this application supports (${DATABASE_SCHEMA_VERSION})`,
+    );
+  }
+  if (fromVersion === DATABASE_SCHEMA_VERSION) return;
+
+  const runMigrations = db.transaction(() => applyPendingMigrations(db, schemaSql));
+  runMigrations();
+}
+
+function applyPendingMigrations(db: DB, schemaSql: string): void {
+  const fromVersion = getSchemaVersion(db);
+  for (let version = fromVersion + 1; version <= DATABASE_SCHEMA_VERSION; version += 1) {
+    const migration = migrations[version];
+    if (!migration) throw new Error(`Missing database migration for schema version ${version}`);
+    migration(db, schemaSql);
+    db.pragma(`user_version = ${version}`);
+  }
+}
+
+/**
+ * Additive repairs for databases created by the pre-versioned app.
+ * CREATE TABLE IF NOT EXISTS in migration 1 handles missing tables; the
+ * column checks keep partially migrated databases usable as well.
+ */
+function migrateLegacyColumns(db: DB): void {
   const addColumn = (table: string, column: string, declaration: string): void => {
     const columns = (db.pragma(`table_info(${table})`) as Array<{ name: string }>).map((columnInfo) => columnInfo.name);
     if (!columns.includes(column)) db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${declaration}`);
@@ -72,6 +206,112 @@ function migrate(db: DB): void {
     addColumn("agent_runs", "finished_at", "TEXT");
     db.exec("CREATE INDEX IF NOT EXISTS idx_agent_runs_project ON agent_runs(project_id, created_at DESC)");
     db.exec("CREATE INDEX IF NOT EXISTS idx_agent_runs_provider ON agent_runs(provider, created_at DESC)");
+  }
+}
+
+function isPersistentDatabasePath(dbPath: string): boolean {
+  return dbPath !== ":memory:" && !dbPath.startsWith("file::memory:");
+}
+
+function existingDatabaseFile(dbPath: string): boolean {
+  try {
+    return statSync(dbPath).isFile() && statSync(dbPath).size > 0;
+  } catch {
+    return false;
+  }
+}
+
+function resolveBackupPath(dbPath: string, options: OpenDbOptions): string {
+  const explicitPath = options.backupPath ?? options.backup?.path;
+  if (explicitPath) return resolve(explicitPath);
+
+  const directory = options.backupDirectory ?? options.backup?.directory ?? dirname(resolve(dbPath));
+  const timestamp = nowIso().replace(/[-:.]/g, "");
+  const filename = `${basename(dbPath)}.backup-${timestamp}-${randomUUID().replace(/-/g, "").slice(0, 8)}.sqlite`;
+  return resolve(directory, filename);
+}
+
+/**
+ * Create a crash-safe, point-in-time backup from a live SQLite connection.
+ * serialize() includes committed WAL state and avoids copying a main file
+ * without its companion -wal file. The temporary file is fsynced before the
+ * final rename so a failed write cannot be mistaken for a valid backup.
+ */
+export function createDatabaseBackup(db: DB, backupPath: string, sourcePath?: string): string {
+  const destination = resolve(backupPath);
+  if (sourcePath && destination === resolve(sourcePath)) {
+    throw new Error("Database backup path must differ from the source database path");
+  }
+  if (existsSync(destination)) {
+    throw new Error(`Database backup path already exists: ${destination}`);
+  }
+
+  mkdirSync(dirname(destination), { recursive: true });
+  // Put the incomplete marker before the final filename so recovery scans for
+  // `<database>.backup-*` can never mistake a crash remnant for a backup.
+  const temporaryPath = resolve(
+    dirname(destination),
+    `.incomplete-${randomUUID().replace(/-/g, "")}-${basename(destination)}`,
+  );
+  let committed = false;
+  try {
+    writeFileSync(temporaryPath, db.serialize(), { flag: "wx" });
+    const descriptor = openSync(temporaryPath, "r+");
+    try {
+      fsyncSync(descriptor);
+    } finally {
+      closeSync(descriptor);
+    }
+    const verification = new Database(temporaryPath, { readonly: true, fileMustExist: true });
+    try {
+      assertDatabaseIntegrity(verification, "database backup");
+    } finally {
+      verification.close();
+    }
+    renameSync(temporaryPath, destination);
+    committed = true;
+    return destination;
+  } finally {
+    if (!committed) {
+      try {
+        unlinkSync(temporaryPath);
+      } catch {
+        // Preserve the migration error; cleanup is best effort.
+      }
+    }
+  }
+}
+
+function assertDatabaseIntegrity(db: DB, label: string): void {
+  const rows = db.pragma("integrity_check") as Array<{ integrity_check: string }>;
+  if (rows.length !== 1 || rows[0]?.integrity_check !== "ok") {
+    const details = rows.map((row) => row.integrity_check).filter(Boolean).join("; ") || "unknown error";
+    throw new Error(`SQLite integrity check failed for ${label}: ${details}`);
+  }
+}
+
+const requiredSchema: Readonly<Record<string, readonly string[]>> = {
+  chapters: ["chapter_id", "rel_path", "text"],
+  skills: ["skill_id", "display_name"],
+  claude_runs: ["run_id", "prompt", "status"],
+  rag_queries: ["query_id", "q"],
+  settings: ["key", "value"],
+  projects: ["project_id", "root_path", "updated_at", "active"],
+  project_chapters: ["project_id", "chapter_id"],
+  project_settings: ["project_id", "key", "value_json"],
+  provider_settings: ["provider_setting_id", "provider", "config_json"],
+  agent_runs: ["run_id", "provider", "status", "created_at"],
+};
+
+function assertCurrentSchema(db: DB): void {
+  for (const [table, requiredColumns] of Object.entries(requiredSchema)) {
+    const columns = new Set(
+      (db.pragma(`table_info(${table})`) as Array<{ name: string }>).map((column) => column.name),
+    );
+    const missing = requiredColumns.filter((column) => !columns.has(column));
+    if (missing.length > 0) {
+      throw new Error(`Database schema ${DATABASE_SCHEMA_VERSION} is invalid: ${table} is missing ${missing.join(", ")}`);
+    }
   }
 }
 
