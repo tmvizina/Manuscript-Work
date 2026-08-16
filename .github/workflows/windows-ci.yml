@@ -1,0 +1,83 @@
+name: Windows CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  app:
+    name: Install, typecheck, and build
+    runs-on: windows-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: npm
+          cache-dependency-path: |
+            app/server/package-lock.json
+            app/ui/package-lock.json
+
+      - name: Install root test dependencies when configured
+        shell: pwsh
+        run: |
+          if (-not (Test-Path -LiteralPath 'package.json')) {
+            Write-Host 'No root package.json; skipping root dependency install.'
+            exit 0
+          }
+
+          $package = Get-Content -LiteralPath 'package.json' -Raw | ConvertFrom-Json
+          $testScript = $package.scripts.test
+          if ([string]::IsNullOrWhiteSpace([string]$testScript)) {
+            Write-Host 'No root scripts.test; skipping root dependency install.'
+            exit 0
+          }
+
+          if (Test-Path -LiteralPath 'package-lock.json') {
+            npm.cmd ci --ignore-scripts --no-audit --no-fund --workspaces=false
+          } else {
+            npm.cmd install --ignore-scripts --no-audit --no-fund --workspaces=false
+          }
+
+      - name: Install server dependencies
+        working-directory: app/server
+        run: npm.cmd ci
+
+      - name: Install UI dependencies
+        working-directory: app/ui
+        run: npm.cmd ci
+
+      - name: Typecheck server
+        working-directory: app/server
+        run: npm.cmd run typecheck
+
+      # The UI build script runs tsc --noEmit before vite build.
+      - name: Typecheck and build UI
+        working-directory: app/ui
+        run: npm.cmd run build
+
+      - name: Run root tests when configured
+        shell: pwsh
+        run: |
+          if (-not (Test-Path -LiteralPath 'package.json')) {
+            Write-Host 'No root package.json; skipping root tests.'
+            exit 0
+          }
+
+          $package = Get-Content -LiteralPath 'package.json' -Raw | ConvertFrom-Json
+          $testScript = $package.scripts.test
+          if ([string]::IsNullOrWhiteSpace([string]$testScript)) {
+            Write-Host 'No root scripts.test; skipping root tests.'
+            exit 0
+          }
+
+          npm.cmd run test
