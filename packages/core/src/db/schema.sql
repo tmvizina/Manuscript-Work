@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS chapters (
   word_count  INTEGER NOT NULL DEFAULT 0,
   active      INTEGER NOT NULL DEFAULT 1,
   file_mtime  TEXT,
+  file_size   INTEGER NOT NULL DEFAULT -1,
   synced_at   TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_chapters_book_num ON chapters(book, number);
@@ -99,6 +100,7 @@ CREATE TABLE IF NOT EXISTS project_chapters (
   word_count   INTEGER NOT NULL DEFAULT 0,
   active       INTEGER NOT NULL DEFAULT 1,
   file_mtime   TEXT,
+  file_size    INTEGER NOT NULL DEFAULT -1,
   synced_at    TEXT NOT NULL,
   PRIMARY KEY(project_id, chapter_id),
   UNIQUE(project_id, rel_path)

@@ -1,8 +1,28 @@
 import { useEffect, useMemo, useState } from "react";
 import type { SkillSummary } from "../lib/api";
+import { createBufferedBatch } from "../lib/bufferedBatch";
 import type { BookWriterTransport, ExecutionProvider, PermissionMode, RunEvent, RunRecord, RunVariant } from "../transport";
 
 const active = (status: RunRecord["status"]) => status === "queued" || status === "starting" || status === "running";
+
+/** Keep token streams readable without creating one DOM node per token. */
+export function appendRunEvents(previous: RunEvent[], incoming: readonly RunEvent[]): RunEvent[] {
+  const next = [...previous];
+  for (const event of incoming) {
+    const last = next[next.length - 1];
+    if (
+      (event.type === "text_delta" || event.type === "reasoning_delta") &&
+      last?.type === event.type &&
+      typeof event.text === "string" &&
+      typeof last.text === "string"
+    ) {
+      next[next.length - 1] = { ...last, sequence: event.sequence, text: `${last.text}${event.text}` };
+    } else {
+      next.push(event);
+    }
+  }
+  return next;
+}
 
 export default function NativeSkillPage({ transport, projectId, skill }: { transport: BookWriterTransport; projectId?: string; skill?: SkillSummary }) {
   const [prompt, setPromptState] = useState(() => skill ? sessionStorage.getItem(`bw-draft-${skill.skill_id}`) ?? "" : "");
@@ -30,11 +50,24 @@ export default function NativeSkillPage({ transport, projectId, skill }: { trans
     if (!current) return;
     let subscriptionId = "";
     let disposed = false;
+    const seenSequences = new Set<number>();
+    const bufferedEvents = createBufferedBatch<RunEvent>((batch) => {
+      if (disposed) return;
+      setEvents((previous) => {
+        const unique = batch.filter((event) => {
+          if (seenSequences.has(event.sequence)) return false;
+          seenSequences.add(event.sequence);
+          return true;
+        });
+        return unique.length ? appendRunEvents(previous, unique) : previous;
+      });
+    });
     transport.runs.subscribe(current.runId, (event) => {
-      setEvents((previous) => previous.some((item) => item.sequence === event.sequence) ? previous : [...previous, event]);
+      if (disposed) return;
+      bufferedEvents.push(event);
       if (["run_completed", "run_failed", "stream_ended"].includes(event.type)) void load();
     }, undefined, (reason) => setError(reason.message)).then((subscription) => { subscriptionId = subscription.subscriptionId; if (disposed) void transport.runs.unsubscribe(subscriptionId); }).catch((reason) => setError(String(reason?.message ?? reason)));
-    return () => { disposed = true; if (subscriptionId) void transport.runs.unsubscribe(subscriptionId); };
+    return () => { disposed = true; bufferedEvents.dispose(); if (subscriptionId) void transport.runs.unsubscribe(subscriptionId); };
   }, [current?.runId]);
 
   if (!skill) return <p className="err">Unknown skill.</p>;

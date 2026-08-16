@@ -239,25 +239,29 @@ export function createElectronTransport(bridge: BookWriterReadOnlyBridge): BookW
       value === null ? null : projectDetail(value, "projects.import")),
   };
 
-  const chapters = {
-    list: async (projectId?: string) => {
-      const id = requireProjectId(projectId, "content.listChapters");
-      return callNative("content.listChapters", () => bridge.content.listChapters(id), (value) => {
+  const listNativeChapters = async (id: string) =>
+    callNative("content.listChapters", () => bridge.content.listChapters(id), (value) => {
         if (!Array.isArray(value)) throw invalidTransportResponse("content.listChapters", "Native chapter response is not an array");
         return value.map((chapter) => chapterSummary(chapter, "content.listChapters"));
       });
+
+  const chapters = {
+    list: async (projectId?: string) => {
+      const id = requireProjectId(projectId, "content.listChapters");
+      return listNativeChapters(id);
     },
-    get: async (projectId: string | undefined, chapterId: string, _options?: ChapterReadOptions) => {
+    get: async (projectId: string | undefined, chapterId: string, options?: ChapterReadOptions) => {
       const id = requireProjectId(projectId, "content.getChapter");
       if (!chapterId) throw new TransportError("chapterId must not be empty", { kind: "electron", code: "INVALID_ARGUMENT", operation: "content.getChapter" });
+      // Normal reads use the synchronized database snapshot. The explicit
+      // fresh path performs one scan first, avoiding a full manuscript rescan
+      // every time the reader selects a chapter.
+      if (options?.fresh) await listNativeChapters(id);
       return callNative("content.getChapter", () => bridge.content.getChapter(id, chapterId), (value) => chapterDocument(value, "content.getChapter"));
     },
     refresh: async (projectId?: string) => {
       const id = requireProjectId(projectId, "content.refreshChapters");
-      return callNative("content.listChapters", () => bridge.content.listChapters(id), (value) => {
-        if (!Array.isArray(value)) throw invalidTransportResponse("content.listChapters", "Native chapter response is not an array");
-        return value.map((chapter) => chapterSummary(chapter, "content.listChapters"));
-      });
+      return listNativeChapters(id);
     },
   };
 

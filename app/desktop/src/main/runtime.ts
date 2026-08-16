@@ -230,7 +230,9 @@ export class NativeDesktopRuntime implements DesktopRuntime {
   openProject(projectId: string): ProjectSummary {
     const project = openStoredProject(this.db, projectId);
     if (!project) notFound("Project", "projects.open");
-    this.syncChapters(project);
+    // Opening selects trusted metadata only. Chapter synchronization is
+    // deferred until the first content request so the renderer can paint the
+    // shell before a large manuscript scan begins.
     return mapProjectSummary(project);
   }
 
@@ -268,8 +270,7 @@ export class NativeDesktopRuntime implements DesktopRuntime {
   }
 
   getChapter(projectId: string, chapterId: string): ChapterDocument {
-    const project = this.requireProject(projectId, "content.getChapter");
-    this.syncChapters(project);
+    this.requireProject(projectId, "content.getChapter");
     const chapter = getProjectChapter(this.db, projectId, chapterId);
     if (!chapter || !chapter.active) notFound("Chapter", "content.getChapter");
     return {

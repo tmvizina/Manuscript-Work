@@ -1,22 +1,26 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { api, type SkillSummary } from "./lib/api";
 import Sidebar from "./components/Sidebar";
 import TopBar from "./components/TopBar";
-import ChaptersPage from "./pages/ChaptersPage";
-import SkillPage from "./pages/SkillPage";
-import RagPage from "./pages/RagPage";
-import SearchPage from "./pages/SearchPage";
-import WorldPage from "./pages/WorldPage";
-import ReviewsPage from "./pages/ReviewsPage";
-import HelpIndexPage from "./pages/HelpIndexPage";
-import HelpSectionPage from "./pages/HelpSectionPage";
-import SettingsPage from "./pages/SettingsPage";
-import NativeSkillPage from "./pages/NativeSkillPage";
 import { nativeSkills, NATIVE_PHASE_LABELS } from "./lib/nativeSkills";
-import NativeReviewsPage from "./pages/NativeReviewsPage";
-import NativeHelpPage from "./pages/NativeHelpPage";
-import ProviderOnboardingPage from "./pages/ProviderOnboardingPage";
 import { createTransport, type ProjectDetail, type ProjectImportInput, type ProjectSummary } from "./transport";
+
+// Route pages are intentionally loaded on demand. The renderer shell (sidebar,
+// top bar, and transport selection) is needed for every route, while heavier
+// pages pull in their data/rendering dependencies only when visited.
+const ChaptersPage = lazy(() => import("./pages/ChaptersPage"));
+const SkillPage = lazy(() => import("./pages/SkillPage"));
+const RagPage = lazy(() => import("./pages/RagPage"));
+const SearchPage = lazy(() => import("./pages/SearchPage"));
+const WorldPage = lazy(() => import("./pages/WorldPage"));
+const ReviewsPage = lazy(() => import("./pages/ReviewsPage"));
+const HelpIndexPage = lazy(() => import("./pages/HelpIndexPage"));
+const HelpSectionPage = lazy(() => import("./pages/HelpSectionPage"));
+const SettingsPage = lazy(() => import("./pages/SettingsPage"));
+const NativeSkillPage = lazy(() => import("./pages/NativeSkillPage"));
+const NativeReviewsPage = lazy(() => import("./pages/NativeReviewsPage"));
+const NativeHelpPage = lazy(() => import("./pages/NativeHelpPage"));
+const ProviderOnboardingPage = lazy(() => import("./pages/ProviderOnboardingPage"));
 
 const transport = createTransport();
 
@@ -230,7 +234,7 @@ export default function App() {
       <Sidebar route={route} items={sidebar} phaseLabels={phaseLabels} error={sidebarError} onRetry={loadSkills} />
       <main className="main">
         {projectError && <p className="err">Project error: {projectError}</p>}
-        {page}
+        <Suspense fallback={<p className="hint" role="status">Loading page…</p>}>{page}</Suspense>
       </main>
     </div>
   );

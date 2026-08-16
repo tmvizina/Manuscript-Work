@@ -5,6 +5,7 @@ import { basename, dirname, join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   DATABASE_SCHEMA_VERSION,
+  DEFAULT_BUSY_TIMEOUT_MS,
   getSchemaVersion,
   getSetting,
   newId,
@@ -125,6 +126,12 @@ describe("shared database core", () => {
     expect(migrated.prepare("SELECT text FROM chapters WHERE chapter_id = ?").get("book-1/Chapter 1 - Legacy.txt")).toMatchObject({
       text: "preserve this chapter",
     });
+    expect(
+      (migrated.pragma("table_info(chapters)") as Array<{ name: string }>).some((column) => column.name === "file_size"),
+    ).toBe(true);
+    expect(migrated.prepare("SELECT file_size FROM chapters WHERE chapter_id = ?").get("book-1/Chapter 1 - Legacy.txt")).toMatchObject({
+      file_size: -1,
+    });
     expect(migrated.prepare("SELECT 1 FROM sqlite_master WHERE name = 'project_chapters'").get()).toBeTruthy();
     expect(migrated.prepare("SELECT 1 FROM sqlite_master WHERE name = 'project_settings'").get()).toBeTruthy();
     expect(migrated.prepare("SELECT 1 FROM sqlite_master WHERE name = 'agent_runs'").get()).toBeTruthy();
@@ -231,7 +238,41 @@ describe("shared database core", () => {
     damaged.pragma(`user_version = ${DATABASE_SCHEMA_VERSION}`);
     damaged.close();
 
-    expect(() => openDb(dbPath)).toThrow(/Database schema 1 is invalid/);
+    expect(() => openDb(dbPath)).toThrow(new RegExp(`Database schema ${DATABASE_SCHEMA_VERSION} is invalid`));
+  });
+
+  it("configures a finite SQLite busy timeout", () => {
+    const db = openDb(":memory:", { busyTimeoutMs: 1_234 });
+    expect(db.pragma("busy_timeout", { simple: true })).toBe(1_234);
+    db.close();
+
+    const defaultDb = openDb(":memory:");
+    expect(defaultDb.pragma("busy_timeout", { simple: true })).toBe(DEFAULT_BUSY_TIMEOUT_MS);
+    defaultDb.close();
+    expect(() => openDb(":memory:", { busyTimeoutMs: -1 })).toThrow(/busyTimeoutMs/);
+  });
+
+  it("backs up and upgrades a version 1 database to the metadata-cache schema", () => {
+    const dbPath = temporaryDatabase();
+    const original = openDb(dbPath);
+    original.exec(`
+      ALTER TABLE chapters DROP COLUMN file_size;
+      ALTER TABLE project_chapters DROP COLUMN file_size;
+      PRAGMA user_version = 1;
+    `);
+    original.close();
+
+    const upgraded = openDb(dbPath);
+    expect(getSchemaVersion(upgraded)).toBe(DATABASE_SCHEMA_VERSION);
+    expect((upgraded.pragma("table_info(chapters)") as Array<{ name: string }>).some((column) => column.name === "file_size")).toBe(true);
+    upgraded.close();
+
+    const backupName = readdirSync(dirname(dbPath)).find((name) => name.startsWith(`${basename(dbPath)}.backup-`));
+    expect(backupName).toBeDefined();
+    const backup = new Database(join(dirname(dbPath), backupName as string), { readonly: true });
+    expect(getSchemaVersion(backup)).toBe(1);
+    expect((backup.pragma("table_info(chapters)") as Array<{ name: string }>).some((column) => column.name === "file_size")).toBe(false);
+    backup.close();
   });
 
   it("generates compact prefixed identifiers", () => {

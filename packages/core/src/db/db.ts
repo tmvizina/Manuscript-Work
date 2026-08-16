@@ -18,14 +18,17 @@ import { randomUUID } from "node:crypto";
 const schemaPath = fileURLToPath(new URL("./schema.sql", import.meta.url));
 
 /**
- * The schema shipped in this release is the first version tracked through
- * SQLite's user_version pragma.  Existing databases have user_version 0 and
- * are treated as the legacy baseline by migration 1.
+ * SQLite's user_version pragma tracks the schema shipped in this release.
+ * Existing databases have user_version 0 and are treated as the legacy
+ * baseline by migration 1.
  */
-export const DATABASE_SCHEMA_VERSION = 1;
+export const DATABASE_SCHEMA_VERSION = 2;
 /** Backwards-friendly aliases for hosts that prefer a shorter name. */
 export const CURRENT_SCHEMA_VERSION = DATABASE_SCHEMA_VERSION;
 export const SCHEMA_VERSION = DATABASE_SCHEMA_VERSION;
+
+/** Default wait for another SQLite connection to release its lock. */
+export const DEFAULT_BUSY_TIMEOUT_MS = 5_000;
 
 export type DB = Database.Database;
 
@@ -39,6 +42,8 @@ export interface DatabaseBackupOptions {
 export interface OpenDbOptions {
   /** Override the bundled schema for an embedding host that owns the file. */
   schemaSql?: string;
+  /** Milliseconds SQLite waits for a concurrent reader/writer before failing. */
+  busyTimeoutMs?: number;
   /** Configure where the pre-migration backup is written. */
   backup?: DatabaseBackupOptions;
   /** Convenience alias for backup.path. */
@@ -56,6 +61,7 @@ export interface OpenDbOptions {
  * database at its previous schema version and keeps the backup for recovery.
  */
 export function openDb(dbPath: string, options: OpenDbOptions = {}): DB {
+  const busyTimeoutMs = normalizeBusyTimeout(options.busyTimeoutMs);
   const persistent = isPersistentDatabasePath(dbPath);
   const existedBeforeOpen = persistent && existingDatabaseFile(dbPath);
   if (persistent) mkdirSync(dirname(dbPath), { recursive: true });
@@ -63,6 +69,7 @@ export function openDb(dbPath: string, options: OpenDbOptions = {}): DB {
   let db: DB | undefined;
   try {
     db = new Database(dbPath);
+    db.pragma(`busy_timeout = ${busyTimeoutMs}`);
     db.pragma("foreign_keys = ON");
 
     const schemaVersion = getSchemaVersion(db);
@@ -132,6 +139,9 @@ const migrations: Readonly<Record<number, Migration>> = {
   1: (db, schemaSql) => {
     db.exec(schemaSql);
     migrateLegacyColumns(db);
+  },
+  2: (db) => {
+    migrateChapterFileMetadataColumns(db);
   },
 };
 
@@ -207,6 +217,30 @@ function migrateLegacyColumns(db: DB): void {
     db.exec("CREATE INDEX IF NOT EXISTS idx_agent_runs_project ON agent_runs(project_id, created_at DESC)");
     db.exec("CREATE INDEX IF NOT EXISTS idx_agent_runs_provider ON agent_runs(provider, created_at DESC)");
   }
+}
+
+/** Add the persistent file-size cache used by metadata-only chapter syncs. */
+function migrateChapterFileMetadataColumns(db: DB): void {
+  const addColumn = (table: string): void => {
+    if (!tableExists(db, table)) return;
+    const columns = (db.pragma(`table_info(${table})`) as Array<{ name: string }>).map((column) => column.name);
+    if (!columns.includes("file_size")) {
+      // -1 marks rows created before the metadata cache existed. They are
+      // hydrated once on the next sync instead of being trusted as unchanged.
+      db.exec(`ALTER TABLE ${table} ADD COLUMN file_size INTEGER NOT NULL DEFAULT -1`);
+    }
+  };
+
+  addColumn("chapters");
+  addColumn("project_chapters");
+}
+
+function normalizeBusyTimeout(value: number | undefined): number {
+  const timeout = value ?? DEFAULT_BUSY_TIMEOUT_MS;
+  if (!Number.isSafeInteger(timeout) || timeout < 0 || timeout > 2_147_483_647) {
+    throw new TypeError("busyTimeoutMs must be a non-negative 32-bit integer");
+  }
+  return timeout;
 }
 
 function isPersistentDatabasePath(dbPath: string): boolean {
@@ -291,13 +325,13 @@ function assertDatabaseIntegrity(db: DB, label: string): void {
 }
 
 const requiredSchema: Readonly<Record<string, readonly string[]>> = {
-  chapters: ["chapter_id", "rel_path", "text"],
+  chapters: ["chapter_id", "rel_path", "text", "file_size"],
   skills: ["skill_id", "display_name"],
   claude_runs: ["run_id", "prompt", "status"],
   rag_queries: ["query_id", "q"],
   settings: ["key", "value"],
   projects: ["project_id", "root_path", "updated_at", "active"],
-  project_chapters: ["project_id", "chapter_id"],
+  project_chapters: ["project_id", "chapter_id", "file_size"],
   project_settings: ["project_id", "key", "value_json"],
   provider_settings: ["provider_setting_id", "provider", "config_json"],
   agent_runs: ["run_id", "provider", "status", "created_at"],

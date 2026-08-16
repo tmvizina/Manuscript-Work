@@ -1,7 +1,14 @@
 import { createHash } from "node:crypto";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("node:fs", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("node:fs")>();
+  return { ...actual, readFileSync: vi.fn(actual.readFileSync) };
+});
+
+import { readFileSync } from "node:fs";
 import { scanChapterFiles } from "./chapters.js";
 import { listHelpSections, readHelpSection, type HelpSectionDefinition } from "./help.js";
 import { isPathInside, resolveInside, safeReviewPath, safeWorldPath } from "./paths.js";
@@ -54,6 +61,29 @@ describe("chapter content", () => {
 });
 
 describe("trusted project chapter content", () => {
+  it("skips content reads and hashes for unchanged chapter metadata", () => {
+    const root = projectRoot();
+    const filename = "Chapter 1 - Cached.txt";
+    mkdirSync(join(root, "chapters"), { recursive: true });
+    const path = join(root, "chapters", filename);
+    writeFileSync(path, "cached chapter", "utf8");
+
+    const db = openDb(":memory:");
+    const project = createProject(db, { projectId: "project-cache", name: "Cache", rootPath: root });
+    expect(syncProjectChapters(db, project)).toMatchObject({ scanned: 1, added: 1 });
+
+    const readSpy = vi.mocked(readFileSync);
+    readSpy.mockClear();
+    expect(syncProjectChapters(db, project)).toMatchObject({ scanned: 1, unchanged: 1 });
+    expect(readSpy).not.toHaveBeenCalled();
+
+    writeFileSync(path, "changed chapter", "utf8");
+    expect(syncProjectChapters(db, project)).toMatchObject({ scanned: 1, updated: 1 });
+    expect(readSpy).toHaveBeenCalled();
+    readSpy.mockRestore();
+    db.close();
+  });
+
   it("syncs decimal chapter numbers in deterministic order", () => {
     const root = projectRoot();
     mkdirSync(join(root, "chapters"), { recursive: true });

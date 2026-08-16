@@ -80,6 +80,22 @@ describe("Electron transport", () => {
     await expect(transport.search.query({ query: "dragon" })).rejects.toMatchObject({ code: "INVALID_ARGUMENT", kind: "electron" });
   });
 
+  it("rescans chapters only for an explicitly fresh native read", async () => {
+    const bridge = nativeBridge();
+    let scans = 0;
+    const listChapters = bridge.content.listChapters;
+    bridge.content.listChapters = async (projectId) => {
+      scans += 1;
+      return listChapters(projectId);
+    };
+    const transport = createElectronTransport(bridge);
+
+    await transport.content.getChapter("project-1", "chapter-1");
+    expect(scans).toBe(0);
+    await transport.content.getChapter("project-1", "chapter-1", { fresh: true });
+    expect(scans).toBe(1);
+  });
+
   it("turns malformed bridge responses into renderer-safe errors", async () => {
     const bridge = nativeBridge();
     bridge.content.listWorld = async () => [undefined as never];

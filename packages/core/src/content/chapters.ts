@@ -31,7 +31,12 @@ export interface ChapterFile {
   sha256: string;
   word_count: number;
   file_mtime: string;
+  /** File size in bytes, captured before content hydration. */
+  file_size: number;
 }
+
+/** Filesystem metadata captured without reading chapter contents. */
+export type ChapterFileMetadata = Omit<ChapterFile, "text" | "sha256" | "word_count">;
 
 export interface ChapterSyncResult {
   scanned: number;
@@ -57,11 +62,17 @@ function chapterOptions(options: ChapterSyncOptions | string): ChapterSyncOption
   return typeof options === "string" ? { manuscriptRoot: options } : options;
 }
 
-/** Read every chapter text file from the configured book roots. */
-export function scanChapterFiles(options: ChapterSyncOptions | string): ChapterFile[] {
+/**
+ * Enumerate chapter files and capture only metadata.
+ *
+ * Sync callers use this pass to avoid opening and hashing chapters whose
+ * stored mtime and byte size are unchanged. `scanChapterFiles` remains the
+ * fully hydrated compatibility API for callers that need the text itself.
+ */
+export function scanChapterFileMetadata(options: ChapterSyncOptions | string): ChapterFileMetadata[] {
   const { manuscriptRoot } = chapterOptions(options);
   const root = rootValue(manuscriptRoot, "manuscriptRoot");
-  const files: ChapterFile[] = [];
+  const files: ChapterFileMetadata[] = [];
 
   for (const { book, dir } of BOOK_ROOTS) {
     // Keep the fixed book roots beneath the caller's trusted manuscript root.
@@ -81,8 +92,6 @@ export function scanChapterFiles(options: ChapterSyncOptions | string): ChapterF
       if (entryStat.isSymbolicLink() || !entryStat.isFile()) continue;
       const stat = statSync(fullPath);
 
-      const text = readFileSync(fullPath, "utf-8");
-      const hash = createHash("sha256").update(text).digest("hex");
       const parsed = parseChapterName(name);
       files.push({
         chapter_id: `${book}/${name}`,
@@ -90,14 +99,28 @@ export function scanChapterFiles(options: ChapterSyncOptions | string): ChapterF
         rel_path: join(dir, name),
         path: fullPath,
         ...parsed,
-        text,
-        sha256: hash,
-        word_count: text.split(/\s+/).filter(Boolean).length,
         file_mtime: stat.mtime.toISOString(),
+        file_size: stat.size,
       });
     }
   }
   return files;
+}
+
+/** Hydrate one metadata record with text and its content-derived fields. */
+export function readChapterFile(file: ChapterFileMetadata): ChapterFile {
+  const text = readFileSync(file.path, "utf-8");
+  return {
+    ...file,
+    text,
+    sha256: createHash("sha256").update(text).digest("hex"),
+    word_count: text.split(/\s+/).filter(Boolean).length,
+  };
+}
+
+/** Read every chapter text file from the configured book roots. */
+export function scanChapterFiles(options: ChapterSyncOptions | string): ChapterFile[] {
+  return scanChapterFileMetadata(options).map(readChapterFile);
 }
 
 /** Sync chapter snapshots into the server's existing chapters table. */
@@ -106,24 +129,57 @@ export function syncChapters(db: ContentDatabase, options: ChapterSyncOptions | 
   const seen = new Set<string>();
   const upsert = db.prepare(`
     INSERT INTO chapters (chapter_id, book, rel_path, number, title, text, sha256,
-                          word_count, active, file_mtime, synced_at)
+                          word_count, active, file_mtime, file_size, synced_at)
     VALUES (@chapter_id, @book, @rel_path, @number, @title, @text, @sha256,
-            @word_count, 1, @file_mtime, @synced_at)
+            @word_count, 1, @file_mtime, @file_size, @synced_at)
     ON CONFLICT(chapter_id) DO UPDATE SET
       number = excluded.number, title = excluded.title, text = excluded.text,
       sha256 = excluded.sha256, word_count = excluded.word_count, active = 1,
-      file_mtime = excluded.file_mtime, synced_at = excluded.synced_at
+      file_mtime = excluded.file_mtime, file_size = excluded.file_size, synced_at = excluded.synced_at
   `);
-  const getHash = db.prepare("SELECT sha256, active FROM chapters WHERE chapter_id = ?");
+  const getMetadata = db.prepare(
+    `SELECT active, file_mtime, file_size
+     FROM chapters WHERE chapter_id = ?`,
+  );
+  const reactivate = db.prepare(
+    `UPDATE chapters SET book = ?, rel_path = ?, number = ?, title = ?, active = 1,
+       file_mtime = ?, file_size = ?, synced_at = ? WHERE chapter_id = ?`,
+  );
 
-  for (const file of scanChapterFiles(options)) {
+  for (const metadata of scanChapterFileMetadata(options)) {
     result.scanned++;
-    seen.add(file.chapter_id);
-    const previous = getHash.get(file.chapter_id) as { sha256: string; active: number } | undefined;
-    if (previous && previous.sha256 === file.sha256 && previous.active === 1) {
+    seen.add(metadata.chapter_id);
+    const previous = getMetadata.get(metadata.chapter_id) as
+      | { active: number; file_mtime: string | null; file_size: number }
+      | undefined;
+    const metadataUnchanged =
+      previous &&
+      previous.file_size >= 0 &&
+      previous.file_size === metadata.file_size &&
+      previous.file_mtime === metadata.file_mtime;
+    if (metadataUnchanged && previous.active === 1) {
       result.unchanged++;
       continue;
     }
+
+    // A vanished row can be reactivated from its existing snapshot without
+    // reopening the file when the filesystem metadata still matches.
+    if (metadataUnchanged && previous.active !== 1) {
+      reactivate.run(
+        metadata.book,
+        metadata.rel_path,
+        metadata.number,
+        metadata.title,
+        metadata.file_mtime,
+        metadata.file_size,
+        nowIso(),
+        metadata.chapter_id,
+      );
+      result.updated++;
+      continue;
+    }
+
+    const file = readChapterFile(metadata);
 
     const { path: _sourcePath, ...row } = file;
     upsert.run({ ...row, synced_at: nowIso() });
@@ -164,14 +220,16 @@ export function refreshChapter(
   }
 
   const text = readFileSync(fullPath, "utf-8");
+  const refreshedStat = statSync(fullPath);
   db.prepare(
-    `UPDATE chapters SET text = ?, sha256 = ?, word_count = ?, active = 1, file_mtime = ?, synced_at = ?
+    `UPDATE chapters SET text = ?, sha256 = ?, word_count = ?, active = 1, file_mtime = ?, file_size = ?, synced_at = ?
      WHERE chapter_id = ?`,
   ).run(
     text,
     createHash("sha256").update(text).digest("hex"),
     text.split(/\s+/).filter(Boolean).length,
-    statSync(fullPath).mtime.toISOString(),
+    refreshedStat.mtime.toISOString(),
+    refreshedStat.size,
     nowIso(),
     chapterId,
   );

@@ -2,6 +2,7 @@ export {
   createDatabaseBackup,
   CURRENT_SCHEMA_VERSION,
   DATABASE_SCHEMA_VERSION,
+  DEFAULT_BUSY_TIMEOUT_MS,
   getSetting,
   getSchemaVersion,
   migrate,

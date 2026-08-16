@@ -15,7 +15,8 @@
   "scripts": {
     "typecheck": "npm.cmd run typecheck --workspaces --if-present && npm.cmd exec --workspace app/ui -- tsc --noEmit",
     "test": "vitest run --config vitest.config.mjs",
-    "build": "npm.cmd run build --workspaces --if-present"
+    "build": "npm.cmd run build --workspaces --if-present",
+    "benchmark:phase6": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File test/benchmarks/windows-phase6-benchmark.ps1"
   },
   "devDependencies": {
     "typescript": "^5.6.0",

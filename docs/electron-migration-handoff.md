@@ -435,7 +435,26 @@ Manual clean-VM assisted UI, actual prior-version upgrade, and remove-data check
 remain final Phase 7 release qualification; they are not represented as completed
 evidence until a release candidate and clean qualification machine exist.
 
-1. Begin Phase 6 measurement and low-end performance work.
+Phase 6 implementation now defers chapter scanning until content is requested,
+avoids rescanning on project selection and ordinary chapter reads, caches file
+mtime/size through schema migration 2, skips unchanged content reads/hashes,
+sets a bounded SQLite busy timeout, lazy-loads renderer routes, and batches plus
+coalesces high-frequency stream events at a bounded update rate. The renderer
+shell fell from one 265.78 kB eager bundle to a 179.23 kB shell plus on-demand
+route chunks.
+
+The headless Windows harness records labeled machine/commit data for package,
+scan, and mock-stream metrics. On the current high-end engineering workstation,
+the 250-file synthetic fixture measured 150.461 ms initial and 33.840 ms
+unchanged, and a 20,000-event mock stream delivered its first token in 1.410 ms
+while keeping replay at its 1,000-event cap. These pass the applicable local
+budgets but are not low-end release evidence. Automated GUI launch measurement
+was disabled by default after repeated exception dialogs; cold/warm launch,
+idle working set, renderer long-task profiling, a 30-minute provider stream,
+and representative low-end hardware remain Phase 7 qualification evidence.
+
+1. Complete Phase 6 validation, package audit, and checkpoint commit, then begin
+   Phase 7 release qualification.
 2. Decide whether RAG becomes an embedded native index or remains an optional
    external compatibility service; do not disguise semantic RAG as literal search.
 3. Add embedded provider payloads only if release engineering later documents the

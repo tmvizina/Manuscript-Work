@@ -1,7 +1,7 @@
 import { existsSync, lstatSync } from "node:fs";
 import { sep, resolve } from "node:path";
 import { ContentDatabase, nowIso } from "./common.js";
-import { ChapterFile, scanChapterFiles } from "./chapters.js";
+import { ChapterFile, ChapterFileMetadata, readChapterFile, scanChapterFileMetadata } from "./chapters.js";
 import { isPathInside, resolveInside, toPosixRelative } from "./paths.js";
 
 /**
@@ -49,7 +49,7 @@ function compareText(left: string, right: string): number {
   return left < right ? -1 : left > right ? 1 : 0;
 }
 
-function compareChapterFiles(left: ChapterFile, right: ChapterFile): number {
+function compareChapterFiles(left: ChapterFileMetadata, right: ChapterFileMetadata): number {
   return (
     compareText(left.book, right.book) ||
     left.number - right.number ||
@@ -64,6 +64,15 @@ function compareChapterFiles(left: ChapterFile, right: ChapterFile): number {
  * supplies a malformed ChapterFile.
  */
 export function scanProjectChapterFiles(input: ProjectInput): ChapterFile[] {
+  return scanProjectChapterMetadata(input).map(readChapterFile);
+}
+
+/**
+ * Scan a trusted project's chapter paths without opening their contents.
+ * The sync path uses this metadata-only pass before deciding which files need
+ * to be read and hashed.
+ */
+export function scanProjectChapterMetadata(input: ProjectInput): ChapterFileMetadata[] {
   const project = trustedProject(input);
   // A symlink at the registered root would make lexical containment checks
   // describe a different physical tree. Missing roots are allowed so a sync
@@ -72,8 +81,8 @@ export function scanProjectChapterFiles(input: ProjectInput): ChapterFile[] {
     const rootStat = lstatSync(project.rootPath);
     if (!rootStat.isDirectory() || rootStat.isSymbolicLink()) return [];
   }
-  const files = scanChapterFiles({ manuscriptRoot: project.rootPath });
-  const safeFiles: ChapterFile[] = [];
+  const files = scanChapterFileMetadata({ manuscriptRoot: project.rootPath });
+  const safeFiles: ChapterFileMetadata[] = [];
 
   for (const file of files) {
     const fullPath = resolve(file.path);
@@ -103,7 +112,7 @@ export function syncProjectChapters(
   input: ProjectInput,
 ): ProjectChapterSyncResult {
   const project = trustedProject(input);
-  const files = scanProjectChapterFiles(project);
+  const files = scanProjectChapterMetadata(project);
   const result: ProjectChapterSyncResult = {
     scanned: files.length,
     added: 0,
@@ -114,14 +123,20 @@ export function syncProjectChapters(
   const seen = new Set<string>();
   const syncedAt = nowIso();
 
-  const getHash = db.prepare(
-    "SELECT sha256, active FROM project_chapters WHERE project_id = ? AND chapter_id = ?",
+  const getMetadata = db.prepare(
+    `SELECT active, file_mtime, file_size
+     FROM project_chapters WHERE project_id = ? AND chapter_id = ?`,
+  );
+  const reactivate = db.prepare(
+    `UPDATE project_chapters SET book = ?, rel_path = ?, number = ?, title = ?, active = 1,
+       file_mtime = ?, file_size = ?, synced_at = ?
+     WHERE project_id = ? AND chapter_id = ?`,
   );
   const upsert = db.prepare(`
     INSERT INTO project_chapters(
       project_id, chapter_id, book, rel_path, number, title, text, sha256,
-      word_count, active, file_mtime, synced_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)
+      word_count, active, file_mtime, file_size, synced_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)
     ON CONFLICT(project_id, chapter_id) DO UPDATE SET
       book = excluded.book,
       rel_path = excluded.rel_path,
@@ -132,30 +147,58 @@ export function syncProjectChapters(
       word_count = excluded.word_count,
       active = excluded.active,
       file_mtime = excluded.file_mtime,
+      file_size = excluded.file_size,
       synced_at = excluded.synced_at
   `);
 
   for (const file of files) {
     seen.add(file.chapter_id);
-    const previous = getHash.get(project.projectId, file.chapter_id) as
-      | { sha256: string; active: number }
+    const previous = getMetadata.get(project.projectId, file.chapter_id) as
+      | { active: number; file_mtime: string | null; file_size: number }
       | undefined;
-    if (previous && previous.sha256 === file.sha256 && previous.active === 1) {
+    const metadataUnchanged =
+      previous &&
+      previous.file_size >= 0 &&
+      previous.file_size === file.file_size &&
+      previous.file_mtime === file.file_mtime;
+    if (metadataUnchanged && previous.active === 1) {
       result.unchanged++;
       continue;
     }
 
+    // Re-activate an unchanged snapshot without reopening the file. This is
+    // common after a temporary missing-directory state and keeps the fast
+    // path free of content reads while preserving the stored text/hash.
+    if (metadataUnchanged && previous.active !== 1) {
+      reactivate.run(
+        file.book,
+        file.rel_path,
+        file.number,
+        file.title,
+        file.file_mtime,
+        file.file_size,
+        syncedAt,
+        project.projectId,
+        file.chapter_id,
+      );
+      result.updated++;
+      continue;
+    }
+
+    const hydrated = readChapterFile(file);
+
     upsert.run(
       project.projectId,
-      file.chapter_id,
-      file.book,
-      file.rel_path,
-      file.number,
-      file.title,
-      file.text,
-      file.sha256,
-      file.word_count,
-      file.file_mtime,
+      hydrated.chapter_id,
+      hydrated.book,
+      hydrated.rel_path,
+      hydrated.number,
+      hydrated.title,
+      hydrated.text,
+      hydrated.sha256,
+      hydrated.word_count,
+      hydrated.file_mtime,
+      hydrated.file_size,
       syncedAt,
     );
     if (previous) result.updated++;
