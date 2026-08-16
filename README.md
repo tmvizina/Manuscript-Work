@@ -1,313 +1,168 @@
 # Book Writer
 
-The **text** half of a fantasy-novel production pipeline. This repo holds the skills
-and the chunking tool that take an idea all the way to a finished, formatted
-manuscript and the chunk + manifest pair that downstream audiobook repos consume.
+Book Writer is a local-first manuscript workspace for planning, drafting,
+reviewing, revising, formatting, and preparing text for narration. It supports
+the original fantasy workflow and a reusable nonfiction profile designed for a
+practical fly-fishing and night-fishing book.
 
-It was extracted from a larger proof-of-concept ("POC") tree that mixed manuscript
-authoring, audio generation, and image work together. This repo isolates **authoring
-only**: sketch → enriched → arc-gated → planned → written → reviewed → re-planned →
-re-written → formatted → chunked. Audio, cloud audit, image-prompt, and
-image-generation work all live in sibling repos and are deliberately out of scope here.
+This repository contains the text-authoring side of the pipeline. Audio
+generation, cloud audio repair, and image generation are intentionally out of
+scope.
 
-Authoring has **two halves** that meet at the first draft:
-- a **generation half** that takes a human's rough idea to a first draft of new prose
-  (enhance → arc-gate → plan → write), and
-- a **revision half** that takes an existing draft to a clean manuscript and chunks
-  (review → plan → write → format → chunk).
-Both halves read a shared **`world/` memory system** (characters, threads, arcs, voice
-bible, continuity ledger) as canon.
+## What it does
 
-You do **not** need to have seen the POC to use this repo. Everything you need to
-understand the inputs, outputs, and the format of each artifact is included as a
-sample under `samples/`.
+- Keeps project memory in a portable `world/` folder. Fantasy projects use it
+  as world canon; nonfiction projects present it as a Knowledge Base.
+- Provides guided workflows for note intake, outline development, human
+  structure review, chapter planning, drafting, editorial review, revision,
+  formatting, title cleanup, and TTS-safe text chunking.
+- Preserves author voice and stable IDs such as `CHAR-NNN`, `THR-NNN`,
+  `RV-NNN`, and `EP-NNN`.
+- Runs Claude Code or Codex CLI through a native Windows desktop boundary,
+  without WSL, Docker, a localhost production server, or stored provider
+  credentials.
+- Stores application data below the Windows user profile while leaving source
+  manuscripts in their chosen folders.
 
----
+## Start here
 
-## Using with Codex
+If you received a Windows installer, follow the
+[first-time install and user guide](docs/windows-first-time-install.md). It
+covers verification, installation, first launch, project import, provider
+sign-in, the first workflow, backups, updates, removal, and troubleshooting.
 
-Open this repository as a Codex workspace. Codex automatically reads `AGENTS.md` and discovers the repo-scoped workflows under `.agents/skills/`. Invoke one explicitly with `$skill-name` (for example, `$book-reviewer-v2`), or describe the job normally and let Codex match the skill from its description.
+Current installers are family-test candidates unless a release owner supplies
+a valid Authenticode signature and published SHA-256 hash. Do not broadly
+distribute an unsigned build.
 
-The detailed workflow sources remain under `skills/` and `skills-rag/`; the lightweight `.agents/skills/` adapters make those sources discoverable without maintaining duplicate copies. The legacy `.claude/` folder remains available for Claude Code compatibility.
+### Choose a project profile
 
----
-## Book Writer Studio (the web app)
+- **Fantasy** uses the established world-canon model for characters, locations,
+  arcs, threads, voice, and continuity.
+- **Fly & Night Fishing** creates a nonfiction `practical-narrative` profile.
+  The same physical `world/` directory becomes a Knowledge Base for author
+  voice, audience, techniques, equipment, species, conditions, places, people,
+  stories, claims, sources, safety/regulations, terminology, and continuity.
 
-The repo ships a browser app that drives the whole pipeline: every skill gets
-a tab in a sidebar (in pipeline order) with a prompt box that runs it through
-`claude -p`, streaming output live; a **Chapter Texts** viewer (chapters are
-stored in the `.txt` files *and* mirrored into SQLite); a **RAG** page for
-semantic canon search over `world/` + chapters (ChromaDB, all local); and a
-**?** Help button that serves each guide in `docs/guides/` as its own page.
-Every skill also has a **RAG-aware variant** (`skills-rag/`) that answers
-canon lookups from the index instead of re-reading whole `world/` files.
+Existing project files are never overwritten when a profile is scaffolded.
+Changing regulations and safety claims still need a jurisdiction, source,
+checked date, and verification status.
 
-```sh
-# 1. the stack (app :8321, rag :8323, chromadb :8322)
-docker compose up -d --build
+## Editorial workflow
 
-# 2. the claude bridge, in an IDE terminal (keeps your host claude login)
-node bridge/claude-bridge.js
+The usual new-book path is:
 
-# open http://localhost:8321
+1. `world-notes-seeder` captures notes, interviews, photographs, and sources.
+2. `outline-enhancer` turns the concept into a structured outline and seeds
+   project memory.
+3. `story-arc-reviewer` pauses for human decisions about structure, coverage,
+   omissions, and unresolved facts.
+4. `manuscript-planner` produces writer-ready chapter briefs.
+5. `manuscript-writer-v2` drafts or revises while protecting voice and
+   provenance.
+6. `book-reviewer-v2` creates stable `RV-NNN` findings.
+7. `manuscript-editing-planner-v2` turns accepted findings into `EP-NNN` work.
+8. Repeat writing/review as needed, then use `novel-formatting`, optional
+   `chapter-title-cleanup`, and `audiobook-text-prep-chunker`.
+
+RAG-aware variants are optional and never replace reading the actual manuscript
+passages being reviewed or edited.
+
+## Use with Codex or Claude Code
+
+Open this repository as the workspace. Codex reads `AGENTS.md` and discovers
+adapters under `.agents/skills/`; invoke a workflow with `$skill-name` or
+describe the task normally. Canonical workflow instructions live in `skills/`
+and `skills-rag/`. The `.claude/` directory remains for legacy Claude Code
+compatibility.
+
+For substantive reviews, editing plans, and writing passes, prefer the v2
+skills. Use a `-rag` variant only when the Book Writer RAG service is available
+and focused canon retrieval will help.
+
+## Desktop development
+
+Requirements:
+
+- Windows x64 for packaging and installer qualification
+- Node.js `>=22.12.0 <25` (the clean release workflow pins 22.14.0)
+- npm, using the committed `package-lock.json`
+
+From the repository root:
+
+```powershell
+npm.cmd ci --no-audit --no-fund
+npm.cmd run typecheck
+npm.cmd test
+npm.cmd run build
 ```
 
-No docker? `cd app/server && npm install && npm start` serves the app alone
-(build the UI once: `cd app/ui && npm install && npm run build`).
+Build the Windows installer without launching it:
 
-See `docs/guides/claude-bridge.md` (how runs reach claude),
-`docs/guides/rag-overview.md`, and `docs/guides/rag-maintenance.md`.
-
-### Project profiles
-
-Book Writer defaults to the original fantasy workflow when a manuscript checkout has no profile file. A portable `.book-writer/project.json` can instead select a reusable nonfiction profile. The first bundled preset is `fly-night-fishing`, designed for a practical book supported by personal fishing stories:
-
-```json
-{
-  "schemaVersion": 1,
-  "profile": "nonfiction",
-  "preset": "fly-night-fishing",
-  "editorialMode": "practical-narrative",
-  "claimsPolicy": "experience-led",
-  "memoryRoot": "world",
-  "memoryLabel": "Knowledge Base"
-}
+```powershell
+npm.cmd run package --workspace book-writer-desktop
+npm.cmd rebuild better-sqlite3
+npm.cmd run audit:package --workspace book-writer-desktop
 ```
 
-The desktop first-run screen can import a folder with this preset and safely scaffold its Knowledge Base. The physical folder stays `world/` for compatibility, but the UI and workflows use nonfiction labels for author voice, audience, topics, techniques, equipment, species, conditions, places, people, stories, claims, sources, safety/regulations, terminology, and continuity. Existing files are never overwritten.
+Packaging temporarily rebuilds `better-sqlite3` for Electron's ABI. The second
+command restores the workspace copy for Node/Vitest; the packaged copy is
+detached so it remains Electron-compatible.
 
-Experience-led means the author's observations and recollections are valid attributed sources; it does not make changing safety or regulation claims timeless. Those entries retain jurisdiction, checked date, source, and verification status.
+The headless performance probe is:
 
----
-
-## What goes in, what comes out
-
-**Input** — depends on which half you enter at:
-- **Generation half (new prose):** a human **sketch** — a premise, a rough outline,
-  or a beat sheet — that `outline-enhancer` deepens, the `story-arc-reviewer` confirms
-  with the author, and `manuscript-planner` turns into a generation guide the writer
-  builds the first draft from.
-- **Revision half (existing draft):** a writing prompt — a brief / chapter direction
-  ("write the next chapter where X happens"), or a **review report** (from
-  `book-reviewer`) plus an **editing plan** (from `manuscript-editing-planner`) that
-  the writer skill executes.
-
-**Output** — three things, in order of the pipeline:
-1. a **compiled, formatted manuscript** (clean novel-ready chapter `.txt` files), then
-2. **chunked text** — `chunks/chXX_NNNN.txt`, ~1500–1800 characters each, never
-   splitting a sentence, and
-3. a **chunk manifest** — `chunk_manifest.json` (machine) plus a human-readable
-   `chunk_manifest.pretty.json`.
-
-The **chunk + manifest pair is the hand-off boundary**: it is the documented contract
-that the Local Audiobook Generator and Cloud Audiobook Repairer repos read as their
-input. That is why the chunker lives here, in the writing repo — chunking is the last
-step of writing, not the first step of audio.
-
----
-
-## The pipeline (sketch → enhance → arc-gate → plan → write → review → … → format → chunk)
-
-Each step is a skill under `skills/`. The pipeline runs left to right in two halves
-that meet at the **first draft**:
-
-```
-GENERATION HALF — sketch to first draft
-  human sketch ─► outline-enhancer ─► story-arc-reviewer ─► manuscript-planner ─► manuscript-writer
-                  (dramaturg)         (arc gate, HUMAN)     (generation planner)  (FIRST DRAFT)
-                       │                      │                     │
-                       └──── seeds ───────────┴──── read as canon ──┘
-                                          ▼
-                              world/ memory system  ──────────────► (read by every skill below too)
-                       (characters · threads · arcs · voice bible · continuity ledger)
-
-                                          │  first draft exists
-                                          ▼
-REVISION HALF — draft to clean, chunked output
-  book-reviewer ─► manuscript-editing-planner ─► manuscript-writer ─┐
-  (review)         (editing plan)                 (edits)           │
-        ▲────────────────── iterate ◄─────────────────────────────-┘
-                                          │  prose settled
-                                          ▼
-  novel-formatting ─► audiobook-text-prep-chunker
-  (format)            (chunk + manifest = hand-off to audiobook repos)
+```powershell
+npm.cmd run benchmark:phase6 -- -Mode safe
 ```
 
-### Generation half — from a human sketch to a first draft
+GUI launch measurement is deliberately disabled unless explicitly enabled on a
+clean disposable Windows VM. Do not run it on a normal working account.
 
-These three skills are the **front of the pipeline**. They turn a human's rough idea
-into a writer-ready generation guide, seeding the shared `world/` memory as they go.
-The first one is the **only mandatory human-authored input**; the arc gate is a
-deliberate **human checkpoint**.
+## Architecture
 
-| # | Step | Skill | What it does | Reads | Writes |
-|---|------|-------|--------------|-------|--------|
-| 0 | **Enhance** (dramaturg) | `outline-enhancer` | Deepens a human seed (premise / outline / beats) into an **enriched outline**, and **seeds the `world/` memory** — opening characters, threads, and arcs with stable IDs. Surfaces plant/grow/harvest threads. Marks anything unresolved **campaign-pending** rather than inventing an answer. | human sketch (+ existing `world/`) | `outline/enriched-outline.md` (beats `OB-NNN`) + seeded `world/` (`CHAR-NNN`, `THR-NNN`, `ARC-NNN`, voice-bible, continuity-ledger) |
-| 0.5 | **Arc-gate** (human checkpoint) | `story-arc-reviewer` | Turns the enhancer's proposed arcs and open questions into concrete **confirmation questions for the author**, records the answers as canon, resolves campaign-pending directions only when the author decides them, and hands a **validated outline** down the line. Not an autonomous approver. | enriched outline + `world/` arcs/threads | `outline/arc-confirmation-questions.md` (`AQ-NNN`) + `outline/validated-outline.md` (confirmation log `AC`) + updated `world/` |
-| 1 | **Plan** (generation) | `manuscript-planner` | Converts the **validated** outline into a **generation guide** the writer generates the first draft from: chapter targets, scene briefs, per-chapter thread beats (PLANT/GROW/HARVEST), and voice/continuity anchors. Distinct from `manuscript-editing-planner` — this plans *new* prose, not revisions. | validated outline + `world/` canon | generation guide `.md` (overall + per-chapter briefs + JSON index, items `GP-YYYY-MM-DD-NNN`) |
+- `app/desktop/` — secure Electron main/preload boundary and Windows packaging
+- `app/ui/` — shared React renderer with native Electron and legacy HTTP transports
+- `packages/core/` — shared SQLite, project, content, search, and execution logic
+- `app/server/` — browser compatibility server; not packaged in production
+- `skills/`, `skills-rag/` — canonical authoring workflows
+- `.agents/skills/` — Codex discovery adapters
+- `samples/` — sample manuscript, report, chunk, and manifest formats
+- `test/` — provider fixtures, packaging checks, and benchmarks
 
-The writer (below) then generates the first draft from that generation guide. Once a
-draft exists, the **revision half** takes over.
+Production Electron calls core services directly over typed IPC. The renderer
+cannot choose executable paths, access Node, navigate to arbitrary content, or
+receive raw provider/private events.
 
-### Revision half — from an existing draft to clean, chunked output
+## Data, privacy, and recovery
 
-Most revision steps ship a **v1** and an enhanced **v2**. v1 is fine for quick
-one-offs; **v2 is the recommended default** for any real pass (stable
-cross-referenceable IDs, voice-drift gates, dependency graphs, `world/`-memory
-awareness).
+Book Writer does not collect provider passwords, API keys, OAuth codes, or
+tokens. Authentication happens in the provider's own terminal/browser. Prompts
+and model responses may still be retained by the provider and in local run
+history, so use synthetic content for release smoke tests.
 
-| # | Step | Skill (v1 / v2) | What it does | Reads | Writes |
-|---|------|------------------|--------------|-------|--------|
-| 2 | **Review** | `book-reviewer` / `book-reviewer-v2` | Reads the manuscript and produces a review report: continuity, motif/repetition audits, character arcs, pacing, audiobook readiness. v2 emits stable `RV-NNN` finding IDs. | manuscript `.txt` | review report `.md` |
-| 3 | **Plan** (editing) | `manuscript-editing-planner` / `manuscript-editing-planner-v2` | Turns the review report into a structured editing plan: book-structure recommendations, chapter-split proposals, and per-chapter edit plans. v2 emits `EP-NNN` plan IDs that reference the `RV-NNN` findings, plus a dependency graph and conflict detection. | review report `.md` | editing plan `.md` (overall + per-chapter) |
-| 4 | **Write** | `manuscript-writer` / `manuscript-writer-v2` | Generates the first draft from the generation guide, **and** executes editing plans on later passes. For each finding it decides **implement / push back / suggestion-only**, with reasoning. It only commits accepted edits; proposed rewrites go to a sidecar `.md` for human approval. v2 adds a voice fingerprint and a self-diff voice gate. | generation guide *or* editing plan `.md` + manuscript | manuscript `.txt` (+ sidecar of suggestions) |
-| — | **Title cleanup** (as needed) | `chapter-title-cleanup` | Audits, renumbers, and standardizes chapter/part/section/file titles **without** rewriting prose. Produces a title map and an audit. Run whenever chapter numbering or titles drift. | chapter files / titles | title audit + title map JSON |
-| 5 | **Format** | `novel-formatting` | Formats chapter files into clean, consistent, novel-ready Markdown/plain text — consistent headings, scene breaks, paragraph spacing, audiobook-friendly output. Preserves prose and chapter order. | manuscript `.txt` | compiled/formatted manuscript |
-| 6 | **Chunk** | `audiobook-text-prep-chunker` | Splits finished chapter `.txt` into Speechify-ready chunks and builds the manifest. **This is the hand-off output.** Text-prep only — it does **not** call Speechify or Whisper. | formatted chapter `.txt` | `chunks/chXX_NNNN.txt` + `chunk_manifest.json` / `.pretty.json` |
+On Windows, application state is under `%APPDATA%\Book Writer`; imported
+manuscript folders stay where the user selected them. Database upgrades create
+an integrity-checked pre-migration backup. Default uninstall preserves local
+application data, and external manuscript folders are never uninstall targets.
 
-The generation half runs **once per book/arc** to produce the first draft; the
-revision half is **iterative** — review → plan → write, repeat, then format and chunk
-once the prose is settled.
+See:
 
-> **The `world/` memory system.** The generation half **seeds** `world/` (the
-> enhancer is the first writer into it; the arc gate updates it with the author's
-> confirmations) and every downstream skill — reviewer, planner, writer — **reads** it
-> as canon. It holds one file per character (`CHAR-NNN`), a thread map (`THR-NNN` with
-> plant/grow/harvest + campaign-pending markers), an arc map (`ARC-NNN`), a voice
-> bible, and a continuity ledger. Stable entity IDs (`CHAR`/`THR`/`ARC`/`OB`) are
-> undated and never renumbered; event IDs (`AQ`/`GP`/`RV`/`EP`) are dated. **No `world/`
-> sample ships in this repo** — it is project-specific canon, kept in the manuscript
-> repo, not migrated here.
+- [Windows installation, upgrade, and recovery](docs/windows-installation.md)
+- [Windows release workflow](docs/windows-release.md)
+- [Release qualification checklist](docs/windows-release-qualification.md)
+- [Rollback and database compatibility](docs/windows-rollback-and-database-compatibility.md)
+- [Phase 6 performance evidence](docs/performance/phase6-windows-benchmarks.md)
+- [Electron migration handoff](docs/electron-migration-handoff.md)
 
-> **Skill default paths point at the POC.** A few SKILL.md files mention a default
-> manuscript repo path (`~/RiderProjects/RoadBeneathDragonsWings/`). That is just the
-> POC convention these skills were authored against. The skills are book-agnostic —
-> point them at whatever manuscript repo you are working in.
+## Current release status
 
----
+Phases 4–6 are implemented and locally validated. Phase 7 repository tests,
+checklists, rollback guidance, and compatibility evidence are present. A public
+release remains on hold until a release owner completes the signed clean-machine
+matrix, publishes the installer hash, resolves the GUI launch exception observed
+by the automated benchmark attempt, records low-end measurements, and approves a
+bounded real Codex provider smoke.
 
-## Folder map
-
-```
-book-writer/
-  README.md               <- this file
-  PLAN.md                 <- how this repo was built (build guide)
-  DESIGN-DECISIONS.md     <- why it is shaped this way (rationale + open questions)
-  skills/
-    # generation half (front of pipeline)
-    outline-enhancer/               <- the dramaturg (seeds world/ memory)
-    story-arc-reviewer/             <- the arc gate (human checkpoint)
-    manuscript-planner/             <- the generation planner (validated outline -> generation guide)
-    # revision half
-    book-reviewer/                  book-reviewer-v2/
-    manuscript-editing-planner/     manuscript-editing-planner-v2/
-    manuscript-writer/              manuscript-writer-v2/
-    chapter-title-cleanup/
-    novel-formatting/
-    audiobook-text-prep-chunker/    <- includes scripts/ (the chunker CLI)
-  samples/
-    manuscript/   Chapter 01 - The First Broken Seal.txt   <- one finished chapter
-    chunks/       ch01_0001.txt                            <- one chunk
-    manifests/    chunk_manifest.pretty.json               <- trimmed manifest (first 2 chapters; format reference)
-    reports/      2026-06-13-initial-chapter-by-chapter-review.md   <- a review report (Review step output)
-                  Chapter 01 - The First Broken Seal - edit-plan.md <- an editing plan (Plan step output)
-```
-
-Each skill folder is a complete Claude Code skill: a `SKILL.md` plus its
-`templates/`, `reference/`, `examples/`, and/or `scripts/`. Drop `skills/` into your
-`~/.claude/skills` (or point your skill loader at it) to use them.
-
----
-
-## Naming conventions (kept as-is from the source)
-
-- **Chapters:** `Chapter NN - Title.txt`. `NN` may be fractional for inserted
-  chapters (`00.5`, `07.6`).
-- **Chunks:** `chXX_NNNN.txt`, where `chXX` is the manifest's `source_file_id`
-  (e.g. `ch01_0001.txt` = chapter 1, chunk 1).
-- **Manifest:** `chunk_manifest.json` (machine) plus `chunk_manifest.pretty.json`
-  (human-readable, indented).
-- **Chunk size:** target 1500–1800 chars, **hard max 2000** (Speechify's per-request
-  limit), and a sentence is never split across a chunk boundary.
-
----
-
-## Sample-driven walkthrough
-
-The four `samples/` folders let you trace one chapter through the **revision half** of
-the pipeline without any of the POC. The **generation-half** artifacts (enriched
-outline, validated outline, generation guide, and the `world/` memory system) are
-project-specific canon and are **not sampled here** — see each skill's own `templates/`
-for their shapes. Open the samples in pipeline order:
-
-1. **A review report** — `samples/reports/2026-06-13-initial-chapter-by-chapter-review.md`.
-   This is what the **Review** step (`book-reviewer`) produces from a manuscript:
-   chapter-by-chapter findings, continuity notes, motif observations.
-
-2. **An editing plan** — `samples/reports/Chapter 01 - The First Broken Seal - edit-plan.md`.
-   This is what the **Plan (editing)** step (`manuscript-editing-planner`) produces from
-   that review: the concrete per-chapter edits the writer will triage in the **Write** step.
-
-3. **A finished chapter** — `samples/manuscript/Chapter 01 - The First Broken Seal.txt`.
-   The output of write + format: clean, novel-ready chapter prose. This is the input
-   to chunking.
-
-4. **A chunk** — `samples/chunks/ch01_0001.txt`. The first ~1.5–1.8 KB slice of that
-   chapter, as the chunker emits it. Note it ends on a clean sentence boundary.
-
-5. **The manifest** — `samples/manifests/chunk_manifest.pretty.json`. A **trimmed**
-   copy (first 2 chapters: `ch00`, `ch00_5`) of a real book manifest, included as a
-   **format reference** (the full book has 51 source_files / 912 chunks; see the
-   `_sample_note` field). Inspect the top-level `settings` block (chunk-size targets,
-   pronunciation guide), the `source_files` array (one entry per chapter, with
-   `source_file_id`, `source_hash`, char counts), and the per-chunk records that
-   follow. Every chunk file like `ch00_0001.txt` has a matching record here.
-
-### Run the chunker yourself
-
-You can reproduce the **Chunk** step from the sample chapter. The chunker is pure-Python with no
-third-party dependencies:
-
-```bash
-cd "skills/audiobook-text-prep-chunker"
-
-python3 scripts/prepare_audiobook_chunks.py \
-  --input "../../samples/manuscript/Chapter 01 - The First Broken Seal.txt" \
-  --out   /tmp/book-writer-chunk-demo \
-  --write-txt-chunks \
-  --verbose
-```
-
-This writes `chXX_NNNN.txt` chunk files plus a fresh `chunk_manifest.json` and
-`chunk_manifest.pretty.json` into `/tmp/book-writer-chunk-demo`. Compare the generated
-chunks against `samples/chunks/ch01_0001.txt` and the generated manifest against
-`samples/manifests/chunk_manifest.pretty.json` to see the format match.
-
-Useful flags (full list via `python3 scripts/prepare_audiobook_chunks.py --help`):
-- `--min-chars` / `--max-chars` / `--hard-max` — chunk-size targets (default 1500 / 1800 / 2000).
-- `--dry-run` — report what would be chunked without writing files.
-- `--full` — force a from-scratch re-chunk (default is incremental: it reuses unchanged
-  chunks so previously generated audio stays valid).
-- `--pronunciation-guide PATH` — substitute hard-to-pronounce terms before chunking.
-
-### A note on the manifest's paths
-
-The sample `chunk_manifest.pretty.json` contains absolute **Windows** paths
-(`C:\Users\tmviz\...`) in fields like `settings.pronunciation_guide_path` and each
-`source_files[].path`. That is intentional and left **as-is** so the sample documents
-the real format. These paths are written by the chunker at run time and are
-**environment-specific** — when you run the chunker on your machine, it records your
-own absolute paths. Do not treat the sample's paths as something to "fix."
-
----
-
-## What's deliberately not here
-
-- **Audio** (Speechify generation, stitching, repair) → Local Audiobook Generator repo.
-- **Cloud audit** of generated audio → Cloud Audiobook Repairer repo.
-- **Image prompts / image generation** → the image repos.
-- **World canon, journals, and the full review/editing-plan archives** are not bulk-copied.
-  Only one sample of each artifact format is included here to teach the loop, not to
-  migrate data. The real manuscript and full chunk/manifest sets stay in the source repo.
-
-See `DESIGN-DECISIONS.md` for the rationale behind these boundaries and the open questions.
+Known product limits include Windows x64-only packaging, no auto-update,
+disabled embedded provider payloads pending redistribution approval, and native
+literal search rather than semantic RAG in the desktop build.

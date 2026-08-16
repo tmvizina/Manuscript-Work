@@ -1,5 +1,7 @@
 # Windows installation, upgrade, and recovery
 
+New users should begin with the [first-time Windows install and user guide](windows-first-time-install.md).
+
 For release-owner qualification, see the [Phase 7 Windows release checklist](windows-release-qualification.md)
 and [rollback and database compatibility policy](windows-rollback-and-database-compatibility.md).
 
