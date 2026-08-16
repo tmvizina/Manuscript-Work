@@ -11,7 +11,8 @@ export function isPathInside(root: string, candidate: string, allowRoot = true):
 
 /** Resolve a path supplied by a caller without allowing traversal outside root. */
 export function resolveInside(root: string, requested: string, allowRoot = false): string | null {
-  if (typeof requested !== "string") return null;
+  if (typeof requested !== "string" || requested.length === 0 || requested.includes("\0") || isAbsolute(requested)) return null;
+  if (requested.split(/[\\/]+/).includes("..")) return null;
   const candidate = resolve(root, requested);
   return isPathInside(root, candidate, allowRoot) ? candidate : null;
 }

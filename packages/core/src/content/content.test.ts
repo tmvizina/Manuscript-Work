@@ -59,6 +59,7 @@ describe("skill content", () => {
       "---\ndescription: A demo skill\n---\n\n# Demo\n",
       "utf8",
     );
+    writeFileSync(join(root, "skills-rag", "demo-rag", "SKILL.md"), "# Demo RAG\n", "utf8");
     const metadata = readSkillMetadata(
       { skill_id: "demo", display_name: "Demo", pipeline_order: 1, phase: "intake", blurb: "demo" },
       root,
