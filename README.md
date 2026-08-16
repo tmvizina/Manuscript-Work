@@ -24,6 +24,13 @@ sample under `samples/`.
 
 ---
 
+## Using with Codex
+
+Open this repository as a Codex workspace. Codex automatically reads `AGENTS.md` and discovers the repo-scoped workflows under `.agents/skills/`. Invoke one explicitly with `$skill-name` (for example, `$book-reviewer-v2`), or describe the job normally and let Codex match the skill from its description.
+
+The detailed workflow sources remain under `skills/` and `skills-rag/`; the lightweight `.agents/skills/` adapters make those sources discoverable without maintaining duplicate copies. The legacy `.claude/` folder remains available for Claude Code compatibility.
+
+---
 ## Book Writer Studio (the web app)
 
 The repo ships a browser app that drives the whole pipeline: every skill gets
