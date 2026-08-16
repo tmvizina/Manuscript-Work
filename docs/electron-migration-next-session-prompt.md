@@ -30,22 +30,27 @@ Before editing:
 4. Treat `25446a6` only as the temporary Git-permission checkpoint it was; its P2
    contents were reviewed and corrected by the later commits.
 
-Resume at the handoff's **Exact next actions**. P2-01/P2-02 are reviewed and
-validated; Phase 2 remains incomplete. The immediate objective is P2-03/P2-04:
+Resume at the handoff's **Exact next actions**. P2-01/P2-02 and the P2-03
+persistence/contract/package foundation are reviewed and validated; Phase 2 remains
+incomplete. The immediate objective is to finish P2-03/P2-04:
 
-- fix the project-scoping and contract blockers before registering handlers;
-- define project onboarding/open semantics and lightweight world summaries;
-- add project-scoped chapter/settings schema and multi-project collision tests;
-- add core project, settings, run-history, and bounded literal-search services;
-- design race-free run subscription/replay and lifecycle ownership;
-- establish a compiled/packaged core strategy including `schema.sql` and Electron-
-  rebuilt `better-sqlite3`;
-- implement injected, sender-authorized, main-validating IPC handlers; and
+- add the project-scoped content-sync adapter and bounded literal-search service;
+- implement injected, sender-authorized, main-validating IPC handlers;
+- implement deterministic provider-runner/replay/cancellation seams; and
 - add IPC/lifecycle/security/native-package tests before renderer migration.
 
 Provider install/auth methods belong to Phase 4. Keep them explicitly unavailable
 until the trusted CLI discovery/install/auth design is implemented; never collect
 credentials or expose raw Electron/process/filesystem objects to React.
+
+Phase 4 now requires offline-first onboarding: the release pipeline embeds pinned,
+verified Windows x64 Claude and Codex payloads in the Book Writer installer, and the
+first-run wizard installs the selected payload per-user without a network download.
+Do not download or embed an artifact until its exact version, official source,
+license/redistribution rights, SHA-256, signature/publisher identity, and update
+policy are approved and recorded. Keep existing-CLI, local-installer, and explicit
+official-online-install fallbacks. Authentication remains the CLI's own visible
+interactive flow and may require provider network access.
 
 Maintain context isolation, renderer sandboxing, Node integration off, strict
 navigation/permission guards, typed allow-listed IPC, runtime validation, and the

@@ -127,17 +127,31 @@ listening TCP port, while the existing web path remains usable.
   onboarding.
 - On first launch, present three states: use detected CLI, install Claude, or
   install Codex. If neither exists, require a selection before enabling runs.
-- Fetch installation instructions only from pinned/official sources or ship a
-  versioned install recipe. Show the exact command and publisher before execution.
-- Prefer a trusted Windows package manager where supported. Installation that
-  modifies machine-wide locations must require normal Windows elevation; Book
-  Writer itself must not silently elevate.
+- Ship pinned Windows x64 provider payloads with the Book Writer installer so the
+  normal first-run CLI installation path does not require a download. Bundle a
+  provider only after its selected version's license and redistribution terms have
+  been approved.
+- Acquire each payload from the provider's official release endpoint during the
+  controlled release build. Record provider, version, architecture, source URL,
+  license, SHA-256, and available publisher/signature metadata in a checked-in
+  manifest/SBOM; fail the release if verification does not match.
+- Before installation, verify the embedded payload again and show its provider,
+  version, publisher, install location, and requested privileges. Refuse a missing,
+  stale, or mismatched payload rather than falling back silently.
+- Prefer a direct signed standalone binary or installer and a per-user location;
+  do not run a downloaded PowerShell/npm bootstrap script from the wizard. Book
+  Writer must not silently elevate or modify machine-wide locations.
+- Keep explicit recovery choices: select an already-installed executable, choose a
+  local installer, or opt into the provider's official online installation path.
+  These are fallbacks, not the default first-run path.
 - Re-scan `PATH` and known installation locations after installation, display the
   discovered version, and let the user retry or choose an executable manually.
 - Start the selected CLI's official interactive authentication command in a real
   visible terminal/PTY. The CLI, not Book Writer, prompts for credentials or opens
   the browser. Book Writer waits for exit, then performs a non-secret status/version
   check and reports success or actionable failure.
+- State clearly that bundled installation is offline, but provider authentication
+  and hosted model use can still require network access.
 - Never collect, proxy, persist, or log passwords, API keys, OAuth codes, tokens,
   or the terminal's sensitive input.
 - Allow provider switching and re-authentication later from Settings.
@@ -231,6 +245,10 @@ Committed checkpoints:
 | `25446a6` | Temporary P2 shell/contract checkpoint used to verify repository commit access | Superseded by review fixes |
 | `68a065a` | Reject lexical traversal segments in shared content paths | Complete |
 | `6ca8e2b` | Integrate and validate the secure Electron preload boundary | Complete |
+| `50bdc29` | Record the reviewed P2 shell and preload handoff | Complete |
+| `f19f6ca` | Add project-scoped persistence and run lifecycle primitives | Complete |
+| `56bc227` | Add replay-safe IPC subscription contracts and preload bridge | Complete |
+| `62913f7` | Package the core and Electron-native SQLite runtime | Complete |
 
 ### Reviewed P2-01/P2-02 foundation
 
@@ -254,50 +272,53 @@ The sandboxed Electron preload is bundled as one CommonJS file at
 `dist/preload/index.cjs`; main/shared code remains ESM. Electron `36.9.5`,
 electron-builder `26.15.3`, and esbuild `0.25.0` are pinned and locked.
 
-Validation completed on 2026-08-16:
+Validation completed through `62913f7` on 2026-08-16:
 
 - root typecheck passed for server, core, desktop, and UI;
-- the full Vitest suite passed: 6 files and 30 tests;
+- the full Vitest suite passed: 7 files and 37 tests;
 - the full production build passed;
 - electron-builder produced `dist/desktop/win-unpacked` successfully;
 - the packaged ASAR contained only the allow-listed main/shared JS, bundled
   preload, and package metadata, with the built UI under `resources/ui`;
+- the packaged Electron runtime imported `@book-writer/core`, loaded the unpacked
+  `better-sqlite3` binary, opened the embedded schema in memory, and executed a
+  direct database smoke query successfully;
 - the unpacked executable remained running during a five-second launch smoke test
   using repository-local temporary user data, then was stopped cleanly; and
 - `git diff --check` and staged checks passed.
 
-Phase 2 is still in progress because P2-03 handlers and P2-04 IPC/lifecycle tests
-are not implemented.
+Phase 2 is still in progress because the P2-03 persistence/contract/package
+foundation is complete but its main-process handlers and the P2-04 IPC/lifecycle
+tests are not implemented.
 
 ## Exact next actions
 
-1. Resolve the P2-03 contract/service blockers before registering handlers:
-   project-scope chapters/settings in the schema, define project onboarding/open
-   semantics, change world listing to lightweight summaries, and remove the run
-   subscription race with an explicit subscription/replay design.
-2. Add core project, project-settings, run-history, and bounded literal-search
-   repositories/services with focused migrations and multi-project collision tests.
-3. Establish a packaged core strategy that emits core runtime code, includes
-   `schema.sql`, packages/rebuilds `better-sqlite3` for Electron, and verifies the
-   native module from the unpacked application.
-4. Implement an injected desktop runtime and main-process IPC handlers. Revalidate
+1. Add the trusted desktop content-sync adapter that populates project-scoped
+   chapter records without changing the legacy server compatibility tables.
+2. Add a bounded literal-search service and focused project/path/result-limit tests.
+3. Implement an injected desktop runtime and main-process IPC handlers. Revalidate
    every request in main, authorize the sender/main frame, resolve filesystem roots
    only from trusted project records, sanitize responses, and return a disposer.
+4. Add the provider-runner abstraction, live subscription registry, bounded replay
+   buffer, cancellation ownership, and deterministic fake-provider seams; keep real
+   provider installation and authentication unavailable.
 5. Add P2-04 IPC, origin/frame authorization, lifecycle, replay/cancellation,
    traversal, and packaged native-module tests. Do not begin renderer migration
    until these tests and the Phase 2 acceptance criteria pass.
-6. Keep provider install/auth handlers explicitly unavailable until Phase 4 rather
-   than implementing unsafe placeholders or collecting credentials.
+6. In Phase 4, implement the offline-first provider payload manifest and wizard
+   flow above only after release engineering confirms redistribution rights and
+   selects the pinned Claude and Codex artifacts.
 
 ## Known risks and decisions still requiring evidence
 
-- The Electron shell packages and launches, but native `better-sqlite3` is not yet
-  imported by the desktop bundle. Its Electron ABI, ASAR-unpack policy, schema
-  resource path, and clean packaged startup still require direct verification.
+- The packaged Electron runtime can load native `better-sqlite3` and the embedded
+  schema, but a clean installed-app startup/database test is still required.
 - Vitest and esbuild require execution outside the managed filesystem sandbox on
   this machine; the full suite passes when granted repository-scoped access.
-- Claude and Codex installation/auth commands can change. Pin or verify official
-  commands during Phase 4 and avoid embedding an unmaintained arbitrary download.
+- Bundling Claude and Codex payloads is the approved offline-first design, but the
+  exact artifacts, redistribution terms, signatures, update cadence, installer-size
+  impact, and revocation response remain Phase 4 release gates. Never embed an
+  unverified or unmaintained arbitrary download.
 - Code signing, certificate ownership, distribution location, and update policy
   have not yet been selected.
 - Performance budgets are initial targets, not measured results. Baseline and
