@@ -254,6 +254,7 @@ Committed checkpoints:
 | `a5dc10e` | Add replayable native run manager and deterministic runner seam | Complete |
 | `08a95be` | Add the renderer transport and first read-only native vertical slice | Complete |
 | `aa2ce89` | Make packaged SQLite rebuilding target the Electron ABI deterministically | Complete |
+| `6a7313d` | Add renderer-level failure recovery without exposing error details | Complete |
 
 ### Reviewed P2-01/P2-02 foundation
 
@@ -360,23 +361,24 @@ Validation completed through `aa2ce89` on 2026-08-16:
   and temporary smoke data were removed.
 
 The first Phase 3 read-only slice is complete. Phase 3 overall remains in progress.
+The renderer root is also protected by an error boundary that replaces unexpected
+component failures with a details-free reload action. Its focused recovery test and
+UI production build passed after `6a7313d`.
 
 ## Exact next actions
 
-1. Add a desktop renderer error boundary and focused recovery test so an unexpected
-   component failure cannot leave a blank window.
-2. Migrate project settings through the existing validated native settings IPC,
+1. Migrate project settings through the existing validated native settings IPC,
    preserving the browser path or an explicit compatibility-only state.
-3. Migrate run history/start/cancel/subscription through the replay-safe native run
+2. Migrate run history/start/cancel/subscription through the replay-safe native run
    API and deterministic fake seam. Do not enable a real provider process in Phase 3.
-4. Migrate skills, reviews,
+3. Migrate skills, reviews,
    and remaining workflows in independently testable slices. The native production
    runner may remain unavailable until Phase 4, but the deterministic transport
    path must be testable with the fake seam.
-5. Add a project import/onboarding seam that creates the first trusted project,
+4. Add a project import/onboarding seam that creates the first trusted project,
    then prove the packaged chapter/world/search slice against repository-local test
    data without Fastify or a listening localhost port.
-6. In Phase 4, implement the offline-first provider payload manifest and wizard
+5. In Phase 4, implement the offline-first provider payload manifest and wizard
    flow above only after release engineering confirms redistribution rights and
    selects the pinned Claude and Codex artifacts.
 
