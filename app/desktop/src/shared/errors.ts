@@ -5,6 +5,9 @@ export const IPC_ERROR_CODES = {
   invalidResponse: "INVALID_RESPONSE",
   invokeFailed: "INVOKE_FAILED",
   malformedEvent: "MALFORMED_EVENT",
+  forbidden: "IPC_FORBIDDEN",
+  featureUnavailable: "FEATURE_UNAVAILABLE",
+  notFound: "NOT_FOUND",
   unknown: "UNKNOWN_ERROR",
 } as const;
 

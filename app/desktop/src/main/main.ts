@@ -1,15 +1,18 @@
 import { existsSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, ipcMain } from "electron";
 import { registerIpcHandlers } from "./ipc.js";
-import { getUiRoot, getUserDataPaths } from "./paths.js";
+import { getUiRoot, getUserDataPaths, type DesktopUserDataPaths } from "./paths.js";
+import { NativeDesktopRuntime } from "./runtime.js";
+import { PROJECT_SETTING_KEYS } from "../shared/contracts.js";
 import { createUiUrl, isAllowedUiUrl, registerUiProtocol, registerUiScheme } from "./uiProtocol.js";
 
 const DEV_URL_ENV = ["BOOK_WRITER_DEV_URL", "ELECTRON_RENDERER_URL", "VITE_DEV_SERVER_URL"] as const;
 
 let mainWindow: BrowserWindow | null = null;
 let rendererOrigin: string | undefined;
+let desktopRuntime: NativeDesktopRuntime | null = null;
 const mainDirectory = dirname(fileURLToPath(import.meta.url));
 
 // Electron requires privileged schemes to be registered before app.ready.
@@ -31,7 +34,7 @@ function localDevUrl(): string | null {
   return null;
 }
 
-function configureUserDataPaths(): void {
+function configureUserDataPaths(): DesktopUserDataPaths {
   const paths = getUserDataPaths(app.getPath("userData"));
   mkdirSync(paths.logs, { recursive: true });
   mkdirSync(paths.data, { recursive: true });
@@ -41,6 +44,7 @@ function configureUserDataPaths(): void {
   console.info(`[desktop] logs=${paths.logs}`);
   console.info(`[desktop] data=${paths.data}`);
   console.info(`[desktop] projects=${paths.projects}`);
+  return paths;
 }
 
 function installNavigationGuards(window: BrowserWindow): void {
@@ -82,7 +86,7 @@ async function loadRenderer(window: BrowserWindow, uiRoot: string): Promise<void
   await window.loadURL(createUiUrl());
 }
 
-export async function createMainWindow(): Promise<BrowserWindow> {
+export async function createMainWindow(runtime: NativeDesktopRuntime): Promise<BrowserWindow> {
   const uiRoot = getUiRoot({
     isPackaged: app.isPackaged,
     appPath: app.getAppPath(),
@@ -106,11 +110,19 @@ export async function createMainWindow(): Promise<BrowserWindow> {
     },
   });
 
+  const disposeIpc = registerIpcHandlers({
+    ipcMain,
+    webContents: window.webContents,
+    runtime,
+    isAllowedFrameUrl: (url) => isAllowedUiUrl(url, rendererOrigin),
+    allowedSettingKeys: new Set(PROJECT_SETTING_KEYS),
+  });
   installNavigationGuards(window);
   window.webContents.session.setPermissionCheckHandler(() => false);
   window.webContents.session.setPermissionRequestHandler((_webContents, _permission, callback) => callback(false));
   window.once("ready-to-show", () => window.show());
   window.on("closed", () => {
+    disposeIpc();
     if (mainWindow === window) mainWindow = null;
   });
 
@@ -136,10 +148,9 @@ if (!hasSingleInstanceLock) {
 
   void app.whenReady()
     .then(async () => {
-      configureUserDataPaths();
-      // Intentionally a no-op today; future IPC channels register here.
-      registerIpcHandlers();
-      await createMainWindow();
+      const paths = configureUserDataPaths();
+      desktopRuntime = new NativeDesktopRuntime(join(paths.data, "book-writer.db"));
+      await createMainWindow(desktopRuntime);
     })
     .catch((error: unknown) => {
       console.error("[desktop] application startup failed", error);
@@ -147,8 +158,16 @@ if (!hasSingleInstanceLock) {
     });
 
   app.on("activate", () => {
-    if (!mainWindow) void createMainWindow();
-    else mainWindow.show();
+    if (!mainWindow) {
+      if (desktopRuntime) void createMainWindow(desktopRuntime);
+      return;
+    }
+    mainWindow.show();
+  });
+
+  app.on("will-quit", () => {
+    desktopRuntime?.close();
+    desktopRuntime = null;
   });
 
   app.on("window-all-closed", () => {

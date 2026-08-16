@@ -1,7 +1,7 @@
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, lstatSync, readdirSync, readFileSync, realpathSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { rootValue } from "./common.js";
-import { safeWorldPath, toPosixRelative } from "./paths.js";
+import { isPathInside, safeWorldPath, toPosixRelative } from "./paths.js";
 
 const WORLD_EXTENSIONS = new Set([".md", ".json"]);
 
@@ -30,25 +30,42 @@ function projectRootValue(projectRoot: string): string {
   return rootValue(projectRoot, "projectRoot");
 }
 
+function safeWorldRoot(projectRoot: string): string | null {
+  const project = projectRootValue(projectRoot);
+  if (!existsSync(project)) return null;
+  const projectStat = lstatSync(project);
+  if (!projectStat.isDirectory() || projectStat.isSymbolicLink()) return null;
+  const root = join(project, "world");
+  if (!existsSync(root)) return null;
+  const rootStat = lstatSync(root);
+  if (!rootStat.isDirectory() || rootStat.isSymbolicLink()) return null;
+  const realRoot = realpathSync(root);
+  return isPathInside(realpathSync(project), realRoot, false) ? realRoot : null;
+}
+
 /** Scan markdown/JSON files below projectRoot/world, grouped by subdirectory. */
 export function scanWorld(projectRoot: string): Map<string, WorldFile[]> {
-  const root = join(projectRootValue(projectRoot), "world");
+  const root = safeWorldRoot(projectRoot);
   const groups = new Map<string, WorldFile[]>();
-  if (!existsSync(root)) return groups;
+  if (!root) return groups;
 
   const walk = (dir: string): void => {
     for (const entry of readdirSync(dir).sort()) {
       if (entry.startsWith(".")) continue;
       const full = join(dir, entry);
-      const stat = statSync(full);
+      const lexicalStat = lstatSync(full);
+      if (lexicalStat.isSymbolicLink()) continue;
+      const real = realpathSync(full);
+      if (!isPathInside(root, real, false)) continue;
+      const stat = statSync(real);
       if (stat.isDirectory()) {
-        walk(full);
+        walk(real);
         continue;
       }
       const dot = entry.lastIndexOf(".");
       const ext = dot >= 0 ? entry.slice(dot).toLowerCase() : "";
       if (!WORLD_EXTENSIONS.has(ext)) continue;
-      const relPath = toPosixRelative(root, full);
+      const relPath = toPosixRelative(root, real);
       const group = relPath.includes("/") ? relPath.slice(0, relPath.lastIndexOf("/")) : "";
       const files = groups.get(group) ?? [];
       files.push({ rel_path: relPath, name: entry.slice(0, dot), ext });
@@ -62,7 +79,7 @@ export function scanWorld(projectRoot: string): Map<string, WorldFile[]> {
 export function listWorld(projectRoot: string): WorldScanResult {
   const groups = scanWorld(projectRoot);
   return {
-    exists: existsSync(join(projectRootValue(projectRoot), "world")),
+    exists: safeWorldRoot(projectRoot) !== null,
     groups: [...groups.entries()]
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([dir, files]) => ({ dir, files })),
@@ -71,8 +88,14 @@ export function listWorld(projectRoot: string): WorldScanResult {
 
 /** Read one world file after resolving it through the traversal-safe helper. */
 export function readWorldFile(projectRoot: string, relPath: string): WorldDocument | null {
-  const path = safeWorldPath(projectRootValue(projectRoot), relPath);
-  if (!path || !existsSync(path) || !statSync(path).isFile()) return null;
+  const project = projectRootValue(projectRoot);
+  const root = safeWorldRoot(project);
+  const candidate = safeWorldPath(project, relPath);
+  if (!root || !candidate || !existsSync(candidate)) return null;
+  const lexicalStat = lstatSync(candidate);
+  if (lexicalStat.isSymbolicLink() || !lexicalStat.isFile()) return null;
+  const path = realpathSync(candidate);
+  if (!isPathInside(root, path, false)) return null;
   const raw = readFileSync(path, "utf-8");
   const stat = statSync(path);
   const kind = relPath.toLowerCase().endsWith(".json") ? "json" : "md";

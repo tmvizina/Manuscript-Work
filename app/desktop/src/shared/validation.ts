@@ -9,6 +9,7 @@ import {
   type JsonValue,
   type ProjectDetail,
   type ProjectSummary,
+  PROJECT_SETTING_KEYS,
   type ProviderSummary,
   type RunAccepted,
   type RunCancelResult,
@@ -323,6 +324,22 @@ export function assertSearchRequest(value: unknown, operation = "search.query"):
 export function assertSettingValue(value: unknown, operation = "settings.set"): asserts value is SettingValue {
   if (!isJsonValue(value)) {
     throw new BookWriterError({ code: IPC_ERROR_CODES.invalidArgument, message: "value must be JSON-serializable", operation });
+  }
+}
+
+export function assertProjectSettingValue(key: unknown, value: unknown, operation = "settings.set"): asserts value is SettingValue {
+  assertRequestString(key, "key", operation);
+  if (!(PROJECT_SETTING_KEYS as readonly string[]).includes(key)) {
+    throw new BookWriterError({ code: IPC_ERROR_CODES.invalidArgument, message: "setting key is not allowed", operation });
+  }
+  assertSettingValue(value, operation);
+  const valid =
+    (key === "preferredProvider" && isExecutionProvider(value)) ||
+    (key === "permissionMode" && isPermissionMode(value)) ||
+    (key === "runVariant" && isRunVariant(value)) ||
+    (key === "defaultModel" && typeof value === "string" && value.trim().length > 0 && value.length <= 128 && !value.includes("\0"));
+  if (!valid) {
+    throw new BookWriterError({ code: IPC_ERROR_CODES.invalidArgument, message: `value is invalid for setting ${key}`, operation });
   }
 }
 

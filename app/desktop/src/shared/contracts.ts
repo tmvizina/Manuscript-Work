@@ -254,6 +254,14 @@ export interface SearchResult {
 
 export type SettingValue = JsonValue;
 
+export const PROJECT_SETTING_KEYS = [
+  "preferredProvider",
+  "defaultModel",
+  "permissionMode",
+  "runVariant",
+] as const;
+export type ProjectSettingKey = (typeof PROJECT_SETTING_KEYS)[number];
+
 export interface SettingRecord {
   projectId: string;
   key: string;
