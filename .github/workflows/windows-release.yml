@@ -55,6 +55,13 @@ jobs:
         working-directory: app/desktop
         run: npm.cmd run audit:package
 
+      # Runs the packaged Electron binary headlessly (ELECTRON_RUN_AS_NODE) to
+      # prove the native ONNX runtime loads against the pinned Electron ABI
+      # without a rebuild step, and that the pruned GPU DLLs stayed pruned.
+      - name: Smoke test packaged ONNX runtime
+        working-directory: app/desktop
+        run: npm.cmd run smoke:onnx
+
       - name: Test install, repair-reinstall, and preserving uninstall
         shell: pwsh
         run: ./test/packaging/windows-installer-lifecycle.ps1

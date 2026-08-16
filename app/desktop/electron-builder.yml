@@ -3,6 +3,7 @@ productName: Book Writer
 asar: true
 asarUnpack:
   - 'node_modules/better-sqlite3/build/Release/*.node'
+  - 'node_modules/onnxruntime-node/bin/napi-v6/win32/x64/*'
 # Native modules are rebuilt explicitly by the package scripts. electron-builder's
 # implicit rebuild can target the invoking Node ABI on Windows/npm 11.
 npmRebuild: false
@@ -27,6 +28,28 @@ files:
   # Electron ABI binary is rebuilt before packaging and is the only runtime
   # artifact the installed app needs besides bindings/file-uri-to-path.
   - '!node_modules/{prebuild-install,detect-libc,expand-template,github-from-package,minimist,mkdirp-classic,napi-build-utils,node-abi,semver,pump,end-of-stream,once,wrappy,rc,deep-extend,ini,strip-json-comments,simple-get,decompress-response,mimic-response,simple-concat,tar-fs,chownr,tar-stream,bl,buffer,base64-js,ieee754,fs-constants,inherits,readable-stream,string_decoder,safe-buffer,util-deprecate,tunnel-agent}{,/**/*}'
+  # onnxruntime-node ships N-API (napi-v6) prebuilts for every OS/arch it
+  # supports; this app only ever loads the Windows x64 CPU execution
+  # provider. Empirically verified (test/packaging/onnx-native-smoke.mjs):
+  # DirectML.dll/dxcompiler.dll/dxil.dll (the DirectML GPU execution
+  # provider's dependencies) are not required for CPU-only inference —
+  # onnxruntime.dll does not statically link or eagerly load them.
+  - '!node_modules/onnxruntime-node/bin/napi-v6/darwin{,/**/*}'
+  - '!node_modules/onnxruntime-node/bin/napi-v6/linux{,/**/*}'
+  - '!node_modules/onnxruntime-node/bin/napi-v6/win32/arm64{,/**/*}'
+  - '!node_modules/onnxruntime-node/bin/napi-v6/win32/x64/DirectML.dll'
+  - '!node_modules/onnxruntime-node/bin/napi-v6/win32/x64/dxcompiler.dll'
+  - '!node_modules/onnxruntime-node/bin/napi-v6/win32/x64/dxil.dll'
+  # onnxruntime-node's own install-time downloader and its private deps;
+  # nothing under dist/*.js (the runtime code actually loaded) requires them.
+  - '!node_modules/onnxruntime-node/script{,/**/*}'
+  - '!node_modules/onnxruntime-node/node_modules{,/**/*}'
+  - '!node_modules/onnxruntime-node/lib{,/**/*}'
+  # Source maps for onnxruntime-node and its onnxruntime-common dependency —
+  # dev-only, same rule the rest of node_modules already follows below, but
+  # these two packages ship .map files even for their shipped dist/*.js.
+  - '!node_modules/onnxruntime-node/**/*.map'
+  - '!node_modules/onnxruntime-common/**/*.map'
   - '!node_modules/**/*.md'
   - '!node_modules/**/.nycrc'
   - '!node_modules/**/test*.js'
