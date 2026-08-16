@@ -10,6 +10,8 @@ __pycache__/
 node_modules/
 .npm-cache/
 app/ui/dist/
+app/desktop/dist/
+dist/desktop/
 app/server/data/
 rag/chroma_db/
 rag/.venv/

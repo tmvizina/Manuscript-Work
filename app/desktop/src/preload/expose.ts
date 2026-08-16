@@ -33,6 +33,8 @@ import {
   assertExecutionProvider,
   assertRequestString,
   assertRunRequest,
+  assertSearchRequest,
+  assertSettingValue,
   isAuthResult,
   isChapterDocument,
   isChapterSummaryList,
@@ -74,13 +76,6 @@ function call<T>(
     .catch((error) => {
       throw asBookWriterError(error, operation);
     });
-}
-
-function requestObject(operation: string, value: unknown): Record<string, unknown> {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
-    throw new BookWriterError({ code: "INVALID_ARGUMENT", message: `${operation} request must be an object`, operation });
-  }
-  return value as Record<string, unknown>;
 }
 
 function createProvidersApi(ipcRenderer: IpcRendererLike): ProviderApi {
@@ -154,7 +149,8 @@ function createRunsApi(ipcRenderer: IpcRendererLike): RunApi {
     },
     subscribe: (runId: string, listener: RunEventListener, onError?: (error: StructuredError) => void): Unsubscribe => {
       assertRequestString(runId, "runId", "runs.subscribe");
-      if (typeof listener !== "function") throw asBookWriterError(new Error("listener must be a function"), "runs.subscribe");
+      if (typeof listener !== "function") throw new BookWriterError({ code: "INVALID_ARGUMENT", message: "listener must be a function", operation: "runs.subscribe" });
+      if (onError !== undefined && typeof onError !== "function") throw new BookWriterError({ code: "INVALID_ARGUMENT", message: "onError must be a function", operation: "runs.subscribe" });
       const wrapped = (...args: unknown[]) => {
         const payload = args.length > 1 ? args[1] : args[0];
         try {
@@ -173,9 +169,7 @@ function createRunsApi(ipcRenderer: IpcRendererLike): RunApi {
 function createSearchApi(ipcRenderer: IpcRendererLike): SearchApi {
   return {
     query: (request: SearchRequest) => {
-      const body = requestObject("search.query", request);
-      assertRequestString(body.projectId, "projectId", "search.query");
-      assertRequestString(body.query, "query", "search.query");
+      assertSearchRequest(request, "search.query");
       return call<SearchResult[]>(ipcRenderer, IPC_CHANNELS.search.query, "search.query", isSearchResultList, request);
     },
   };
@@ -191,6 +185,7 @@ function createSettingsApi(ipcRenderer: IpcRendererLike): SettingsApi {
     set: (projectId, key, value: SettingValue) => {
       assertRequestString(projectId, "projectId", "settings.set");
       assertRequestString(key, "key", "settings.set");
+      assertSettingValue(value, "settings.set");
       return call<SettingRecord>(ipcRenderer, IPC_CHANNELS.settings.set, "settings.set", isSettingRecord, { projectId, key, value });
     },
   };

@@ -4,8 +4,12 @@ asar: true
 directories:
   output: ../../dist/desktop
 files:
-  - from: dist/main
-    to: main
+  - from: dist
+    to: dist
+    filter:
+      - 'main/**/*.js'
+      - 'shared/**/*.js'
+      - 'preload/index.cjs'
   - package.json
 extraResources:
   - from: ../ui/dist

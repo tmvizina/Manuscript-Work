@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { app, BrowserWindow } from "electron";
 import { registerIpcHandlers } from "./ipc.js";
 import { getUiRoot, getUserDataPaths } from "./paths.js";
@@ -9,6 +10,7 @@ const DEV_URL_ENV = ["BOOK_WRITER_DEV_URL", "ELECTRON_RENDERER_URL", "VITE_DEV_S
 
 let mainWindow: BrowserWindow | null = null;
 let rendererOrigin: string | undefined;
+const mainDirectory = dirname(fileURLToPath(import.meta.url));
 
 // Electron requires privileged schemes to be registered before app.ready.
 registerUiScheme();
@@ -60,7 +62,9 @@ function installNavigationGuards(window: BrowserWindow): void {
 }
 
 async function loadRenderer(window: BrowserWindow, uiRoot: string): Promise<void> {
-  const devUrl = localDevUrl();
+  // A packaged build must never grant the preload bridge to content selected
+  // through a mutable development environment variable.
+  const devUrl = app.isPackaged ? null : localDevUrl();
   if (devUrl) {
     rendererOrigin = new URL(devUrl).origin;
     await window.loadURL(devUrl);
@@ -98,11 +102,13 @@ export async function createMainWindow(): Promise<BrowserWindow> {
       nodeIntegration: false,
       webSecurity: true,
       allowRunningInsecureContent: false,
-      preload: join(__dirname, "preload.js"),
+      preload: join(mainDirectory, "..", "preload", "index.cjs"),
     },
   });
 
   installNavigationGuards(window);
+  window.webContents.session.setPermissionCheckHandler(() => false);
+  window.webContents.session.setPermissionRequestHandler((_webContents, _permission, callback) => callback(false));
   window.once("ready-to-show", () => window.show());
   window.on("closed", () => {
     if (mainWindow === window) mainWindow = null;
@@ -128,12 +134,17 @@ if (!hasSingleInstanceLock) {
     mainWindow.focus();
   });
 
-  app.whenReady().then(async () => {
-    configureUserDataPaths();
-    // Intentionally a no-op today; future IPC channels register here.
-    registerIpcHandlers();
-    await createMainWindow();
-  });
+  void app.whenReady()
+    .then(async () => {
+      configureUserDataPaths();
+      // Intentionally a no-op today; future IPC channels register here.
+      registerIpcHandlers();
+      await createMainWindow();
+    })
+    .catch((error: unknown) => {
+      console.error("[desktop] application startup failed", error);
+      app.quit();
+    });
 
   app.on("activate", () => {
     if (!mainWindow) void createMainWindow();

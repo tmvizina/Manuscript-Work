@@ -36,17 +36,52 @@ export class BookWriterError extends Error {
     };
   }
 }
-export function isStructuredError(value: unknown): value is StructuredError {
-  if (!value || typeof value !== "object") return false;
+
+function isJsonValue(value: unknown, seen = new WeakSet<object>(), depth = 0): value is JsonValue {
+  if (depth > 64) return false;
+  if (value === null || typeof value === "string" || typeof value === "boolean") return true;
+  if (typeof value === "number") return Number.isFinite(value);
+  if (typeof value !== "object") return false;
+  if (seen.has(value)) return false;
+  seen.add(value);
+  const valid = Array.isArray(value)
+    ? value.every((item) => isJsonValue(item, seen, depth + 1))
+    : Object.getPrototypeOf(value) === Object.prototype && Object.values(value).every((item) => isJsonValue(item, seen, depth + 1));
+  seen.delete(value);
+  return valid;
+}
+
+function hasOnlyKeys(candidate: Record<string, unknown>, keys: readonly string[]): boolean {
+  return Object.keys(candidate).every((key) => keys.includes(key));
+}
+
+function hasStructuredErrorShape(value: unknown): value is StructuredError {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
   const candidate = value as Record<string, unknown>;
-  return candidate.name === "BookWriterError" && typeof candidate.code === "string" && typeof candidate.message === "string";
+  return (
+    candidate.name === "BookWriterError" &&
+    typeof candidate.code === "string" &&
+    candidate.code.length > 0 &&
+    typeof candidate.message === "string" &&
+    (candidate.operation === undefined || typeof candidate.operation === "string") &&
+    (candidate.retryable === undefined || typeof candidate.retryable === "boolean") &&
+    (candidate.details === undefined || isJsonValue(candidate.details))
+  );
+}
+
+export function isStructuredError(value: unknown): value is StructuredError {
+  return hasStructuredErrorShape(value) && hasOnlyKeys(value as unknown as Record<string, unknown>, ["name", "code", "message", "operation", "retryable", "details"]);
 }
 
 export function toStructuredError(value: unknown, operation?: string): StructuredError {
-  if (isStructuredError(value)) {
+  if (hasStructuredErrorShape(value)) {
     return {
-      ...value,
-      ...(value.operation || !operation ? {} : { operation }),
+      name: "BookWriterError",
+      code: value.code,
+      message: value.message,
+      ...(value.operation || operation ? { operation: value.operation || operation } : {}),
+      ...(value.retryable === undefined ? {} : { retryable: value.retryable }),
+      ...(value.details === undefined ? {} : { details: value.details }),
     };
   }
   if (value instanceof BookWriterError) return value.toJSON();

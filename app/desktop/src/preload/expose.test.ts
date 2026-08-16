@@ -39,10 +39,25 @@ describe("preload exposure", () => {
     expect(exposed).toHaveProperty("settings.get");
   });
 
-  it("validates request arguments before invoking IPC", async () => {
+  it("validates request arguments before invoking IPC", () => {
     const ipc = ipcStub([]);
     const api = createBookWriterApi(ipc);
-    await expect(api.providers.install("invalid" as never)).rejects.toMatchObject({ code: "INVALID_ARGUMENT" });
+    const invalidCalls = [
+      () => api.providers.install("invalid" as never),
+      () => api.runs.start({ provider: "codex", prompt: "go", model: "" }),
+      () => api.search.query({ projectId: "project-1", query: "dragon", scope: "invalid" as never }),
+      () => api.search.query({ projectId: "project-1", query: "dragon", limit: 0 }),
+      () => api.settings.set("project-1", "bad", Number.NaN),
+      () => api.runs.start({ provider: "codex", prompt: "go", command: "unexpected" } as never),
+    ];
+    for (const invalidCall of invalidCalls) {
+      try {
+        invalidCall();
+        throw new Error("expected request validation to fail");
+      } catch (error) {
+        expect(error).toMatchObject({ code: "INVALID_ARGUMENT" });
+      }
+    }
     expect(ipc.calls).toHaveLength(0);
   });
 

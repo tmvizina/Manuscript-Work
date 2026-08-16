@@ -12,9 +12,10 @@ const UI_CSP = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self' data:",
-  "connect-src 'self' http://localhost:8321 http://127.0.0.1:8321 ws://localhost:5173 ws://127.0.0.1:5173",
+  "connect-src 'self'",
   "object-src 'none'",
   "base-uri 'self'",
+  "form-action 'none'",
   "frame-ancestors 'none'",
 ].join("; ");
 
