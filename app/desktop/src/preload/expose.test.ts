@@ -34,6 +34,7 @@ describe("preload exposure", () => {
     expect(exposed).not.toHaveProperty("invoke");
     expect(exposed).not.toHaveProperty("send");
     expect(exposed).toHaveProperty("providers.list");
+    expect(exposed).toHaveProperty("providers.cancelAuth");
     expect(exposed).toHaveProperty("projects.list");
     expect(exposed).toHaveProperty("projects.import");
     expect(exposed).toHaveProperty("content.listChapters");
@@ -47,6 +48,7 @@ describe("preload exposure", () => {
     const api = createBookWriterApi(ipc);
     const invalidCalls = [
       () => api.providers.install("invalid" as never),
+      () => api.providers.cancelAuth("invalid" as never),
       () => api.runs.start({ provider: "codex", prompt: "go", model: "" }),
       () => api.search.query({ projectId: "project-1", query: "dragon", scope: "invalid" as never }),
       () => api.search.query({ projectId: "project-1", query: "dragon", limit: 0 }),
@@ -69,6 +71,19 @@ describe("preload exposure", () => {
     const api = createBookWriterApi(ipc);
     await expect(api.providers.list()).resolves.toEqual([{ provider: "claude", status: "ready" }]);
     expect(ipc.calls[0][0]).toBe(IPC_CHANNELS.providers.list);
+  });
+
+  it("sends only a provider enum for authentication and cancellation", async () => {
+    const ipc = ipcStub((channel, arg) => channel === IPC_CHANNELS.providers.auth
+      ? { provider: (arg as { provider: "claude" }).provider, status: "authenticated", ok: true, authenticated: true }
+      : { provider: (arg as { provider: "claude" }).provider, cancelled: true });
+    const api = createBookWriterApi(ipc);
+    await expect(api.providers.auth("claude")).resolves.toMatchObject({ authenticated: true });
+    await expect(api.providers.cancelAuth("claude")).resolves.toEqual({ provider: "claude", cancelled: true });
+    expect(ipc.calls).toEqual([
+      [IPC_CHANNELS.providers.auth, { provider: "claude" }],
+      [IPC_CHANNELS.providers.authCancel, { provider: "claude" }],
+    ]);
   });
 
   it("merges replay with events arriving during the subscribe handshake and cleans up explicitly", async () => {

@@ -15,6 +15,7 @@ import NativeSkillPage from "./pages/NativeSkillPage";
 import { nativeSkills, NATIVE_PHASE_LABELS } from "./lib/nativeSkills";
 import NativeReviewsPage from "./pages/NativeReviewsPage";
 import NativeHelpPage from "./pages/NativeHelpPage";
+import ProviderOnboardingPage from "./pages/ProviderOnboardingPage";
 import { createTransport, type ProjectDetail, type ProjectImportInput, type ProjectSummary } from "./transport";
 
 const transport = createTransport();
@@ -160,6 +161,8 @@ export default function App() {
     page = <><h1>Add a project</h1><div className="empty"><p><strong>Choose a manuscript folder and its writing profile.</strong></p><p>The fishing option creates a portable nonfiction configuration and scaffolds a Knowledge Base without overwriting existing files.</p><p><button className="btn" onClick={() => importProject({ profile: "nonfiction", preset: "fly-night-fishing" })}>Import Fly &amp; Night Fishing Book</button> <button className="btn ghost" onClick={() => importProject({ profile: "fantasy" })}>Import Fantasy Book</button></p></div></>;
   } else if (native && route === "/settings") {
     page = <SettingsPage transport={transport} projectId={projectId} />;
+  } else if (native && route === "/providers") {
+    page = <ProviderOnboardingPage transport={transport} projectId={projectId} />;
   } else if (native && route.startsWith("/skill/")) {
     const id = decodeURIComponent(route.slice("/skill/".length));
     page = <NativeSkillPage key={id} transport={transport} projectId={projectId} skill={sidebar.find((item) => item.skill_id === id)} />;
@@ -189,7 +192,7 @@ export default function App() {
     page = <ChaptersPage transport={transport} projectId={projectId} selectedId={selected} />;
   }
 
-  const needsProject = native && (route === "/chapters" || route.startsWith("/chapters/") || route === "/world" || route.startsWith("/world/") || route === "/search" || route === "/settings" || route.startsWith("/skill/") || route === "/reviews" || route.startsWith("/reviews/"));
+  const needsProject = native && (route === "/chapters" || route.startsWith("/chapters/") || route === "/world" || route.startsWith("/world/") || route === "/search" || route === "/settings" || route === "/providers" || route.startsWith("/skill/") || route === "/reviews" || route.startsWith("/reviews/"));
   if (needsProject && projects !== null && projects.length === 0) {
     page = (
       <>

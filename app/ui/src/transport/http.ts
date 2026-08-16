@@ -15,6 +15,7 @@ import type {
   SearchTransport,
   SettingsTransport,
   RunsTransport,
+  ProvidersTransport,
   WorldDocument,
   WorldSummary,
   WorldTransport,
@@ -372,10 +373,20 @@ function createRuns(): RunsTransport {
   };
 }
 
+function createProviders(): ProvidersTransport {
+  return {
+    async list() { throw unsupportedTransport("providers.list", "Provider discovery is available only in the native desktop app."); },
+    async status() { throw unsupportedTransport("providers.status", "Provider discovery is available only in the native desktop app."); },
+    async auth() { throw unsupportedTransport("providers.auth", "Provider authentication is available only in the native desktop app."); },
+    async cancelAuth() { throw unsupportedTransport("providers.authCancel", "Provider authentication is available only in the native desktop app."); },
+  };
+}
+
 /** Build the browser/development transport over the current Fastify routes. */
 export function createHttpTransport(options: HttpTransportOptions = {}): BookWriterTransport {
   const fetchImpl = options.fetch ?? defaultFetch();
   const projects = createProjects(fetchImpl, options);
+  const providers = createProviders();
   const chapters = createChapters(fetchImpl);
   const world = createWorld(fetchImpl);
   const search = createSearch(fetchImpl);
@@ -389,7 +400,7 @@ export function createHttpTransport(options: HttpTransportOptions = {}): BookWri
     async listReviews() { throw unsupportedTransport("content.listReviews", "The compatibility Reviews page keeps its existing server routes."); },
     async getReview() { throw unsupportedTransport("content.getReview", "The compatibility Reviews page keeps its existing server routes."); },
   };
-  return { mode: "http", projects, content, search, settings, runs, chapters, world };
+  return { mode: "http", providers, projects, content, search, settings, runs, chapters, world };
 }
 
 /** Kept exported for focused tests and future compatibility adapters. */

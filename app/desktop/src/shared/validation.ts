@@ -1,6 +1,7 @@
 import { asBookWriterError, IPC_ERROR_CODES, BookWriterError, isStructuredError } from "./errors.js";
 import {
   EXECUTION_PROVIDERS,
+  type AuthCancelResult,
   type AuthResult,
   type ChapterDocument,
   type ChapterSummary,
@@ -139,6 +140,10 @@ export function isInstallResult(value: unknown): value is InstallResult {
 
 export function isAuthResult(value: unknown): value is AuthResult {
   return isRecord(value) && hasOnlyKeys(value, ["provider", "status", "ok", "authenticated", "account", "expiresAt", "message"]) && isExecutionProvider(value.provider) && isAuthStatus(value.status) && isBoolean(value.ok) && isBoolean(value.authenticated) && isOptionalString(value.account) && isOptionalString(value.expiresAt) && isOptionalString(value.message);
+}
+
+export function isAuthCancelResult(value: unknown): value is AuthCancelResult {
+  return isRecord(value) && hasOnlyKeys(value, ["provider", "cancelled"]) && isExecutionProvider(value.provider) && isBoolean(value.cancelled);
 }
 
 export function isProjectSummary(value: unknown): value is ProjectSummary {

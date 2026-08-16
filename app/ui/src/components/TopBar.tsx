@@ -63,6 +63,7 @@ export default function TopBar({
       </select>}
       {mode === "electron" && <a className="iconbtn" href="#/projects" title="Add a project">+</a>}
       {mode === "electron" && <a className={`iconbtn ${route === "/settings" ? "active" : ""}`} href="#/settings" title="Project settings">&#9881;</a>}
+      {mode === "electron" && <a className={`iconbtn ${route === "/providers" ? "active" : ""}`} href="#/providers" title="Provider setup">&#9889;</a>}
       {mode === "electron" && <a className="iconbtn help" href="#/help" title="Guides & help">?</a>}
       {activeRuns.length > 0 && (
         <a

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { SkillSummary } from "../lib/api";
-import type { BookWriterTransport, PermissionMode, RunEvent, RunRecord, RunVariant } from "../transport";
+import type { BookWriterTransport, ExecutionProvider, PermissionMode, RunEvent, RunRecord, RunVariant } from "../transport";
 
 const active = (status: RunRecord["status"]) => status === "queued" || status === "starting" || status === "running";
 
@@ -11,11 +11,21 @@ export default function NativeSkillPage({ transport, projectId, skill }: { trans
   const [runs, setRuns] = useState<RunRecord[]>([]);
   const [events, setEvents] = useState<RunEvent[]>([]);
   const [error, setError] = useState("");
+  const [provider, setProvider] = useState<ExecutionProvider | null>(null);
+  const [providerReady, setProviderReady] = useState(false);
   const current = useMemo(() => runs.find((run) => active(run.status)), [runs]);
   const setPrompt = (value: string) => { setPromptState(value); if (skill) sessionStorage.setItem(`bw-draft-${skill.skill_id}`, value); };
   const load = () => projectId && skill ? transport.runs.list({ projectId, skillId: skill.skill_id, limit: 20 }).then(setRuns) : Promise.resolve();
 
   useEffect(() => { setEvents([]); setError(""); void load().catch((reason) => setError(String(reason?.message ?? reason))); }, [projectId, skill?.skill_id]);
+  useEffect(() => {
+    if (!projectId) return;
+    Promise.all([transport.settings.get(projectId, "preferredProvider"), transport.providers.status()]).then(([record, statuses]) => {
+      const selected = record?.value === "claude" || record?.value === "codex" ? record.value : null;
+      setProvider(selected);
+      setProviderReady(selected !== null && statuses.some((status) => status.provider === selected && status.status === "ready"));
+    }).catch((reason) => setError(String(reason?.message ?? reason)));
+  }, [projectId, transport]);
   useEffect(() => {
     if (!current) return;
     let subscriptionId = "";
@@ -33,7 +43,8 @@ export default function NativeSkillPage({ transport, projectId, skill }: { trans
   const start = async () => {
     setError(""); setEvents([]);
     try {
-      await transport.runs.start({ provider: "claude", projectId, skillId: skill.skill_id, variant, permissionMode, prompt: `/${skill.skill_id}${variant === "rag" ? "-rag" : ""} ${prompt}`.trim() });
+      if (!provider || !providerReady) throw new Error("Choose a detected provider before starting a run.");
+      await transport.runs.start({ provider, projectId, skillId: skill.skill_id, variant, permissionMode, prompt: `/${skill.skill_id}${variant === "rag" ? "-rag" : ""} ${prompt}`.trim() });
     } catch (reason: any) {
       setError(String(reason?.message ?? reason));
     } finally {
@@ -49,10 +60,10 @@ export default function NativeSkillPage({ transport, projectId, skill }: { trans
       <div className="controls">
         <span className="variant-toggle"><button className={variant === "base" ? "on" : ""} onClick={() => setVariant("base")}>Base</button><button className={variant === "rag" ? "on" : ""} onClick={() => setVariant("rag")}>RAG-aware</button></span>
         <select value={permissionMode} onChange={(event) => setPermissionMode(event.target.value as PermissionMode)}><option value="acceptEdits">acceptEdits</option><option value="default">default</option><option value="plan">plan</option></select>
-        <button className="btn" disabled={!prompt.trim() || !!current} onClick={start}>Run</button>
+        <button className="btn" disabled={!prompt.trim() || !!current || !providerReady} onClick={start}>Run</button>
         {current && <button className="btn danger" onClick={() => transport.runs.cancel(current.runId).then(load)}>Cancel</button>}
       </div>
-      <p className="hint">Native provider execution remains disabled until Phase 4. The run API and history are wired for the deterministic test runner.</p>
+      <p className="hint">{providerReady ? `${provider} is detected. Real execution remains disabled until the native runner slice lands.` : <>Choose an installed CLI in <a href="#/providers">Provider setup</a> before running workflows.</>}</p>
       {error && <p className="err">{error}</p>}
       {events.length > 0 && <div className="stream">{events.map((event) => <p className="txt" key={event.sequence}>{event.text ?? event.result ?? event.output ?? event.error?.message ?? event.type}</p>)}</div>}
     </div>

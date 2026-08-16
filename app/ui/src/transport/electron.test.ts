@@ -4,6 +4,13 @@ import type { BookWriterReadOnlyBridge } from "./bridge.js";
 
 function nativeBridge(): BookWriterReadOnlyBridge {
   return {
+    providers: {
+      list: async () => [{ provider: "claude", status: "ready", version: "claude 2.1.0", executablePath: "C:/Tools/claude.exe" }, { provider: "codex", status: "not_installed" }],
+      status: async (provider) => [{ provider: provider ?? "claude", status: "ready" }],
+      install: async () => ({}),
+      auth: async (provider) => ({ provider, status: "authenticated", ok: true, authenticated: true }),
+      cancelAuth: async (provider) => ({ provider, cancelled: true }),
+    },
     projects: {
       list: async () => [{ projectId: "project-1", name: "Project", rootPath: "C:/project", active: true }],
       get: async () => ({ projectId: "project-1", name: "Project", rootPath: "C:/project", active: true, worldRoot: "C:/project/world" }),
@@ -44,6 +51,9 @@ describe("Electron transport", () => {
     await expect(transport.projects.list()).resolves.toEqual([
       { projectId: "project-1", name: "Project", rootPath: "C:/project", active: true },
     ]);
+    await expect(transport.providers.list()).resolves.toEqual(expect.arrayContaining([expect.objectContaining({ provider: "claude", status: "ready" })]));
+    await expect(transport.providers.auth("claude")).resolves.toMatchObject({ provider: "claude", authenticated: true });
+    await expect(transport.providers.cancelAuth("claude")).resolves.toEqual({ provider: "claude", cancelled: true });
     await expect(transport.projects.get("project-1")).resolves.toMatchObject({ worldRoot: "C:/project/world" });
     await expect(transport.content.listChapters("project-1")).resolves.toEqual([
       { chapterId: "project-1:chapter-1", book: "book-1", relPath: "chapters/one.txt", number: 1, title: "One", wordCount: 4, active: true },

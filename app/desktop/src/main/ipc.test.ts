@@ -9,6 +9,8 @@ function runtime(overrides: Partial<DesktopRuntime> = {}): DesktopRuntime {
   return {
     listProviders: () => [],
     getProviderStatus: () => [],
+    authenticateProvider: (provider) => ({ provider, status: "authenticated", ok: true, authenticated: true }),
+    cancelProviderAuthentication: (provider) => ({ provider, cancelled: false }),
     listProjects: () => [],
     getProject: () => null,
     openProject: (projectId) => ({ projectId, name: "Project", rootPath: "C:/project", active: true }),
@@ -121,10 +123,14 @@ describe("desktop IPC boundary", () => {
     test.dispose();
   });
 
-  it("keeps provider installation and authentication unavailable", async () => {
-    const test = harness();
+  it("keeps provider installation unavailable and forwards allow-listed authentication", async () => {
+    const authenticateProvider = vi.fn((provider: "claude" | "codex") => ({ provider, status: "authenticated" as const, ok: true, authenticated: true }));
+    const test = harness(runtime({ authenticateProvider }));
     expect(await test.invoke(IPC_CHANNELS.providers.install, { provider: "claude" })).toMatchObject({ ok: false, error: { code: "FEATURE_UNAVAILABLE" } });
-    expect(await test.invoke(IPC_CHANNELS.providers.auth, { provider: "codex" })).toMatchObject({ ok: false, error: { code: "FEATURE_UNAVAILABLE" } });
+    expect(await test.invoke(IPC_CHANNELS.providers.auth, { provider: "codex" })).toEqual({ ok: true, value: { provider: "codex", status: "authenticated", ok: true, authenticated: true } });
+    expect(authenticateProvider).toHaveBeenCalledWith("codex");
+    expect(await test.invoke(IPC_CHANNELS.providers.auth, { provider: "codex", executablePath: "C:/untrusted.exe" })).toMatchObject({ ok: false, error: { code: "INVALID_ARGUMENT" } });
+    expect(await test.invoke(IPC_CHANNELS.providers.authCancel, { provider: "codex" })).toEqual({ ok: true, value: { provider: "codex", cancelled: false } });
     test.dispose();
   });
 

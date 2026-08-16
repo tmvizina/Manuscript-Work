@@ -165,6 +165,12 @@ details.desc p { color: var(--muted); font-size: 0.9rem; max-width: 75ch; }
 .settings-form label { display: grid; gap: 6px; font-weight: 600; }
 .settings-form select, .settings-form input[type="text"] { width: 100%; box-sizing: border-box; font-weight: 400; }
 .native-document { white-space: pre-wrap; overflow-wrap: anywhere; }
+.provider-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; max-width: 850px; }
+.provider-card p { margin-bottom: 0; }
+.provider-path { overflow-wrap: anywhere; }
+.provider-card.selected { border-color: var(--accent); }
+.provider-notice { max-width: 810px; }
+.provider-notice p { margin-bottom: 0; }
 .variant-toggle { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
 .variant-toggle button { border: 0; background: var(--bg-deep); color: var(--muted); padding: 7px 12px; cursor: pointer; }
 .variant-toggle button.on { background: var(--accent); color: var(--accent-text); font-weight: 600; }

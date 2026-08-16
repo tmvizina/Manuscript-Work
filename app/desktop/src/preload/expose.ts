@@ -3,6 +3,7 @@ import {
   BOOK_WRITER_WINDOW_KEY,
   IPC_CHANNELS,
   type AuthResult,
+  type AuthCancelResult,
   type BookWriterApi,
   type ChapterDocument,
   type ChapterSummary,
@@ -48,6 +49,7 @@ import {
   assertSearchRequest,
   assertSettingValue,
   isAuthResult,
+  isAuthCancelResult,
   isChapterDocument,
   isChapterSummaryList,
   isInstallResult,
@@ -109,6 +111,10 @@ function createProvidersApi(ipcRenderer: IpcRendererLike): ProviderApi {
     auth: (provider) => {
       assertExecutionProvider(provider, "providers.auth");
       return call<AuthResult>(ipcRenderer, IPC_CHANNELS.providers.auth, "providers.auth", isAuthResult, { provider });
+    },
+    cancelAuth: (provider) => {
+      assertExecutionProvider(provider, "providers.authCancel");
+      return call<AuthCancelResult>(ipcRenderer, IPC_CHANNELS.providers.authCancel, "providers.authCancel", isAuthCancelResult, { provider });
     },
   };
 }

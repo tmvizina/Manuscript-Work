@@ -53,6 +53,11 @@ export interface AuthResult {
   message?: string;
 }
 
+export interface AuthCancelResult {
+  provider: ExecutionProvider;
+  cancelled: boolean;
+}
+
 export interface ProjectSummary {
   projectId: string;
   name: string;
@@ -303,6 +308,7 @@ export interface ProviderApi {
   status(provider?: ExecutionProvider): Promise<ProviderSummary[]>;
   install(provider: ExecutionProvider): Promise<InstallResult>;
   auth(provider: ExecutionProvider): Promise<AuthResult>;
+  cancelAuth(provider: ExecutionProvider): Promise<AuthCancelResult>;
 }
 
 export interface ProjectApi {
@@ -358,6 +364,7 @@ export const IPC_CHANNELS = {
     status: "book-writer/providers/status",
     install: "book-writer/providers/install",
     auth: "book-writer/providers/auth",
+    authCancel: "book-writer/providers/auth-cancel",
   },
   projects: {
     list: "book-writer/projects/list",

@@ -4,6 +4,7 @@ import { createProject } from "@book-writer/core";
 import { afterEach, describe, expect, it } from "vitest";
 import { DeterministicFakeRunner } from "./runs/index.js";
 import { NativeDesktopRuntime } from "./runtime.js";
+import { ProviderDiscovery } from "./providers/discovery.js";
 
 const roots: string[] = [];
 
@@ -20,6 +21,23 @@ afterEach(() => {
 });
 
 describe("native desktop runtime", () => {
+  it("discovers providers through an injected main-process service", async () => {
+    const root = testRoot();
+    const providerDiscovery = new ProviderDiscovery({
+      environment: { platform: "win32", path: "C:\\Tools", pathExt: ".EXE" },
+      isFile: (path) => path === "C:\\Tools\\codex.exe",
+      canonicalize: (path) => path,
+      probeVersion: async () => ({ stdout: "codex 1.0.0", stderr: "" }),
+      probeAuthentication: async () => false,
+    });
+    const runtime = new NativeDesktopRuntime(join(root, "data", "book-writer.db"), { providerDiscovery });
+    await expect(runtime.listProviders()).resolves.toEqual([
+      expect.objectContaining({ provider: "claude", status: "not_installed" }),
+      expect.objectContaining({ provider: "codex", status: "auth_required", version: "codex 1.0.0" }),
+    ]);
+    await runtime.close();
+  });
+
   it("composes trusted content and an injected deterministic runner", async () => {
     const root = testRoot();
     mkdirSync(join(root, "chapters"), { recursive: true });

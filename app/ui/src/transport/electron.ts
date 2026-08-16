@@ -1,6 +1,8 @@
 import { detectBookWriterReadOnlyBridge, type BookWriterReadOnlyBridge } from "./bridge.js";
 import { invalidTransportResponse, toTransportError, TransportError } from "./errors.js";
 import type {
+  AuthResult,
+  AuthCancelResult,
   BookWriterTransport,
   ChapterDocument,
   ChapterReadOptions,
@@ -20,6 +22,7 @@ import type {
   RunRequest,
   ReviewDocument,
   ReviewSummary,
+  ProviderSummary,
   WorldDocument,
   WorldSummary,
 } from "./types.js";
@@ -148,6 +151,28 @@ function runRecord(value: unknown, operation: string): RunRecord {
   return value as unknown as RunRecord;
 }
 
+function providerSummary(value: unknown, operation: string): ProviderSummary {
+  const statuses = ["unknown", "checking", "ready", "not_installed", "auth_required", "unavailable", "error"];
+  if (!isRecord(value) || (value.provider !== "claude" && value.provider !== "codex") || !statuses.includes(String(value.status))) throw invalidTransportResponse(operation, "Native provider response is invalid");
+  return value as unknown as ProviderSummary;
+}
+
+function authResult(value: unknown, operation: string): AuthResult {
+  const statuses = ["authenticated", "auth_required", "expired", "unsupported", "failed"];
+  if (!isRecord(value) || (value.provider !== "claude" && value.provider !== "codex") ||
+      !statuses.includes(String(value.status)) || typeof value.ok !== "boolean" || typeof value.authenticated !== "boolean") {
+    throw invalidTransportResponse(operation, "Native authentication response is invalid");
+  }
+  return value as unknown as AuthResult;
+}
+
+function authCancelResult(value: unknown, operation: string): AuthCancelResult {
+  if (!isRecord(value) || (value.provider !== "claude" && value.provider !== "codex") || typeof value.cancelled !== "boolean") {
+    throw invalidTransportResponse(operation, "Native authentication cancellation response is invalid");
+  }
+  return value as unknown as AuthCancelResult;
+}
+
 function requireProjectId(projectId: string | undefined, operation: string): string {
   if (typeof projectId !== "string" || projectId.trim().length === 0) {
     throw new TransportError("projectId is required by the Electron transport", {
@@ -171,6 +196,20 @@ async function callNative<T, U>(operation: string, call: () => Promise<T>, adapt
 
 /** Build a renderer transport over the narrow, already-validated preload API. */
 export function createElectronTransport(bridge: BookWriterReadOnlyBridge): BookWriterTransport {
+  const providers = {
+    list: () => callNative("providers.list", () => bridge.providers.list(), (value) => {
+      if (!Array.isArray(value)) throw invalidTransportResponse("providers.list", "Native provider response is not an array");
+      return value.map((provider) => providerSummary(provider, "providers.list"));
+    }),
+    status: (provider?: "claude" | "codex") => callNative("providers.status", () => bridge.providers.status(provider), (value) => {
+      if (!Array.isArray(value)) throw invalidTransportResponse("providers.status", "Native provider response is not an array");
+      return value.map((item) => providerSummary(item, "providers.status"));
+    }),
+    auth: (provider: "claude" | "codex") => callNative("providers.auth", () => bridge.providers.auth(provider), (value) =>
+      authResult(value, "providers.auth")),
+    cancelAuth: (provider: "claude" | "codex") => callNative("providers.authCancel", () => bridge.providers.cancelAuth(provider), (value) =>
+      authCancelResult(value, "providers.authCancel")),
+  };
   const projects = {
     list: () => callNative("projects.list", () => bridge.projects.list(), (value) => {
       if (!Array.isArray(value)) throw invalidTransportResponse("projects.list", "Native project response is not an array");
@@ -277,7 +316,7 @@ export function createElectronTransport(bridge: BookWriterReadOnlyBridge): BookW
       return callNative("content.getReview", () => bridge.content.getReview(id, relPath), (value) => reviewDocument(value, "content.getReview"));
     },
   };
-  return { mode: "electron", projects, content, search, settings, runs, chapters, world };
+  return { mode: "electron", providers, projects, content, search, settings, runs, chapters, world };
 }
 
 /** Detect the bridge and construct the native transport when present. */

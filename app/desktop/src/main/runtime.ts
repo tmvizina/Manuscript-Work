@@ -30,6 +30,8 @@ import {
 import { basename, resolve } from "node:path";
 import { PROJECT_SETTING_KEYS } from "../shared/contracts.js";
 import type {
+  AuthResult,
+  AuthCancelResult,
   ChapterDocument,
   ChapterSummary,
   ExecutionProvider,
@@ -60,9 +62,13 @@ import { assertProjectSettingValue } from "../shared/validation.js";
 import type { DesktopRuntime } from "./ipc.js";
 import { RunManager } from "./runs/manager.js";
 import type { ProviderRunner, RunPersistence } from "./runs/contracts.js";
+import { ProviderDiscovery } from "./providers/discovery.js";
+import { ProviderAuthentication } from "./providers/authentication.js";
 
 export interface NativeDesktopRuntimeOptions {
   runner?: ProviderRunner;
+  providerDiscovery?: ProviderDiscovery;
+  providerAuthentication?: ProviderAuthentication;
 }
 
 const unavailableRunner: ProviderRunner = {
@@ -130,21 +136,16 @@ function mapRun(run: AgentRunRecord): RunRecord {
   };
 }
 
-function providerUnavailable(provider: ExecutionProvider): ProviderSummary {
-  return {
-    provider,
-    status: "unavailable",
-    message: "Provider discovery and authentication are scheduled for Phase 4",
-    checkedAt: new Date().toISOString(),
-  };
-}
-
 export class NativeDesktopRuntime implements DesktopRuntime {
   readonly db: DB;
   private readonly runs: RunManager;
+  private readonly providerDiscovery: ProviderDiscovery;
+  private readonly providerAuthentication: ProviderAuthentication;
 
   constructor(dbPath: string, options: NativeDesktopRuntimeOptions = {}) {
     this.db = openDb(dbPath);
+    this.providerDiscovery = options.providerDiscovery ?? new ProviderDiscovery();
+    this.providerAuthentication = options.providerAuthentication ?? new ProviderAuthentication({ discovery: this.providerDiscovery });
     resolveOrphanedAgentRuns(this.db);
     const persistence: RunPersistence = {
       createRun: (input) => mapRun(createAgentRun(this.db, {
@@ -177,6 +178,7 @@ export class NativeDesktopRuntime implements DesktopRuntime {
   }
 
   async close(): Promise<void> {
+    this.providerAuthentication.cancelAll();
     await this.runs.shutdown();
     this.db.close();
   }
@@ -191,12 +193,20 @@ export class NativeDesktopRuntime implements DesktopRuntime {
     this.db.transaction(() => syncProjectChapters(this.db, project))();
   }
 
-  listProviders(): ProviderSummary[] {
-    return [providerUnavailable("claude"), providerUnavailable("codex")];
+  listProviders(): Promise<ProviderSummary[]> {
+    return this.providerDiscovery.scan();
   }
 
-  getProviderStatus(provider?: ExecutionProvider): ProviderSummary[] {
-    return provider ? [providerUnavailable(provider)] : this.listProviders();
+  getProviderStatus(provider?: ExecutionProvider): Promise<ProviderSummary[]> {
+    return this.providerDiscovery.scan(provider);
+  }
+
+  authenticateProvider(provider: ExecutionProvider): Promise<AuthResult> {
+    return this.providerAuthentication.authenticate(provider);
+  }
+
+  cancelProviderAuthentication(provider: ExecutionProvider): AuthCancelResult {
+    return { provider, cancelled: this.providerAuthentication.cancel(provider) };
   }
 
   listProjects(): ProjectSummary[] {

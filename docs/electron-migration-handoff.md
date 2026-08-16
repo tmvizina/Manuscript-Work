@@ -373,11 +373,55 @@ documented repository-scoped sandbox exception for Vitest/esbuild.
 
 ## Exact next actions
 
-1. Add focused renderer interaction tests for Settings, Native Skill runs, and
-   Reviews, plus a packaged smoke proving those pages never issue HTTP requests.
-2. Decide whether RAG becomes an embedded native index or remains an optional
+Phase 4 began on 2026-08-16 with main-process-only Windows provider discovery.
+The discovery service resolves allow-listed `claude` and `codex` names from PATH,
+prefers direct executables, supports Windows command shims, records bounded version
+output, and reports missing/version-failure states without accepting renderer paths.
+Native Provider Setup and Settings expose rescan and per-project provider selection.
+A detected CLI remains `auth_required`; workflow execution stays disabled until a
+separate authentication check marks it ready. Installation remains visibly gated
+because no provider payload has redistribution approval, publisher evidence, and a
+verified checked-in SHA-256 manifest yet. A strict offline-only manifest parser and
+local payload verifier now reject unknown fields, missing approvals, stale approval,
+unapproved sources, metadata mismatch, unreadable payloads, and SHA-256 mismatch;
+no actual provider manifest or payload is bundled. Focused Provider Setup and Native
+Skill renderer tests cover missing, detected/auth-required, selection, rescan, and
+run gating without network calls. Root typecheck, 22 test files/104 tests, the
+production build, and diff validation passed for these slices.
+
+The next Phase 4 slice now adds explicit authentication readiness probes and a
+main-process-owned interactive sign-in service. Claude uses `claude auth login`
+and verifies with the ephemeral, non-persisted `claude auth status --json` result;
+Codex uses `codex login` and verifies by the documented exit status of
+`codex login status`. Only those probes can produce `ready`; a version check or
+zero exit from the login command is not sufficient. On Windows the provider is
+started with hardcoded arguments in its own visible console, inherited terminal
+I/O, no shell for direct executables, and no Book Writer stdout, input, credential,
+or token capture. Command shims are constrained to the discovered canonical path,
+trusted `ComSpec`, hardcoded arguments, and metacharacter rejection. Authentication
+requests are deduplicated per provider, can be cancelled through a provider-only
+IPC request, and are cancelled during runtime shutdown. Provider Setup supports
+sign-in/cancel, and Settings supports provider switching and re-authentication.
+Installation remains gated exactly as above.
+
+Validation for this slice on 2026-08-16: root typecheck passed; all 25 Vitest files
+and 117 tests passed; the full production build and unpacked x64 package passed;
+the packaged GUI launched without a parent console, remained responsive, and
+contained the authentication main module and narrow preload. Native Settings and
+Reviews tests also prove their Electron transports issue no HTTP requests. A manual
+sign-in smoke is still required to visually prove the separate provider terminal,
+keyboard interaction, cancellation, and post-auth readiness before this
+authentication slice is treated as release-accepted.
+
+1. Package the current build and run a no-parent-console Windows smoke for Claude
+   and Codex authentication; verify visible keyboard interaction, terminal close,
+   explicit cancellation, post-auth readiness, and absence of credential logging.
+2. Run the remaining packaged page-navigation smoke and confirm Provider Setup,
+   Settings, Native Skill, and Reviews render without HTTP requests; their focused
+   transport tests are now present.
+3. Decide whether RAG becomes an embedded native index or remains an optional
    external compatibility service; do not disguise semantic RAG as literal search.
-3. In Phase 4, implement the offline-first provider payload manifest and wizard
+4. Implement the offline-first provider payload manifest and install wizard
    flow above only after release engineering confirms redistribution rights and
    selects the pinned Claude and Codex artifacts.
 
@@ -388,6 +432,9 @@ documented repository-scoped sandbox exception for Vitest/esbuild.
   a Phase 5 qualification item.
 - Vitest and esbuild require execution outside the managed filesystem sandbox on
   this machine; the full suite passes when granted repository-scoped access.
+- `electron-rebuild` changes the shared workspace `better-sqlite3` binary to the
+  Electron ABI. After packaging, run `npm.cmd rebuild better-sqlite3` before the
+  Node/Vitest suite; the packaged copy under `dist` remains Electron-compatible.
 - Bundling Claude and Codex payloads is the approved offline-first design, but the
   exact artifacts, redistribution terms, signatures, update cadence, installer-size
   impact, and revocation response remain Phase 4 release gates. Never embed an

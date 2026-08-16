@@ -102,6 +102,11 @@ export interface SettingRecord {
 }
 
 export type ExecutionProvider = "claude" | "codex";
+export type ProviderStatus = "unknown" | "checking" | "ready" | "not_installed" | "auth_required" | "unavailable" | "error";
+export interface ProviderSummary { provider: ExecutionProvider; status: ProviderStatus; version?: string; executablePath?: string; account?: string; message?: string; checkedAt?: string }
+export type AuthStatus = "authenticated" | "auth_required" | "expired" | "unsupported" | "failed";
+export interface AuthResult { provider: ExecutionProvider; status: AuthStatus; ok: boolean; authenticated: boolean; account?: string; expiresAt?: string; message?: string }
+export interface AuthCancelResult { provider: ExecutionProvider; cancelled: boolean }
 export type RunVariant = "base" | "rag";
 export type PermissionMode = "default" | "acceptEdits" | "plan";
 export type RunStatus = "queued" | "starting" | "running" | "completed" | "failed" | "cancelled";
@@ -161,6 +166,13 @@ export interface RunsTransport {
   unsubscribe(subscriptionId: string): Promise<{ subscriptionId: string; unsubscribed: boolean }>;
 }
 
+export interface ProvidersTransport {
+  list(): Promise<ProviderSummary[]>;
+  status(provider?: ExecutionProvider): Promise<ProviderSummary[]>;
+  auth(provider: ExecutionProvider): Promise<AuthResult>;
+  cancelAuth(provider: ExecutionProvider): Promise<AuthCancelResult>;
+}
+
 export interface BookWriterTransport {
   readonly mode: TransportMode;
   readonly projects: ProjectTransport;
@@ -168,6 +180,7 @@ export interface BookWriterTransport {
   readonly search: SearchTransport;
   readonly settings: SettingsTransport;
   readonly runs: RunsTransport;
+  readonly providers: ProvidersTransport;
 
   /** Convenience aliases for consumers that do not need the content grouping. */
   readonly chapters: ChapterTransport;

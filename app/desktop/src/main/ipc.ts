@@ -1,6 +1,8 @@
 import type { IpcMain, IpcMainInvokeEvent, WebContents } from "electron";
 import {
   IPC_CHANNELS,
+  type AuthResult,
+  type AuthCancelResult,
   type ChapterDocument,
   type ChapterSummary,
   type ExecutionProvider,
@@ -42,6 +44,8 @@ import {
   isProjectDetail,
   isProjectSummary,
   isProviderSummaryList,
+  isAuthResult,
+  isAuthCancelResult,
   isRecord,
   isRunAccepted,
   isRunCancelResult,
@@ -61,6 +65,8 @@ import {
 export interface DesktopRuntime {
   listProviders(): Promise<ProviderSummary[]> | ProviderSummary[];
   getProviderStatus(provider?: ExecutionProvider): Promise<ProviderSummary[]> | ProviderSummary[];
+  authenticateProvider(provider: ExecutionProvider): Promise<AuthResult> | AuthResult;
+  cancelProviderAuthentication(provider: ExecutionProvider): Promise<AuthCancelResult> | AuthCancelResult;
   listProjects(): Promise<ProjectSummary[]> | ProjectSummary[];
   getProject(projectId: string): Promise<ProjectDetail | null> | ProjectDetail | null;
   openProject(projectId: string): Promise<ProjectSummary> | ProjectSummary;
@@ -226,19 +232,34 @@ export function registerIpcHandlers(options: RegisterIpcOptions): () => void {
     });
   });
 
-  const unavailableProviderAction = (request: unknown, operation: string): never => {
+  const unavailableProviderInstall = (request: unknown): never => {
+    const operation = "providers.install";
     assertOnlyKeys(request, ["provider"], operation);
     assertExecutionProvider(request.provider, operation);
     throw new BookWriterError({
       code: IPC_ERROR_CODES.featureUnavailable,
-      message: "Provider installation and authentication are not available until onboarding is implemented",
+      message: "Provider installation is unavailable until an approved embedded payload is configured",
       operation,
     });
   };
   register(IPC_CHANNELS.providers.install, "providers.install", (_value): _value is never => false, (request) =>
-    unavailableProviderAction(request, "providers.install"));
-  register(IPC_CHANNELS.providers.auth, "providers.auth", (_value): _value is never => false, (request) =>
-    unavailableProviderAction(request, "providers.auth"));
+    unavailableProviderInstall(request));
+  register(IPC_CHANNELS.providers.auth, "providers.auth", isAuthResult, (request) => {
+    assertOnlyKeys(request, ["provider"], "providers.auth");
+    assertExecutionProvider(request.provider, "providers.auth");
+    return Promise.resolve(options.runtime.authenticateProvider(request.provider)).then((result) => {
+      if (result.provider !== request.provider) invalidResponse("Provider authentication did not match the request", "providers.auth");
+      return result;
+    });
+  });
+  register(IPC_CHANNELS.providers.authCancel, "providers.authCancel", isAuthCancelResult, (request) => {
+    assertOnlyKeys(request, ["provider"], "providers.authCancel");
+    assertExecutionProvider(request.provider, "providers.authCancel");
+    return Promise.resolve(options.runtime.cancelProviderAuthentication(request.provider)).then((result) => {
+      if (result.provider !== request.provider) invalidResponse("Provider authentication cancellation did not match the request", "providers.authCancel");
+      return result;
+    });
+  });
 
   register(IPC_CHANNELS.projects.list, "projects.list", isProjectSummaryList, (request) => {
     assertNoRequest(request, "projects.list");

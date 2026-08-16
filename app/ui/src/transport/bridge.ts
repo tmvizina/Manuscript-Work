@@ -17,6 +17,10 @@ import type {
   RunSubscription,
   ReviewDocument,
   ReviewSummary,
+  ExecutionProvider,
+  ProviderSummary,
+  AuthResult,
+  AuthCancelResult,
   WorldDocument,
   WorldSummary,
 } from "./types.js";
@@ -27,6 +31,13 @@ import type {
  * the desktop package at runtime.
  */
 export interface BookWriterReadOnlyBridge {
+  readonly providers: {
+    list(): Promise<ProviderSummary[]>;
+    status(provider?: ExecutionProvider): Promise<ProviderSummary[]>;
+    install(provider: ExecutionProvider): Promise<unknown>;
+    auth(provider: ExecutionProvider): Promise<AuthResult>;
+    cancelAuth(provider: ExecutionProvider): Promise<AuthCancelResult>;
+  };
   readonly projects: {
     list(): Promise<ProjectSummary[]>;
     get(projectId: string): Promise<ProjectDetail | null>;
@@ -80,11 +91,13 @@ function hasMethods(value: unknown, methods: readonly string[]): value is Unknow
 export function isBookWriterReadOnlyBridge(value: unknown): value is BookWriterReadOnlyBridge {
   if (!isRecord(value)) return false;
   const projects = value.projects;
+  const providers = value.providers;
   const content = value.content;
   const search = value.search;
   const settings = value.settings;
   const runs = value.runs;
   return (
+    hasMethods(providers, ["list", "status", "install", "auth", "cancelAuth"]) &&
     hasMethods(projects, ["list", "get", "open", "import"]) &&
     hasMethods(content, ["listChapters", "getChapter", "listWorld", "getWorld", "listReviews", "getReview"]) &&
     hasMethods(search, ["query"]) &&

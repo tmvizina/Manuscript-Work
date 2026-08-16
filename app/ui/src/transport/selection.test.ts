@@ -5,6 +5,7 @@ import type { BookWriterReadOnlyBridge } from "./bridge.js";
 
 function bridge(): BookWriterReadOnlyBridge {
   return {
+    providers: { list: async () => [], status: async () => [], install: async () => ({}), auth: async (provider) => ({ provider, status: "authenticated" as const, ok: true, authenticated: true }), cancelAuth: async (provider) => ({ provider, cancelled: true }) },
     projects: {
       list: async () => [],
       get: async () => null,
