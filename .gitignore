@@ -8,6 +8,7 @@ __pycache__/
 
 # book-writer app
 node_modules/
+.npm-cache/
 app/ui/dist/
 app/server/data/
 rag/chroma_db/

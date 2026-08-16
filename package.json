@@ -11,7 +11,7 @@
   ],
   "scripts": {
     "typecheck": "npm.cmd run typecheck --workspaces --if-present && npm.cmd exec --workspace app/ui -- tsc --noEmit",
-    "test": "npm.cmd exec -- vitest run --config vitest.config.ts",
+    "test": "vitest run --config vitest.config.mjs",
     "build": "npm.cmd run build --workspaces --if-present"
   },
   "devDependencies": {
