@@ -1,5 +1,23 @@
 # Manuscript Work — Codex Instructions
 
+## IMPORTANT WINDOWS GIT EXECUTION RULE:
+
+Git commands that modify .git must be executed as separate command invocations so Codex execpolicy rules can escalate them outside the Windows sandbox.
+
+Never chain git add, git commit, git reset, git checkout, git restore, or other Git mutations with `;`, `&&`, `||`, pipes, or other commands.
+
+In particular, do NOT run:
+git add ...; git diff ...; git commit ...
+
+Instead run these as separate tool calls:
+git add -- <files>
+git diff --cached --check
+git diff --cached --stat
+git commit -m "<message>"
+
+Do not wrap git add or git commit inside an explicit PowerShell or cmd.exe invocation.
+
+
 ## Repository purpose
 
 This repository contains the text-authoring half of a fantasy-novel production pipeline. Keep audio generation, cloud audio repair, and image generation out of scope. The workflow runs from world-note intake and outline development through drafting, review, revision, formatting, and TTS chunk preparation.

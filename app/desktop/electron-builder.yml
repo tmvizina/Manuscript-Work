@@ -1,0 +1,21 @@
+appId: com.bookwriter.desktop
+productName: Book Writer
+asar: true
+directories:
+  output: ../../dist/desktop
+files:
+  - from: dist/main
+    to: main
+  - package.json
+extraResources:
+  - from: ../ui/dist
+    to: ui
+    filter:
+      - '**/*'
+win:
+  target:
+    - nsis
+  artifactName: '${productName}-${version}-${arch}.${ext}'
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
