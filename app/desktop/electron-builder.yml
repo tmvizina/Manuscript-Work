@@ -12,6 +12,8 @@ files:
     to: dist
     filter:
       - 'main/**/*.js'
+      - '!main/runs/fakeRunner.js'
+      - '!main/runs/index.js'
       - 'shared/**/*.js'
       - 'preload/index.cjs'
   - package.json

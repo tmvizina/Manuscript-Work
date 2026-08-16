@@ -1,4 +1,6 @@
 import {
+  createAgentRun,
+  finishAgentRun,
   getAgentRun,
   getProject as getStoredProject,
   getProjectChapter,
@@ -6,7 +8,7 @@ import {
   listProjectChapters,
   listProjects,
   listWorld as scanWorldDocuments,
-  newId,
+  markAgentRunStarted,
   openDb,
   openProject as openStoredProject,
   readWorldFile,
@@ -45,17 +47,25 @@ import type {
 import { BookWriterError, IPC_ERROR_CODES } from "../shared/errors.js";
 import { assertProjectSettingValue } from "../shared/validation.js";
 import type { DesktopRuntime } from "./ipc.js";
+import { RunManager } from "./runs/manager.js";
+import type { ProviderRunner, RunPersistence } from "./runs/contracts.js";
+
+export interface NativeDesktopRuntimeOptions {
+  runner?: ProviderRunner;
+}
+
+const unavailableRunner: ProviderRunner = {
+  start(): never {
+    throw new BookWriterError({
+      code: IPC_ERROR_CODES.featureUnavailable,
+      message: "Provider execution is unavailable until the native CLI runner is configured",
+      operation: "runs.start",
+    });
+  },
+};
 
 function notFound(entity: string, operation: string): never {
   throw new BookWriterError({ code: IPC_ERROR_CODES.notFound, message: `${entity} was not found`, operation });
-}
-
-function featureUnavailable(operation: string): never {
-  throw new BookWriterError({
-    code: IPC_ERROR_CODES.featureUnavailable,
-    message: "Provider execution is unavailable until the native runner is configured",
-    operation,
-  });
 }
 
 function mapProject(project: CoreProjectDetail): ProjectDetail {
@@ -117,15 +127,43 @@ function providerUnavailable(provider: ExecutionProvider): ProviderSummary {
 
 export class NativeDesktopRuntime implements DesktopRuntime {
   readonly db: DB;
-  private readonly subscriptions = new Set<string>();
+  private readonly runs: RunManager;
 
-  constructor(dbPath: string) {
+  constructor(dbPath: string, options: NativeDesktopRuntimeOptions = {}) {
     this.db = openDb(dbPath);
     resolveOrphanedAgentRuns(this.db);
+    const persistence: RunPersistence = {
+      createRun: (input) => mapRun(createAgentRun(this.db, {
+        runId: input.runId,
+        projectId: input.projectId,
+        provider: input.provider,
+        model: input.model,
+        skillId: input.skillId,
+        variant: input.variant,
+        permissionMode: input.permissionMode,
+        prompt: input.prompt,
+      })),
+      getRun: (runId) => {
+        const run = getAgentRun(this.db, runId);
+        return run ? mapRun(run) : null;
+      },
+      markRunStarted: (runId) => {
+        markAgentRunStarted(this.db, runId);
+      },
+      finishRun: (runId, input) => {
+        finishAgentRun(this.db, runId, {
+          status: input.status,
+          resultText: input.resultText,
+          error: input.error,
+          usage: input.usage,
+        });
+      },
+    };
+    this.runs = new RunManager({ runner: options.runner ?? unavailableRunner, persistence });
   }
 
-  close(): void {
-    this.subscriptions.clear();
+  async close(): Promise<void> {
+    await this.runs.shutdown();
     this.db.close();
   }
 
@@ -228,39 +266,28 @@ export class NativeDesktopRuntime implements DesktopRuntime {
     };
   }
 
-  startRun(_request: RunRequest): RunAccepted {
-    return featureUnavailable("runs.start");
+  startRun(request: RunRequest): Promise<RunAccepted> {
+    if (request.projectId) this.requireProject(request.projectId, "runs.start");
+    return this.runs.startRun(request);
   }
 
-  getRun(runId: string): RunRecord {
-    const run = getAgentRun(this.db, runId);
-    if (!run) notFound("Run", "runs.get");
-    return mapRun(run);
+  getRun(runId: string): Promise<RunRecord> {
+    return this.runs.getRun(runId);
   }
 
-  cancelRun(runId: string): RunCancelResult {
-    if (!getAgentRun(this.db, runId)) notFound("Run", "runs.cancel");
-    return { runId, cancelled: false };
+  cancelRun(runId: string): Promise<RunCancelResult> {
+    return this.runs.cancelRun(runId);
   }
 
   subscribeRun(
     request: RunSubscribeRequest,
     _deliver: (delivery: RunEventDelivery) => void,
-  ): RunSubscriptionAccepted {
-    if (!getAgentRun(this.db, request.runId)) notFound("Run", "runs.subscribe");
-    const subscriptionId = newId("subscription");
-    this.subscriptions.add(subscriptionId);
-    return {
-      subscriptionId,
-      runId: request.runId,
-      replayCursor: request.afterSequence ?? -1,
-      replayTruncated: false,
-      replay: [],
-    };
+  ): Promise<RunSubscriptionAccepted> {
+    return this.runs.subscribeRun(request, _deliver);
   }
 
-  unsubscribeRun(subscriptionId: string): RunUnsubscribeResult {
-    return { subscriptionId, unsubscribed: this.subscriptions.delete(subscriptionId) };
+  unsubscribeRun(subscriptionId: string): Promise<RunUnsubscribeResult> {
+    return this.runs.unsubscribeRun(subscriptionId);
   }
 
   search(request: SearchRequest): SearchResult[] {

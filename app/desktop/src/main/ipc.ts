@@ -295,6 +295,9 @@ export function registerIpcHandlers(options: RegisterIpcOptions): () => void {
           // disposer owns subscription cancellation.
         }
       });
+      if (isRecord(rawAccepted) && typeof rawAccepted.subscriptionId === "string" && rawAccepted.subscriptionId.trim()) {
+        acceptedId = rawAccepted.subscriptionId;
+      }
       const accepted = assertOutput(rawAccepted, isRunSubscriptionAccepted, "runs.subscribe");
       acceptedId = accepted.subscriptionId;
       if (

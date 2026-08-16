@@ -31,10 +31,11 @@ function runtime(overrides: Partial<DesktopRuntime> = {}): DesktopRuntime {
 function harness(runtimeValue = runtime()) {
   const handlers = new Map<string, Handler>();
   const sent: Array<{ channel: string; value: unknown }> = [];
+  let destroyed = false;
   const frame = { url: "book-writer://app/index.html" };
   const webContents = {
     mainFrame: frame,
-    isDestroyed: () => false,
+    isDestroyed: () => destroyed,
     send: (channel: string, value: unknown) => sent.push({ channel, value }),
   } as unknown as WebContents;
   const event = { sender: webContents, senderFrame: frame } as unknown as IpcMainInvokeEvent;
@@ -61,7 +62,7 @@ function harness(runtimeValue = runtime()) {
   };
   const invoke = (channel: string, request?: unknown, invokeEvent = event) =>
     invokeArgs(channel, request === undefined ? [] : [request], invokeEvent);
-  return { dispose, event, frame, handlers, invoke, invokeArgs, sent, webContents };
+  return { dispose, event, frame, handlers, invoke, invokeArgs, sent, setDestroyed: (value: boolean) => { destroyed = value; }, webContents };
 }
 
 describe("desktop IPC boundary", () => {
@@ -89,6 +90,9 @@ describe("desktop IPC boundary", () => {
     )).toMatchObject({ ok: false, error: { code: "IPC_FORBIDDEN" } });
 
     test.frame.url = "https://example.invalid/";
+    expect(await test.invoke(IPC_CHANNELS.projects.list)).toMatchObject({ ok: false, error: { code: "IPC_FORBIDDEN" } });
+    test.frame.url = "book-writer://app/index.html";
+    test.setDestroyed(true);
     expect(await test.invoke(IPC_CHANNELS.projects.list)).toMatchObject({ ok: false, error: { code: "IPC_FORBIDDEN" } });
     test.dispose();
   });
@@ -154,5 +158,16 @@ describe("desktop IPC boundary", () => {
     resolveSubscribe({ subscriptionId: "subscription-late", runId: "run-1", replayCursor: -1, replayTruncated: false, replay: [] });
     expect(await pending).toMatchObject({ ok: false, error: { code: "IPC_FORBIDDEN" } });
     expect(unsubscribeRun).toHaveBeenCalledWith("subscription-late");
+  });
+
+  it("cleans a subscription ID returned in a malformed acceptance", async () => {
+    const unsubscribeRun = vi.fn((subscriptionId: string) => ({ subscriptionId, unsubscribed: true }));
+    const test = harness(runtime({
+      subscribeRun: () => ({ subscriptionId: "subscription-invalid", runId: "wrong-run" } as never),
+      unsubscribeRun,
+    }));
+    expect(await test.invoke(IPC_CHANNELS.runs.subscribe, { runId: "run-1" })).toMatchObject({ ok: false, error: { code: "INVALID_RESPONSE" } });
+    expect(unsubscribeRun).toHaveBeenCalledWith("subscription-invalid");
+    test.dispose();
   });
 });

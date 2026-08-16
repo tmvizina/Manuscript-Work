@@ -13,6 +13,7 @@ const DEV_URL_ENV = ["BOOK_WRITER_DEV_URL", "ELECTRON_RENDERER_URL", "VITE_DEV_S
 let mainWindow: BrowserWindow | null = null;
 let rendererOrigin: string | undefined;
 let desktopRuntime: NativeDesktopRuntime | null = null;
+let shutdownStarted = false;
 const mainDirectory = dirname(fileURLToPath(import.meta.url));
 
 // Electron requires privileged schemes to be registered before app.ready.
@@ -165,9 +166,17 @@ if (!hasSingleInstanceLock) {
     mainWindow.show();
   });
 
-  app.on("will-quit", () => {
-    desktopRuntime?.close();
-    desktopRuntime = null;
+  app.on("before-quit", (event) => {
+    if (!desktopRuntime || shutdownStarted) return;
+    event.preventDefault();
+    shutdownStarted = true;
+    const runtime = desktopRuntime;
+    void runtime.close()
+      .catch((error: unknown) => console.error("[desktop] runtime shutdown failed", error))
+      .finally(() => {
+        desktopRuntime = null;
+        app.quit();
+      });
   });
 
   app.on("window-all-closed", () => {
