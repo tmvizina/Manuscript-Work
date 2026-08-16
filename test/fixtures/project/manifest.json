@@ -1,0 +1,21 @@
+{
+  "fixture_id": "project-synthetic-001",
+  "description": "A small synthetic project for parser, indexing, and stream integration tests.",
+  "title": "The Glass Orchard",
+  "slug": "glass-orchard",
+  "synthetic_only": true,
+  "manuscript_files": [
+    "manuscript/Chapter 01 - A Bell in the Orchard.txt",
+    "manuscript/Chapter 02 - The Weather Door.txt"
+  ],
+  "world_files": [
+    "world/setting.md",
+    "world/characters.md",
+    "world/timeline.md"
+  ],
+  "expected": {
+    "chapter_count": 2,
+    "world_file_count": 3,
+    "stable_ids": ["CHAR-SYN-001", "CHAR-SYN-002", "THR-SYN-001"]
+  }
+}

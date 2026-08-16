@@ -1,0 +1,2 @@
+{"type":"item.started","item":{"id":"item-syn-malformed-002","type":"agent_message","text":"complete line"}}
+{"type":"item.completed","item":{"id":"item-syn-malformed-002","type":"agent_message","text":"truncated line"
