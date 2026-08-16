@@ -11,6 +11,7 @@ node_modules/
 .npm-cache/
 app/ui/dist/
 app/desktop/dist/
+packages/core/dist/
 dist/desktop/
 app/server/data/
 rag/chroma_db/

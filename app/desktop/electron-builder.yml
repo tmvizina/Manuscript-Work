@@ -1,6 +1,10 @@
 appId: com.bookwriter.desktop
 productName: Book Writer
 asar: true
+asarUnpack:
+  - 'node_modules/better-sqlite3/build/Release/*.node'
+npmRebuild: true
+nativeRebuilder: sequential
 directories:
   output: ../../dist/desktop
 files:
@@ -11,6 +15,10 @@ files:
       - 'shared/**/*.js'
       - 'preload/index.cjs'
   - package.json
+  - '!node_modules/@book-writer/core/src{,/**/*}'
+  - '!node_modules/@book-writer/core/tsconfig*.json'
+  - '!node_modules/better-sqlite3/src{,/**/*}'
+  - '!node_modules/better-sqlite3/deps{,/**/*}'
 extraResources:
   - from: ../ui/dist
     to: ui
