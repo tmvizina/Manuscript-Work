@@ -252,6 +252,8 @@ Committed checkpoints:
 | `91f1817` | Add trusted chapter sync and bounded literal search | Complete |
 | `6b7eac6` | Register sender-authorized native IPC services | Complete |
 | `a5dc10e` | Add replayable native run manager and deterministic runner seam | Complete |
+| `08a95be` | Add the renderer transport and first read-only native vertical slice | Complete |
+| `aa2ce89` | Make packaged SQLite rebuilding target the Electron ABI deterministically | Complete |
 
 ### Reviewed P2-01/P2-02 foundation
 
@@ -317,23 +319,63 @@ therefore rebuilt `better-sqlite3` for Node before Vitest, then electron-builder
 rebuilt it for Electron before the final package/native smoke. This is expected
 native-module state, not a test failure.
 
-Phase 2 acceptance criteria are met. Renderer transport migration may begin.
+Phase 2 acceptance criteria are met.
+
+### Phase 3 read-only renderer slice
+
+The React renderer now selects a typed HTTP or Electron transport at runtime.
+The Electron adapter detects only the allow-listed `window.bookWriter` shape and
+normalizes structured errors without importing Electron or Node. The browser
+adapter preserves the existing health, chapter, chapter-sync, and world routes.
+It deliberately does not present semantic RAG as equivalent to native bounded
+literal search; browser RAG remains on its existing page.
+
+Project list/open and selection, chapter list/read/refresh, flat native world
+list/read, and native bounded search are wired through the transport. Native
+Markdown is rendered as inert text because the desktop boundary returns source
+text, while the compatibility server retains its existing rendered-HTML path.
+Still-unmigrated skill, review, RAG, help, health, and run polling are gated in
+Electron so a packaged renderer does not silently fall back to `/api` or
+localhost. A fresh desktop database displays an explicit no-project state until
+the first-run project import ticket supplies a trusted project record.
+
+Validation completed through `aa2ce89` on 2026-08-16:
+
+- root typecheck passed for server, core, desktop, and UI;
+- the full Vitest suite passed with 15 files and 75 tests after rebuilding
+  `better-sqlite3` for the system Node ABI;
+- the focused final renderer suite passed with 4 files and 11 tests, including
+  HTTP/Electron selection, response adaptation, search-semantics separation, and
+  flat native world grouping;
+- the full production build passed;
+- the canonical `package:dir` workflow built the UI, main, preload, and core,
+  explicitly rebuilt `better-sqlite3` for Electron `36.9.5`, and produced the
+  unpacked Windows application;
+- an initial package smoke exposed electron-builder's implicit rebuild retaining
+  system Node ABI 137 instead of Electron ABI 135; `aa2ce89` replaced that
+  unreliable implicit step with explicit `electron-rebuild` targeting the pinned
+  Electron version; and
+- the corrected unpacked executable remained alive through a five-second hidden
+  launch with repository-local user data, after which all spawned app processes
+  and temporary smoke data were removed.
+
+The first Phase 3 read-only slice is complete. Phase 3 overall remains in progress.
 
 ## Exact next actions
 
-1. Inventory the React renderer's direct `fetch`, EventSource, and endpoint usage;
-   define a transport interface that preserves the current UI-facing shapes.
-2. Implement an Electron transport backed only by `window.bookWriter`, with a
-   runtime selector that keeps the HTTP transport for ordinary browser development.
-3. Migrate the first read-only vertical slice: project list/open, chapter list/read,
-   world list/read, and bounded search. Add transport/component tests and desktop
-   unavailable/error states before migrating mutations.
-4. Migrate project settings, run history/start/cancel/streaming, skills, reviews,
+1. Add a desktop renderer error boundary and focused recovery test so an unexpected
+   component failure cannot leave a blank window.
+2. Migrate project settings through the existing validated native settings IPC,
+   preserving the browser path or an explicit compatibility-only state.
+3. Migrate run history/start/cancel/subscription through the replay-safe native run
+   API and deterministic fake seam. Do not enable a real provider process in Phase 3.
+4. Migrate skills, reviews,
    and remaining workflows in independently testable slices. The native production
    runner may remain unavailable until Phase 4, but the deterministic transport
    path must be testable with the fake seam.
-5. Add the desktop error boundary and prove the packaged UI performs the migrated
-   slice without Fastify or a listening localhost port.
+5. Add a project import/onboarding seam that creates the first trusted project,
+   then prove the packaged chapter/world/search slice against repository-local test
+   data without Fastify or a listening localhost port.
 6. In Phase 4, implement the offline-first provider payload manifest and wizard
    flow above only after release engineering confirms redistribution rights and
    selects the pinned Claude and Codex artifacts.
