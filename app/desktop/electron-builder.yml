@@ -3,7 +3,9 @@ productName: Book Writer
 asar: true
 asarUnpack:
   - 'node_modules/better-sqlite3/build/Release/*.node'
-npmRebuild: true
+# Native modules are rebuilt explicitly by the package scripts. electron-builder's
+# implicit rebuild can target the invoking Node ABI on Windows/npm 11.
+npmRebuild: false
 nativeRebuilder: sequential
 directories:
   output: ../../dist/desktop

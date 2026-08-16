@@ -9,15 +9,18 @@
     "build:core": "npm.cmd run build --workspace @book-writer/core",
     "build:main": "tsc -p tsconfig.main.json",
     "build:preload": "esbuild ./src/preload/index.ts --bundle --platform=node --format=cjs --target=node22 --external:electron --outfile=dist/preload/index.cjs",
+    "rebuild:electron": "electron-rebuild --force --which-module better-sqlite3 --version 36.9.5 --module-dir ../..",
     "build": "npm.cmd run typecheck && npm.cmd run build:core && npm.cmd run build:main && npm.cmd run build:preload",
     "dev": "npm.cmd --prefix ../ui run build && npm.cmd run build && electron .",
     "start": "npm.cmd run build && electron .",
-    "package": "npm.cmd --prefix ../ui run build && npm.cmd run build && electron-builder --config electron-builder.yml"
+    "package": "npm.cmd --prefix ../ui run build && npm.cmd run build && npm.cmd run rebuild:electron && electron-builder --config electron-builder.yml",
+    "package:dir": "npm.cmd --prefix ../ui run build && npm.cmd run build && npm.cmd run rebuild:electron && electron-builder --config electron-builder.yml --dir"
   },
   "dependencies": {
     "@book-writer/core": "0.1.0"
   },
   "devDependencies": {
+    "@electron/rebuild": "^4.2.0",
     "@types/node": "^22.0.0",
     "electron": "36.9.5",
     "electron-builder": "26.15.3",
