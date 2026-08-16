@@ -83,6 +83,39 @@ CREATE TABLE IF NOT EXISTS projects (
   active     INTEGER NOT NULL DEFAULT 1
 );
 
+-- Desktop projects need an isolated chapter snapshot because chapter IDs and
+-- relative paths repeat naturally across manuscripts. Keep the legacy
+-- `chapters` table unchanged while the server compatibility path still
+-- addresses one MANUSCRIPT_ROOT at a time.
+CREATE TABLE IF NOT EXISTS project_chapters (
+  project_id   TEXT NOT NULL REFERENCES projects(project_id) ON DELETE CASCADE,
+  chapter_id   TEXT NOT NULL,
+  book         TEXT NOT NULL,
+  rel_path     TEXT NOT NULL,
+  number       REAL NOT NULL,
+  title        TEXT NOT NULL,
+  text         TEXT NOT NULL,
+  sha256       TEXT NOT NULL,
+  word_count   INTEGER NOT NULL DEFAULT 0,
+  active       INTEGER NOT NULL DEFAULT 1,
+  file_mtime   TEXT,
+  synced_at    TEXT NOT NULL,
+  PRIMARY KEY(project_id, chapter_id),
+  UNIQUE(project_id, rel_path)
+);
+CREATE INDEX IF NOT EXISTS idx_project_chapters_book_num
+  ON project_chapters(project_id, active, book, number, chapter_id);
+
+-- JSON settings are scoped to a project and timestamped for renderer-facing
+-- records. The legacy global string `settings` table remains unchanged.
+CREATE TABLE IF NOT EXISTS project_settings (
+  project_id TEXT NOT NULL REFERENCES projects(project_id) ON DELETE CASCADE,
+  key        TEXT NOT NULL,
+  value_json TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  PRIMARY KEY(project_id, key)
+);
+
 -- Provider configuration is deliberately data-only. Secrets should be
 -- represented by an environment/keychain reference, never stored as a raw
 -- token in this table.

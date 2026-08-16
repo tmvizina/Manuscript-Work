@@ -60,7 +60,13 @@ function migrate(db: DB): void {
     addColumn("agent_runs", "variant", "TEXT NOT NULL DEFAULT 'base'");
     addColumn("agent_runs", "permission_mode", "TEXT NOT NULL DEFAULT 'default'");
     addColumn("agent_runs", "result_text", "TEXT NOT NULL DEFAULT ''");
+    addColumn("agent_runs", "error", "TEXT");
     addColumn("agent_runs", "transcript_path", "TEXT");
+    addColumn("agent_runs", "num_turns", "INTEGER");
+    addColumn("agent_runs", "duration_ms", "INTEGER");
+    addColumn("agent_runs", "total_cost_usd", "REAL");
+    addColumn("agent_runs", "input_tokens", "INTEGER");
+    addColumn("agent_runs", "output_tokens", "INTEGER");
     addColumn("agent_runs", "created_at", "TEXT NOT NULL DEFAULT ''");
     addColumn("agent_runs", "started_at", "TEXT");
     addColumn("agent_runs", "finished_at", "TEXT");

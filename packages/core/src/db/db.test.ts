@@ -27,7 +27,7 @@ describe("shared database core", () => {
       .prepare("SELECT name FROM sqlite_master WHERE type = 'table'")
       .all() as Array<{ name: string }>;
 
-    for (const table of ["claude_runs", "projects", "provider_settings", "agent_runs"]) {
+    for (const table of ["claude_runs", "projects", "project_chapters", "project_settings", "provider_settings", "agent_runs"]) {
       expect(tables.some((entry) => entry.name === table)).toBe(true);
     }
 
@@ -74,6 +74,25 @@ describe("shared database core", () => {
     const dbPath = temporaryDatabase();
     const legacy = new Database(dbPath);
     legacy.exec(`
+      CREATE TABLE chapters (
+        chapter_id TEXT PRIMARY KEY,
+        book TEXT NOT NULL,
+        rel_path TEXT NOT NULL UNIQUE,
+        number REAL NOT NULL,
+        title TEXT NOT NULL,
+        text TEXT NOT NULL,
+        sha256 TEXT NOT NULL,
+        word_count INTEGER NOT NULL DEFAULT 0,
+        active INTEGER NOT NULL DEFAULT 1,
+        file_mtime TEXT,
+        synced_at TEXT NOT NULL
+      );
+      INSERT INTO chapters(
+        chapter_id, book, rel_path, number, title, text, sha256, word_count, synced_at
+      ) VALUES (
+        'book-1/Chapter 1 - Legacy.txt', 'book-1', 'chapters/Chapter 1 - Legacy.txt',
+        1, 'Legacy', 'preserve this chapter', 'legacy-hash', 3, '2026-01-01T00:00:00Z'
+      );
       CREATE TABLE claude_runs (
         run_id TEXT PRIMARY KEY,
         skill_id TEXT,
@@ -94,6 +113,11 @@ describe("shared database core", () => {
     expect(migrated.prepare("SELECT prompt FROM claude_runs WHERE run_id = ?").get("legacy_only")).toMatchObject({
       prompt: "keep me",
     });
+    expect(migrated.prepare("SELECT text FROM chapters WHERE chapter_id = ?").get("book-1/Chapter 1 - Legacy.txt")).toMatchObject({
+      text: "preserve this chapter",
+    });
+    expect(migrated.prepare("SELECT 1 FROM sqlite_master WHERE name = 'project_chapters'").get()).toBeTruthy();
+    expect(migrated.prepare("SELECT 1 FROM sqlite_master WHERE name = 'project_settings'").get()).toBeTruthy();
     expect(migrated.prepare("SELECT 1 FROM sqlite_master WHERE name = 'agent_runs'").get()).toBeTruthy();
     migrated.close();
   });
