@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { BookWriterError, isStructuredError, toStructuredError } from "./errors.js";
-import { isChapterSummary, isJsonValue, isRunEvent, parseResponse } from "./validation.js";
+import { RUN_REPLAY_LIMIT } from "./contracts.js";
+import { assertRunSubscribeRequest, assertRunUnsubscribeRequest, isChapterSummary, isJsonValue, isRunEvent, isRunEventDelivery, isRunSubscriptionAccepted, isWorldDocument, isWorldSummaryList, parseResponse } from "./validation.js";
 
 describe("desktop IPC contracts", () => {
   it("serializes structured errors without leaking Error internals", () => {
@@ -44,6 +45,27 @@ describe("desktop IPC contracts", () => {
 
   it("accepts decimal chapter numbers used by interstitial chapters", () => {
     expect(isChapterSummary({ chapterId: "chapter-1-5", book: "1", relPath: "chapter-1-5.txt", number: 1.5, title: "Interlude", wordCount: 100, active: true })).toBe(true);
+  });
+
+  it("keeps world listings lightweight while validating full world documents separately", () => {
+    const summary = { documentId: "world-1", relPath: "world/people.md", title: "People" };
+    expect(isWorldSummaryList([summary])).toBe(true);
+    expect(isWorldSummaryList([{ ...summary, text: "full contents" }])).toBe(false);
+    expect(isWorldDocument({ ...summary, text: "full contents" })).toBe(true);
+  });
+
+  it("validates bounded, ordered run subscription replay snapshots", () => {
+    const event = { runId: "run-1", provider: "codex", sequence: 0, type: "run_started" };
+    const accepted = { subscriptionId: "subscription-1", runId: "run-1", replayCursor: 0, replayTruncated: false, replay: [event] };
+    expect(isRunSubscriptionAccepted(accepted)).toBe(true);
+    expect(isRunSubscriptionAccepted({ ...accepted, replay: [{ ...event, runId: "run-2" }] })).toBe(false);
+    expect(isRunSubscriptionAccepted({ ...accepted, replayCursor: 1 })).toBe(false);
+    expect(isRunSubscriptionAccepted({ ...accepted, replay: Array.from({ length: RUN_REPLAY_LIMIT + 1 }, (_, sequence) => ({ ...event, sequence })), replayCursor: RUN_REPLAY_LIMIT })).toBe(false);
+    expect(isRunEventDelivery({ subscriptionId: "subscription-1", event })).toBe(true);
+    expect(isRunEventDelivery({ subscriptionId: "subscription-1", event, raw: "private" })).toBe(false);
+    expect(() => assertRunSubscribeRequest({ runId: "run-1", afterSequence: 1.5 })).toThrowError();
+    expect(() => assertRunSubscribeRequest({ runId: "run-1", unsupported: true })).toThrowError();
+    expect(() => assertRunUnsubscribeRequest({ subscriptionId: "" })).toThrowError();
   });
 
   it("sanitizes structured error objects at the trust boundary", () => {

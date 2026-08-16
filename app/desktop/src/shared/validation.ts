@@ -13,15 +13,23 @@ import {
   type RunAccepted,
   type RunCancelResult,
   type RunEvent,
+  type RunEventDelivery,
   RUN_EVENT_TYPES,
+  RUN_REPLAY_LIMIT,
   type RunRecord,
   type RunRequest,
+  type RunSubscribeRequest,
+  type RunSubscriptionAccepted,
+  type RunSubscriptionOptions,
+  type RunUnsubscribeRequest,
+  type RunUnsubscribeResult,
   type RunUsage,
   type SearchRequest,
   type SearchResult,
   type SettingValue,
   type SettingRecord,
   type WorldDocument,
+  type WorldSummary,
 } from "./contracts.js";
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
@@ -169,12 +177,18 @@ export function isChapterDocument(value: unknown): value is ChapterDocument {
   return isChapterSummary(summary) && typeof text === "string" && isOptionalString(sha256);
 }
 
-export function isWorldDocument(value: unknown): value is WorldDocument {
-  return isRecord(value) && hasOnlyKeys(value, ["documentId", "relPath", "title", "text", "updatedAt"]) && isNonEmptyString(value.documentId) && typeof value.relPath === "string" && typeof value.text === "string" && isOptionalString(value.title) && isOptionalString(value.updatedAt);
+export function isWorldSummary(value: unknown): value is WorldSummary {
+  return isRecord(value) && hasOnlyKeys(value, ["documentId", "relPath", "title", "updatedAt"]) && isNonEmptyString(value.documentId) && typeof value.relPath === "string" && isOptionalString(value.title) && isOptionalString(value.updatedAt);
 }
 
-export function isWorldDocumentList(value: unknown): value is WorldDocument[] {
-  return Array.isArray(value) && value.every(isWorldDocument);
+export function isWorldSummaryList(value: unknown): value is WorldSummary[] {
+  return Array.isArray(value) && value.every(isWorldSummary);
+}
+
+export function isWorldDocument(value: unknown): value is WorldDocument {
+  if (!isRecord(value) || !hasOnlyKeys(value, ["documentId", "relPath", "title", "text", "updatedAt"])) return false;
+  const { text, ...summary } = value;
+  return isWorldSummary(summary) && typeof text === "string";
 }
 
 export function isRunAccepted(value: unknown): value is RunAccepted {
@@ -246,6 +260,37 @@ export function isRunEvent(value: unknown): value is RunEvent {
   );
 }
 
+export function isRunEventDelivery(value: unknown): value is RunEventDelivery {
+  return isRecord(value) && hasOnlyKeys(value, ["subscriptionId", "event"]) && isNonEmptyString(value.subscriptionId) && isRunEvent(value.event);
+}
+
+export function isRunSubscriptionAccepted(value: unknown): value is RunSubscriptionAccepted {
+  if (
+    !isRecord(value) ||
+    !hasOnlyKeys(value, ["subscriptionId", "runId", "replayCursor", "replayTruncated", "replay"]) ||
+    !isNonEmptyString(value.subscriptionId) ||
+    !isNonEmptyString(value.runId) ||
+    !Number.isSafeInteger(value.replayCursor) ||
+    (value.replayCursor as number) < -1 ||
+    !isBoolean(value.replayTruncated) ||
+    !Array.isArray(value.replay) ||
+    value.replay.length > RUN_REPLAY_LIMIT ||
+    !value.replay.every(isRunEvent)
+  ) {
+    return false;
+  }
+  const replay = value.replay as RunEvent[];
+  if (replay.some((event) => event.runId !== value.runId)) return false;
+  for (let index = 1; index < replay.length; index += 1) {
+    if (replay[index]!.sequence <= replay[index - 1]!.sequence) return false;
+  }
+  return replay.length === 0 || replay[replay.length - 1]!.sequence === value.replayCursor;
+}
+
+export function isRunUnsubscribeResult(value: unknown): value is RunUnsubscribeResult {
+  return isRecord(value) && hasOnlyKeys(value, ["subscriptionId", "unsubscribed"]) && isNonEmptyString(value.subscriptionId) && isBoolean(value.unsubscribed);
+}
+
 export function isSearchResult(value: unknown): value is SearchResult {
   return isRecord(value) && hasOnlyKeys(value, ["resultId", "scope", "relPath", "title", "snippet", "score"]) && isNonEmptyString(value.resultId) && typeof value.scope === "string" && ["chapters", "world", "reviews"].includes(value.scope) && typeof value.relPath === "string" && typeof value.title === "string" && typeof value.snippet === "string" && (value.score === undefined || (typeof value.score === "number" && Number.isFinite(value.score)));
 }
@@ -279,6 +324,31 @@ export function assertSettingValue(value: unknown, operation = "settings.set"): 
   if (!isJsonValue(value)) {
     throw new BookWriterError({ code: IPC_ERROR_CODES.invalidArgument, message: "value must be JSON-serializable", operation });
   }
+}
+
+export function assertRunSubscriptionOptions(value: unknown, operation = "runs.subscribe"): asserts value is RunSubscriptionOptions | undefined {
+  if (value === undefined) return;
+  if (!isRecord(value) || !hasOnlyKeys(value, ["afterSequence"])) {
+    throw new BookWriterError({ code: IPC_ERROR_CODES.invalidArgument, message: "subscription options are invalid", operation });
+  }
+  if (value.afterSequence !== undefined && (!Number.isSafeInteger(value.afterSequence) || (value.afterSequence as number) < -1)) {
+    throw new BookWriterError({ code: IPC_ERROR_CODES.invalidArgument, message: "afterSequence must be a safe integer greater than or equal to -1", operation });
+  }
+}
+
+export function assertRunSubscribeRequest(value: unknown, operation = "runs.subscribe"): asserts value is RunSubscribeRequest {
+  if (!isRecord(value) || !hasOnlyKeys(value, ["runId", "afterSequence"])) {
+    throw new BookWriterError({ code: IPC_ERROR_CODES.invalidArgument, message: "subscribe request is invalid", operation });
+  }
+  assertRequestString(value.runId, "runId", operation);
+  assertRunSubscriptionOptions(value.afterSequence === undefined ? undefined : { afterSequence: value.afterSequence }, operation);
+}
+
+export function assertRunUnsubscribeRequest(value: unknown, operation = "runs.unsubscribe"): asserts value is RunUnsubscribeRequest {
+  if (!isRecord(value) || !hasOnlyKeys(value, ["subscriptionId"])) {
+    throw new BookWriterError({ code: IPC_ERROR_CODES.invalidArgument, message: "unsubscribe request is invalid", operation });
+  }
+  assertRequestString(value.subscriptionId, "subscriptionId", operation);
 }
 
 export function assertRequestString(value: unknown, name: string, operation: string): asserts value is string {

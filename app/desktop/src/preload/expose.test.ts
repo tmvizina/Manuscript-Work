@@ -2,14 +2,16 @@ import { describe, expect, it } from "vitest";
 import { IPC_CHANNELS } from "../shared/contracts.js";
 import { createBookWriterApi, exposeBookWriter, type ContextBridgeLike, type IpcRendererLike } from "./expose.js";
 
-function ipcStub(response: unknown): IpcRendererLike & { calls: Array<[string, unknown]>; listeners: Map<string, (...args: unknown[]) => void> } {
+type StubResponse = unknown | ((channel: string, arg: unknown) => unknown | Promise<unknown>);
+
+function ipcStub(response: StubResponse): IpcRendererLike & { calls: Array<[string, unknown]>; listeners: Map<string, (...args: unknown[]) => void> } {
   const listeners = new Map<string, (...args: unknown[]) => void>();
   return {
     calls: [],
     listeners,
     invoke: async function (channel: string, arg: unknown) {
       this.calls.push([channel, arg]);
-      return response;
+      return typeof response === "function" ? response(channel, arg) : response;
     },
     on(channel, listener) {
       listeners.set(channel, listener);
@@ -68,16 +70,51 @@ describe("preload exposure", () => {
     expect(ipc.calls[0][0]).toBe(IPC_CHANNELS.providers.list);
   });
 
-  it("filters run events by run id and returns an unsubscribe function", () => {
-    const ipc = ipcStub([]);
+  it("merges replay with events arriving during the subscribe handshake and cleans up explicitly", async () => {
+    let resolveSubscribe: ((value: unknown) => void) | undefined;
+    const subscribeResponse = new Promise<unknown>((resolve) => (resolveSubscribe = resolve));
+    const ipc = ipcStub((channel: string, arg: unknown) => {
+      if (channel === IPC_CHANNELS.runs.subscribe) return subscribeResponse;
+      if (channel === IPC_CHANNELS.runs.unsubscribe) {
+        return { subscriptionId: (arg as { subscriptionId: string }).subscriptionId, unsubscribed: true };
+      }
+      return [];
+    });
     const api = createBookWriterApi(ipc);
-    const received: string[] = [];
-    const unsubscribe = api.runs.subscribe("run-1", (event) => received.push(event.runId));
+    const received: number[] = [];
+    const subscribing = api.runs.subscribe("run-1", (event) => received.push(event.sequence), { afterSequence: -1 });
     const listener = ipc.listeners.get(IPC_CHANNELS.runs.event);
-    listener?.({}, { runId: "run-2", provider: "codex", sequence: 0, type: "text_delta", text: "ignore" });
-    listener?.({}, { runId: "run-1", provider: "codex", sequence: 1, type: "text_delta", text: "keep" });
-    expect(received).toEqual(["run-1"]);
-    unsubscribe();
+    expect(listener).toBeDefined();
+    listener?.({}, { subscriptionId: "subscription-1", event: { runId: "run-1", provider: "codex", sequence: 1, type: "text_delta", text: "buffered" } });
+    listener?.({}, { subscriptionId: "subscription-1", event: { runId: "run-1", provider: "codex", sequence: 2, type: "text_delta", text: "early live event" } });
+    resolveSubscribe?.({
+      subscriptionId: "subscription-1",
+      runId: "run-1",
+      replayCursor: 1,
+      replayTruncated: false,
+      replay: [
+        { runId: "run-1", provider: "codex", sequence: 0, type: "run_started" },
+        { runId: "run-1", provider: "codex", sequence: 1, type: "text_delta", text: "replayed duplicate" },
+      ],
+    });
+    const subscription = await subscribing;
+    expect(subscription).toEqual({ subscriptionId: "subscription-1", runId: "run-1", replayCursor: 1, replayTruncated: false });
+    expect(received).toEqual([0, 1, 2]);
+    listener?.({}, { subscriptionId: "subscription-1", event: { runId: "run-1", provider: "codex", sequence: 3, type: "text_delta", text: "live" } });
+    expect(received).toEqual([0, 1, 2, 3]);
+
+    await expect(api.runs.unsubscribe("subscription-1")).resolves.toEqual({ subscriptionId: "subscription-1", unsubscribed: true });
+    expect(ipc.listeners.has(IPC_CHANNELS.runs.event)).toBe(false);
+    expect(ipc.calls.map(([channel]) => channel)).toEqual([IPC_CHANNELS.runs.subscribe, IPC_CHANNELS.runs.unsubscribe]);
+  });
+
+  it("removes its provisional event listener when subscribe fails", async () => {
+    const ipc = ipcStub((channel: string) => {
+      if (channel === IPC_CHANNELS.runs.subscribe) throw new Error("subscribe failed");
+      return [];
+    });
+    const api = createBookWriterApi(ipc);
+    await expect(api.runs.subscribe("run-1", () => undefined)).rejects.toMatchObject({ code: "INVOKE_FAILED", operation: "runs.subscribe" });
     expect(ipc.listeners.has(IPC_CHANNELS.runs.event)).toBe(false);
   });
 });

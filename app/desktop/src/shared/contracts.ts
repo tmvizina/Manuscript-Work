@@ -84,12 +84,15 @@ export interface ChapterDocument extends ChapterSummary {
   sha256?: string;
 }
 
-export interface WorldDocument {
+export interface WorldSummary {
   documentId: string;
   relPath: string;
   title?: string;
-  text: string;
   updatedAt?: string;
+}
+
+export interface WorldDocument extends WorldSummary {
+  text: string;
 }
 
 export interface RunRequest {
@@ -189,6 +192,48 @@ export interface RunEvent {
   data?: JsonValue;
 }
 
+/** Maximum replay batch accepted across the renderer trust boundary. */
+export const RUN_REPLAY_LIMIT = 1_000;
+
+export interface RunSubscriptionOptions {
+  /** Last sequence already processed by the caller; replay starts after it. */
+  afterSequence?: number;
+}
+
+export interface RunSubscribeRequest extends RunSubscriptionOptions {
+  runId: string;
+}
+
+/** Main installs live delivery before taking this replay snapshot. */
+export interface RunSubscriptionAccepted {
+  subscriptionId: string;
+  runId: string;
+  replayCursor: number;
+  replayTruncated: boolean;
+  replay: RunEvent[];
+}
+
+export interface RunSubscription {
+  subscriptionId: string;
+  runId: string;
+  replayCursor: number;
+  replayTruncated: boolean;
+}
+
+export interface RunEventDelivery {
+  subscriptionId: string;
+  event: RunEvent;
+}
+
+export interface RunUnsubscribeRequest {
+  subscriptionId: string;
+}
+
+export interface RunUnsubscribeResult {
+  subscriptionId: string;
+  unsubscribed: boolean;
+}
+
 export type SearchScope = "all" | "chapters" | "world" | "reviews";
 
 export interface SearchRequest {
@@ -232,18 +277,18 @@ export interface ProjectApi {
 export interface ContentApi {
   listChapters(projectId: string): Promise<ChapterSummary[]>;
   getChapter(projectId: string, chapterId: string): Promise<ChapterDocument>;
-  listWorld(projectId: string): Promise<WorldDocument[]>;
+  listWorld(projectId: string): Promise<WorldSummary[]>;
   getWorld(projectId: string, relPath: string): Promise<WorldDocument>;
 }
 
 export type RunEventListener = (event: RunEvent) => void;
-export type Unsubscribe = () => void;
 
 export interface RunApi {
   start(request: RunRequest): Promise<RunAccepted>;
   get(runId: string): Promise<RunRecord>;
   cancel(runId: string): Promise<RunCancelResult>;
-  subscribe(runId: string, listener: RunEventListener, onError?: (error: StructuredError) => void): Unsubscribe;
+  subscribe(runId: string, listener: RunEventListener, options?: RunSubscriptionOptions, onError?: (error: StructuredError) => void): Promise<RunSubscription>;
+  unsubscribe(subscriptionId: string): Promise<RunUnsubscribeResult>;
 }
 
 export interface SearchApi {
@@ -288,6 +333,8 @@ export const IPC_CHANNELS = {
     start: "book-writer/runs/start",
     get: "book-writer/runs/get",
     cancel: "book-writer/runs/cancel",
+    subscribe: "book-writer/runs/subscribe",
+    unsubscribe: "book-writer/runs/unsubscribe",
     event: "book-writer/runs/event",
   },
   search: { query: "book-writer/search/query" },
