@@ -90,7 +90,7 @@ CI has typecheck/build/test entry points without requiring a real provider login
 Acceptance: the server and desktop can share content, database, and normalized
 provider contracts without Electron importing Fastify.
 
-### Phase 2 - Secure Electron shell and IPC boundary (in progress)
+### Phase 2 - Secure Electron shell and IPC boundary (complete)
 
 - P2-01: create the secure single-instance main process, packaged UI protocol,
   path policy, and builder configuration.
@@ -249,6 +249,9 @@ Committed checkpoints:
 | `f19f6ca` | Add project-scoped persistence and run lifecycle primitives | Complete |
 | `56bc227` | Add replay-safe IPC subscription contracts and preload bridge | Complete |
 | `62913f7` | Package the core and Electron-native SQLite runtime | Complete |
+| `91f1817` | Add trusted chapter sync and bounded literal search | Complete |
+| `6b7eac6` | Register sender-authorized native IPC services | Complete |
+| `a5dc10e` | Add replayable native run manager and deterministic runner seam | Complete |
 
 ### Reviewed P2-01/P2-02 foundation
 
@@ -272,10 +275,28 @@ The sandboxed Electron preload is bundled as one CommonJS file at
 `dist/preload/index.cjs`; main/shared code remains ESM. Electron `36.9.5`,
 electron-builder `26.15.3`, and esbuild `0.25.0` are pinned and locked.
 
-Validation completed through `62913f7` on 2026-08-16:
+### Completed P2-03/P2-04 native boundary
+
+The desktop main process now opens the application database below Electron
+`userData`, resolves project roots only from trusted stored records, synchronizes
+project-scoped chapters without touching the legacy server table, serves physically
+contained world files, runs bounded literal search, and enforces a project-setting
+key/value allow-list. Every IPC request is revalidated in main and authorized to the
+registered application's exact main frame; responses are explicitly mapped and
+validated before crossing the boundary.
+
+The injected run manager owns provider handles, persistence, cancellation,
+subscription IDs, monotonic renderer sequences, live-before-replay registration,
+and a replay buffer capped by `RUN_REPLAY_LIMIT`. Provider raw/private/unknown data
+is not forwarded. The deterministic fake runner exercises the lifecycle without a
+paid or authenticated provider call; production provider execution, installation,
+and authentication remain explicitly unavailable until Phase 4.
+
+Validation completed through `a5dc10e` on 2026-08-16:
 
 - root typecheck passed for server, core, desktop, and UI;
-- the full Vitest suite passed: 7 files and 37 tests;
+- the full Vitest suite passed before the final Electron-native rebuild: 12 files
+  and 65 tests;
 - the full production build passed;
 - electron-builder produced `dist/desktop/win-unpacked` successfully;
 - the packaged ASAR contained only the allow-listed main/shared JS, bundled
@@ -283,36 +304,45 @@ Validation completed through `62913f7` on 2026-08-16:
 - the packaged Electron runtime imported `@book-writer/core`, loaded the unpacked
   `better-sqlite3` binary, opened the embedded schema in memory, and executed a
   direct database smoke query successfully;
+- the final packaged runtime opened a trusted project, synchronized decimal chapter
+  `2.5`, and returned `FEATURE_UNAVAILABLE` without launching a provider;
+- ASAR inspection confirmed that only `contracts.js`, `manager.js`, and
+  `sanitize.js` from the run subsystem ship; the fake runner and tests are excluded;
 - the unpacked executable remained running during a five-second launch smoke test
   using repository-local temporary user data, then was stopped cleanly; and
 - `git diff --check` and staged checks passed.
 
-Phase 2 is still in progress because the P2-03 persistence/contract/package
-foundation is complete but its main-process handlers and the P2-04 IPC/lifecycle
-tests are not implemented.
+The system Node and Electron use different native ABIs on this machine. Validation
+therefore rebuilt `better-sqlite3` for Node before Vitest, then electron-builder
+rebuilt it for Electron before the final package/native smoke. This is expected
+native-module state, not a test failure.
+
+Phase 2 acceptance criteria are met. Renderer transport migration may begin.
 
 ## Exact next actions
 
-1. Add the trusted desktop content-sync adapter that populates project-scoped
-   chapter records without changing the legacy server compatibility tables.
-2. Add a bounded literal-search service and focused project/path/result-limit tests.
-3. Implement an injected desktop runtime and main-process IPC handlers. Revalidate
-   every request in main, authorize the sender/main frame, resolve filesystem roots
-   only from trusted project records, sanitize responses, and return a disposer.
-4. Add the provider-runner abstraction, live subscription registry, bounded replay
-   buffer, cancellation ownership, and deterministic fake-provider seams; keep real
-   provider installation and authentication unavailable.
-5. Add P2-04 IPC, origin/frame authorization, lifecycle, replay/cancellation,
-   traversal, and packaged native-module tests. Do not begin renderer migration
-   until these tests and the Phase 2 acceptance criteria pass.
+1. Inventory the React renderer's direct `fetch`, EventSource, and endpoint usage;
+   define a transport interface that preserves the current UI-facing shapes.
+2. Implement an Electron transport backed only by `window.bookWriter`, with a
+   runtime selector that keeps the HTTP transport for ordinary browser development.
+3. Migrate the first read-only vertical slice: project list/open, chapter list/read,
+   world list/read, and bounded search. Add transport/component tests and desktop
+   unavailable/error states before migrating mutations.
+4. Migrate project settings, run history/start/cancel/streaming, skills, reviews,
+   and remaining workflows in independently testable slices. The native production
+   runner may remain unavailable until Phase 4, but the deterministic transport
+   path must be testable with the fake seam.
+5. Add the desktop error boundary and prove the packaged UI performs the migrated
+   slice without Fastify or a listening localhost port.
 6. In Phase 4, implement the offline-first provider payload manifest and wizard
    flow above only after release engineering confirms redistribution rights and
    selects the pinned Claude and Codex artifacts.
 
 ## Known risks and decisions still requiring evidence
 
-- The packaged Electron runtime can load native `better-sqlite3` and the embedded
-  schema, but a clean installed-app startup/database test is still required.
+- The unpacked packaged Electron runtime can load native `better-sqlite3`, the
+  embedded schema, and the native service facade. A clean installed-app test remains
+  a Phase 5 qualification item.
 - Vitest and esbuild require execution outside the managed filesystem sandbox on
   this machine; the full suite passes when granted repository-scoped access.
 - Bundling Claude and Codex payloads is the approved offline-first design, but the

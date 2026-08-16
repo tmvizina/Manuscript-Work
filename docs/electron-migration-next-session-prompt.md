@@ -30,14 +30,14 @@ Before editing:
 4. Treat `25446a6` only as the temporary Git-permission checkpoint it was; its P2
    contents were reviewed and corrected by the later commits.
 
-Resume at the handoff's **Exact next actions**. P2-01/P2-02 and the P2-03
-persistence/contract/package foundation are reviewed and validated; Phase 2 remains
-incomplete. The immediate objective is to finish P2-03/P2-04:
+Resume at the handoff's **Exact next actions**. Phase 2 is complete through
+`a5dc10e`; the immediate objective is Phase 3 renderer transport migration:
 
-- add the project-scoped content-sync adapter and bounded literal-search service;
-- implement injected, sender-authorized, main-validating IPC handlers;
-- implement deterministic provider-runner/replay/cancellation seams; and
-- add IPC/lifecycle/security/native-package tests before renderer migration.
+- inventory direct renderer HTTP/EventSource usage and define a transport interface;
+- preserve the HTTP transport for browser development;
+- add an Electron transport using only `window.bookWriter`;
+- migrate project/chapter/world/search as the first read-only vertical slice; and
+- add transport/component/error-state tests before migrating mutations and runs.
 
 Provider install/auth methods belong to Phase 4. Keep them explicitly unavailable
 until the trusted CLI discovery/install/auth design is implemented; never collect
