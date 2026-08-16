@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, dialog, ipcMain } from "electron";
 import { registerIpcHandlers } from "./ipc.js";
 import { getUiRoot, getUserDataPaths, type DesktopUserDataPaths } from "./paths.js";
 import { NativeDesktopRuntime } from "./runtime.js";
@@ -117,6 +117,13 @@ export async function createMainWindow(runtime: NativeDesktopRuntime): Promise<B
     runtime,
     isAllowedFrameUrl: (url) => isAllowedUiUrl(url, rendererOrigin),
     allowedSettingKeys: new Set(PROJECT_SETTING_KEYS),
+    pickProjectRoot: async () => {
+      const result = await dialog.showOpenDialog(window, {
+        title: "Choose a manuscript project folder",
+        properties: ["openDirectory", "createDirectory"],
+      });
+      return result.canceled ? null : result.filePaths[0] ?? null;
+    },
   });
   installNavigationGuards(window);
   window.webContents.session.setPermissionCheckHandler(() => false);

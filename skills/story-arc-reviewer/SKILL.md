@@ -130,6 +130,10 @@ See `templates/arc-confirmation-questions-template.md` and `templates/validated-
 - Update `world/` canon to reflect confirmed arc direction.
 - Hand a human-validated outline to the planner.
 
+## Nonfiction project override
+
+If the target project selects the nonfiction profile, read `../nonfiction-profile.md` and operate as its Structure & Coverage Gate. Those confirmation targets override fantasy arc and campaign terminology above.
+
 ## Final Operating Principle
 
 The arc gate exists so that no chapter is ever planned against an arc the author never agreed to. It does not assume; it asks. It presents the dramaturg's best proposal, makes the stakes legible, and lets the author confirm, correct, or defer. When it hands the outline forward, every arc is either the author's confirmed intent or an explicitly author-retained open question — and the planner can build on it knowing the difference.

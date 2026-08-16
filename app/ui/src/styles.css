@@ -161,6 +161,10 @@ details.desc p { color: var(--muted); font-size: 0.9rem; max-width: 75ch; }
 
 .runbox { margin-top: 6px; }
 .runbox .controls { display: flex; gap: 10px; align-items: center; margin-top: 10px; flex-wrap: wrap; }
+.settings-form { display: grid; gap: 16px; max-width: 620px; }
+.settings-form label { display: grid; gap: 6px; font-weight: 600; }
+.settings-form select, .settings-form input[type="text"] { width: 100%; box-sizing: border-box; font-weight: 400; }
+.native-document { white-space: pre-wrap; overflow-wrap: anywhere; }
 .variant-toggle { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
 .variant-toggle button { border: 0; background: var(--bg-deep); color: var(--muted); padding: 7px 12px; cursor: pointer; }
 .variant-toggle button.on { background: var(--accent); color: var(--accent-text); font-weight: 600; }

@@ -10,7 +10,12 @@ import WorldPage from "./pages/WorldPage";
 import ReviewsPage from "./pages/ReviewsPage";
 import HelpIndexPage from "./pages/HelpIndexPage";
 import HelpSectionPage from "./pages/HelpSectionPage";
-import { createTransport, type ProjectSummary } from "./transport";
+import SettingsPage from "./pages/SettingsPage";
+import NativeSkillPage from "./pages/NativeSkillPage";
+import { nativeSkills, NATIVE_PHASE_LABELS } from "./lib/nativeSkills";
+import NativeReviewsPage from "./pages/NativeReviewsPage";
+import NativeHelpPage from "./pages/NativeHelpPage";
+import { createTransport, type ProjectDetail, type ProjectImportInput, type ProjectSummary } from "./transport";
 
 const transport = createTransport();
 
@@ -41,6 +46,7 @@ export default function App() {
   const native = transport.mode === "electron";
   const [projects, setProjects] = useState<ProjectSummary[] | null>(null);
   const [projectId, setProjectId] = useState<string>();
+  const [project, setProject] = useState<ProjectDetail | null>(null);
   const [projectError, setProjectError] = useState("");
   const [sidebar, setSidebar] = useState<SkillSummary[]>([]);
   const [sidebarError, setSidebarError] = useState(false);
@@ -57,7 +63,8 @@ export default function App() {
         const remembered = localStorage.getItem("bw-project-id");
         const next = items.find((item) => item.projectId === remembered)?.projectId ?? items[0].projectId;
         await transport.projects.open(next);
-        if (alive) setProjectId(next);
+        const detail = await transport.projects.get(next);
+        if (alive) { setProjectId(next); setProject(detail); }
       })
       .catch((error) => {
         if (!alive) return;
@@ -71,16 +78,39 @@ export default function App() {
     setProjectError("");
     try {
       await transport.projects.open(next);
+      const detail = await transport.projects.get(next);
       localStorage.setItem("bw-project-id", next);
       setProjectId(next);
+      setProject(detail);
       location.hash = "#/chapters";
     } catch (error: any) {
       setProjectError(String(error?.message ?? error));
     }
   };
 
+  const importProject = async (input: ProjectImportInput) => {
+    setProjectError("");
+    try {
+      const imported = await transport.projects.import(input);
+      if (!imported) return;
+      setProjects(await transport.projects.list());
+      await transport.projects.open(imported.projectId);
+      localStorage.setItem("bw-project-id", imported.projectId);
+      setProjectId(imported.projectId);
+      setProject(imported);
+      location.hash = "#/world";
+    } catch (error: any) {
+      setProjectError(String(error?.message ?? error));
+    }
+  };
+
   const loadSkills = () => {
-    if (native) return;
+    if (native) {
+      setSidebar(nativeSkills(project?.profile));
+      setPhaseLabels(NATIVE_PHASE_LABELS);
+      setSidebarError(false);
+      return;
+    }
     setSidebarError(false);
     api("/api/skills")
       .then((d) => {
@@ -92,7 +122,7 @@ export default function App() {
         setSidebarError(true);
       });
   };
-  useEffect(loadSkills, [native]);
+  useEffect(loadSkills, [native, project?.profile]);
 
   useEffect(() => {
     if (native) return;
@@ -105,8 +135,16 @@ export default function App() {
 
   const [activeRuns, setActiveRuns] = useState<Array<{ run_id: string; skill_id: string | null }>>([]);
   useEffect(() => {
-    if (native) return;
     let alive = true;
+    if (native) {
+      if (!projectId) { setActiveRuns([]); return () => { alive = false; }; }
+      const pollNative = () => transport.runs.list({ projectId, limit: 10 }).then((runs) => {
+        if (alive) setActiveRuns(runs.filter((run) => run.status === "running" || run.status === "starting" || run.status === "queued").map((run) => ({ run_id: run.runId, skill_id: run.skillId ?? null })));
+      }).catch(() => alive && setActiveRuns([]));
+      void pollNative();
+      const nativeTimer = setInterval(pollNative, 10_000);
+      return () => { alive = false; clearInterval(nativeTimer); };
+    }
     const poll = () => api("/api/claude/runs?limit=10")
       .then((data) => {
         if (alive) setActiveRuns((data.runs ?? []).filter((run: any) => run.status === "running" || run.status === "queued"));
@@ -115,10 +153,21 @@ export default function App() {
     poll();
     const timer = setInterval(poll, 10_000);
     return () => { alive = false; clearInterval(timer); };
-  }, [native]);
+  }, [native, projectId]);
 
   let page: JSX.Element;
-  if (native && (route.startsWith("/skill/") || route === "/rag" || route.startsWith("/reviews") || route.startsWith("/help"))) {
+  if (native && route === "/projects") {
+    page = <><h1>Add a project</h1><div className="empty"><p><strong>Choose a manuscript folder and its writing profile.</strong></p><p>The fishing option creates a portable nonfiction configuration and scaffolds a Knowledge Base without overwriting existing files.</p><p><button className="btn" onClick={() => importProject({ profile: "nonfiction", preset: "fly-night-fishing" })}>Import Fly &amp; Night Fishing Book</button> <button className="btn ghost" onClick={() => importProject({ profile: "fantasy" })}>Import Fantasy Book</button></p></div></>;
+  } else if (native && route === "/settings") {
+    page = <SettingsPage transport={transport} projectId={projectId} />;
+  } else if (native && route.startsWith("/skill/")) {
+    const id = decodeURIComponent(route.slice("/skill/".length));
+    page = <NativeSkillPage key={id} transport={transport} projectId={projectId} skill={sidebar.find((item) => item.skill_id === id)} />;
+  } else if (native && (route === "/reviews" || route.startsWith("/reviews/"))) {
+    page = <NativeReviewsPage transport={transport} projectId={projectId} path={route === "/reviews" ? "" : decodeURI(route.slice("/reviews/".length))} />;
+  } else if (native && route.startsWith("/help")) {
+    page = <NativeHelpPage />;
+  } else if (native && route === "/rag") {
     page = <PendingDesktopPage feature={route.startsWith("/help") ? "Help" : route.startsWith("/reviews") ? "Reviews" : route === "/rag" ? "RAG" : "Skills"} />;
   } else if (route.startsWith("/skill/")) {
     const id = decodeURIComponent(route.slice("/skill/".length));
@@ -128,7 +177,7 @@ export default function App() {
   } else if (route === "/search") {
     page = <SearchPage transport={transport} projectId={projectId} />;
   } else if (route === "/world" || route.startsWith("/world/")) {
-    page = <WorldPage transport={transport} projectId={projectId} path={route === "/world" ? "" : decodeURI(route.slice("/world/".length))} />;
+    page = <WorldPage transport={transport} projectId={projectId} profile={project?.profile} path={route === "/world" ? "" : decodeURI(route.slice("/world/".length))} />;
   } else if (route === "/reviews" || route.startsWith("/reviews/")) {
     page = <ReviewsPage path={route === "/reviews" ? "" : decodeURI(route.slice("/reviews/".length))} />;
   } else if (route === "/help") {
@@ -140,14 +189,15 @@ export default function App() {
     page = <ChaptersPage transport={transport} projectId={projectId} selectedId={selected} />;
   }
 
-  const needsProject = native && (route === "/chapters" || route.startsWith("/chapters/") || route === "/world" || route.startsWith("/world/") || route === "/search");
+  const needsProject = native && (route === "/chapters" || route.startsWith("/chapters/") || route === "/world" || route.startsWith("/world/") || route === "/search" || route === "/settings" || route.startsWith("/skill/") || route === "/reviews" || route.startsWith("/reviews/"));
   if (needsProject && projects !== null && projects.length === 0) {
     page = (
       <>
         <h1>No project configured</h1>
         <div className="empty">
-          <p><strong>The desktop database does not contain a trusted manuscript project.</strong></p>
-          <p>Project import belongs to the first-run wizard. Until that ticket lands, use a previously registered project or the browser compatibility app.</p>
+          <p><strong>Choose a manuscript folder and its writing profile.</strong></p>
+          <p>The fishing option creates a portable nonfiction configuration and scaffolds a Knowledge Base without overwriting existing files.</p>
+          <p><button className="btn" onClick={() => importProject({ profile: "nonfiction", preset: "fly-night-fishing" })}>Import Fly &amp; Night Fishing Book</button> <button className="btn ghost" onClick={() => importProject({ profile: "fantasy" })}>Import Fantasy Book</button></p>
         </div>
       </>
     );
@@ -164,6 +214,7 @@ export default function App() {
         projects={projects ?? []}
         projectId={projectId}
         onProjectChange={selectProject}
+        memoryLabel={project?.profile?.memoryLabel ?? "World"}
         activeRuns={activeRuns.map((run) => ({
           ...run,
           skill_name: sidebar.find((skill) => skill.skill_id === run.skill_id)?.display_name ?? run.skill_id ?? "run",

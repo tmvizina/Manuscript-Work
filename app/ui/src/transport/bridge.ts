@@ -2,9 +2,21 @@ import type {
   ChapterDocument,
   ChapterSummary,
   ProjectDetail,
+  ProjectImportInput,
   ProjectSummary,
   SearchRequest,
   SearchResult,
+  ProjectSettingKey,
+  ProjectSettingValue,
+  SettingRecord,
+  RunAccepted,
+  RunEvent,
+  RunListRequest,
+  RunRecord,
+  RunRequest,
+  RunSubscription,
+  ReviewDocument,
+  ReviewSummary,
   WorldDocument,
   WorldSummary,
 } from "./types.js";
@@ -19,15 +31,30 @@ export interface BookWriterReadOnlyBridge {
     list(): Promise<ProjectSummary[]>;
     get(projectId: string): Promise<ProjectDetail | null>;
     open(projectId: string): Promise<ProjectSummary>;
+    import(input: ProjectImportInput): Promise<ProjectDetail | null>;
   };
   readonly content: {
     listChapters(projectId: string): Promise<ChapterSummary[]>;
     getChapter(projectId: string, chapterId: string): Promise<ChapterDocument>;
     listWorld(projectId: string): Promise<WorldSummary[]>;
     getWorld(projectId: string, relPath: string): Promise<WorldDocument>;
+    listReviews(projectId: string): Promise<ReviewSummary[]>;
+    getReview(projectId: string, relPath: string): Promise<ReviewDocument>;
   };
   readonly search: {
     query(request: SearchRequest & { projectId: string }): Promise<SearchResult[]>;
+  };
+  readonly settings: {
+    get(projectId: string, key: ProjectSettingKey): Promise<SettingRecord | null>;
+    set(projectId: string, key: ProjectSettingKey, value: ProjectSettingValue): Promise<SettingRecord>;
+  };
+  readonly runs: {
+    start(request: RunRequest): Promise<RunAccepted>;
+    list(request?: RunListRequest): Promise<RunRecord[]>;
+    get(runId: string): Promise<RunRecord>;
+    cancel(runId: string): Promise<{ runId: string; cancelled: boolean }>;
+    subscribe(runId: string, listener: (event: RunEvent) => void, options?: { afterSequence?: number }, onError?: (error: { message: string }) => void): Promise<RunSubscription>;
+    unsubscribe(subscriptionId: string): Promise<{ subscriptionId: string; unsubscribed: boolean }>;
   };
 }
 
@@ -55,10 +82,14 @@ export function isBookWriterReadOnlyBridge(value: unknown): value is BookWriterR
   const projects = value.projects;
   const content = value.content;
   const search = value.search;
+  const settings = value.settings;
+  const runs = value.runs;
   return (
-    hasMethods(projects, ["list", "get", "open"]) &&
-    hasMethods(content, ["listChapters", "getChapter", "listWorld", "getWorld"]) &&
-    hasMethods(search, ["query"])
+    hasMethods(projects, ["list", "get", "open", "import"]) &&
+    hasMethods(content, ["listChapters", "getChapter", "listWorld", "getWorld", "listReviews", "getReview"]) &&
+    hasMethods(search, ["query"]) &&
+    hasMethods(settings, ["get", "set"]) &&
+    hasMethods(runs, ["start", "list", "get", "cancel", "subscribe", "unsubscribe"])
   );
 }
 

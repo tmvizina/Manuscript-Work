@@ -6,12 +6,16 @@ import {
   type ExecutionProvider,
   type IpcResponse,
   type ProjectDetail,
+  type ProjectImportInput,
   type ProjectSummary,
   type ProviderSummary,
   type RunAccepted,
   type RunCancelResult,
   type RunEventDelivery,
   type RunRecord,
+  type RunListRequest,
+  type ReviewDocument,
+  type ReviewSummary,
   type RunRequest,
   type RunSubscribeRequest,
   type RunSubscriptionAccepted,
@@ -26,6 +30,7 @@ import {
 import { BookWriterError, IPC_ERROR_CODES } from "../shared/errors.js";
 import {
   assertExecutionProvider,
+  assertProjectImportInput,
   assertProjectSettingValue,
   assertRequestString,
   assertRunRequest,
@@ -42,6 +47,9 @@ import {
   isRunCancelResult,
   isRunEventDelivery,
   isRunRecord,
+  isRunRecordList,
+  isReviewDocument,
+  isReviewSummaryList,
   isRunSubscriptionAccepted,
   isRunUnsubscribeResult,
   isSearchResultList,
@@ -56,12 +64,16 @@ export interface DesktopRuntime {
   listProjects(): Promise<ProjectSummary[]> | ProjectSummary[];
   getProject(projectId: string): Promise<ProjectDetail | null> | ProjectDetail | null;
   openProject(projectId: string): Promise<ProjectSummary> | ProjectSummary;
+  importProject(rootPath: string, input: ProjectImportInput): Promise<ProjectDetail> | ProjectDetail;
   listChapters(projectId: string): Promise<ChapterSummary[]> | ChapterSummary[];
   getChapter(projectId: string, chapterId: string): Promise<ChapterDocument> | ChapterDocument;
   listWorld(projectId: string): Promise<WorldSummary[]> | WorldSummary[];
   getWorld(projectId: string, relPath: string): Promise<WorldDocument> | WorldDocument;
+  listReviews(projectId: string): Promise<ReviewSummary[]> | ReviewSummary[];
+  getReview(projectId: string, relPath: string): Promise<ReviewDocument> | ReviewDocument;
   startRun(request: RunRequest): Promise<RunAccepted> | RunAccepted;
   getRun(runId: string): Promise<RunRecord> | RunRecord;
+  listRuns(request?: RunListRequest): Promise<RunRecord[]> | RunRecord[];
   cancelRun(runId: string): Promise<RunCancelResult> | RunCancelResult;
   subscribeRun(
     request: RunSubscribeRequest,
@@ -79,6 +91,7 @@ export interface RegisterIpcOptions {
   runtime: DesktopRuntime;
   isAllowedFrameUrl(url: string): boolean;
   allowedSettingKeys: ReadonlySet<string>;
+  pickProjectRoot?: () => Promise<string | null>;
 }
 
 type Guard<T> = (value: unknown) => value is T;
@@ -243,6 +256,15 @@ export function registerIpcHandlers(options: RegisterIpcOptions): () => void {
     if (project.projectId !== projectId) invalidResponse("Project response did not match the request", "projects.open");
     return project;
   });
+  register(IPC_CHANNELS.projects.import, "projects.import", (value): value is ProjectDetail | null => value === null || isProjectDetail(value), async (request) => {
+    assertProjectImportInput(request, "projects.import");
+    if (!options.pickProjectRoot) {
+      throw new BookWriterError({ code: IPC_ERROR_CODES.featureUnavailable, message: "Project folder selection is unavailable", operation: "projects.import" });
+    }
+    const rootPath = await options.pickProjectRoot();
+    if (rootPath === null) return null;
+    return options.runtime.importProject(rootPath, request);
+  });
 
   register(IPC_CHANNELS.content.listChapters, "content.listChapters", isChapterSummaryList, (request) =>
     options.runtime.listChapters(projectIdRequest(request, "content.listChapters")));
@@ -260,10 +282,25 @@ export function registerIpcHandlers(options: RegisterIpcOptions): () => void {
     assertRequestString(request.relPath, "relPath", "content.getWorld");
     return options.runtime.getWorld(request.projectId, request.relPath);
   });
+  register(IPC_CHANNELS.content.listReviews, "content.listReviews", isReviewSummaryList, (request) => options.runtime.listReviews(projectIdRequest(request, "content.listReviews")));
+  register(IPC_CHANNELS.content.getReview, "content.getReview", isReviewDocument, (request) => {
+    assertOnlyKeys(request, ["projectId", "relPath"], "content.getReview");
+    assertRequestString(request.projectId, "projectId", "content.getReview");
+    assertRequestString(request.relPath, "relPath", "content.getReview");
+    return options.runtime.getReview(request.projectId, request.relPath);
+  });
 
   register(IPC_CHANNELS.runs.start, "runs.start", isRunAccepted, (request) => {
     assertRunRequest(request, "runs.start");
     return options.runtime.startRun(request);
+  });
+  register(IPC_CHANNELS.runs.list, "runs.list", isRunRecordList, (request) => {
+    if (request === undefined) return options.runtime.listRuns();
+    assertOnlyKeys(request, ["projectId", "skillId", "limit"], "runs.list");
+    if (request.projectId !== undefined) assertRequestString(request.projectId, "projectId", "runs.list");
+    if (request.skillId !== undefined) assertRequestString(request.skillId, "skillId", "runs.list");
+    if (request.limit !== undefined && (!Number.isSafeInteger(request.limit) || (request.limit as number) < 1 || (request.limit as number) > 100)) invalid("limit must be an integer from 1 to 100", "runs.list");
+    return options.runtime.listRuns(request as RunListRequest);
   });
   register(IPC_CHANNELS.runs.get, "runs.get", isRunRecord, (request) =>
     options.runtime.getRun(runIdRequest(request, "runs.get")));

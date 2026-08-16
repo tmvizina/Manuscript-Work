@@ -9,6 +9,7 @@ function bridge(): BookWriterReadOnlyBridge {
       list: async () => [],
       get: async () => null,
       open: async () => ({ projectId: "project-1", name: "Project", rootPath: "C:/project", active: true }),
+      import: async () => null,
     },
     content: {
       listChapters: async () => [],
@@ -24,8 +25,22 @@ function bridge(): BookWriterReadOnlyBridge {
       }),
       listWorld: async () => [],
       getWorld: async () => ({ documentId: "world:x", relPath: "x.md", text: "" }),
+      listReviews: async () => [],
+      getReview: async (_projectId, relPath) => ({ relPath, kind: "review", updatedAt: "2026-08-16T00:00:00.000Z", bytes: 0, text: "" }),
     },
     search: { query: async () => [] },
+    settings: {
+      get: async () => null,
+      set: async (projectId, key, value) => ({ projectId, key, value, updatedAt: "2026-08-16T00:00:00.000Z" }),
+    },
+    runs: {
+      start: async (request) => ({ runId: "run-1", provider: request.provider, status: "queued" }),
+      list: async () => [],
+      get: async (runId) => ({ runId, provider: "claude", variant: "base", status: "completed", prompt: "", createdAt: "2026-08-16T00:00:00.000Z" }),
+      cancel: async (runId) => ({ runId, cancelled: false }),
+      subscribe: async (runId) => ({ subscriptionId: "sub-1", runId, replayCursor: -1, replayTruncated: false }),
+      unsubscribe: async (subscriptionId) => ({ subscriptionId, unsubscribed: true }),
+    },
   };
 }
 

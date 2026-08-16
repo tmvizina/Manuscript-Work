@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { createProject } from "@book-writer/core";
 import { afterEach, describe, expect, it } from "vitest";
@@ -23,7 +23,9 @@ describe("native desktop runtime", () => {
   it("composes trusted content and an injected deterministic runner", async () => {
     const root = testRoot();
     mkdirSync(join(root, "chapters"), { recursive: true });
+    mkdirSync(join(root, "reviews"), { recursive: true });
     writeFileSync(join(root, "chapters", "Chapter 1.5 - Bridge.txt"), "A silver dragon crosses.", "utf8");
+    writeFileSync(join(root, "reviews", "2026-08-16-project.md"), "# Project review\n\n### RV-001\nFinding.", "utf8");
     const runner = new DeterministicFakeRunner();
     const runtime = new NativeDesktopRuntime(join(root, "data", "book-writer.db"), { runner });
     createProject(runtime.db, { projectId: "project-1", name: "Project", rootPath: root });
@@ -32,6 +34,8 @@ describe("native desktop runtime", () => {
     expect(opened).toMatchObject({ projectId: "project-1", name: "Project" });
     expect(opened).not.toHaveProperty("manuscriptRoot");
     expect(runtime.listChapters("project-1")[0]?.number).toBe(1.5);
+    expect(runtime.listReviews("project-1")[0]).toMatchObject({ relPath: "reviews/2026-08-16-project.md", kind: "review" });
+    expect(runtime.getReview("project-1", "reviews/2026-08-16-project.md").text).toContain("RV-001");
 
     const accepted = await runtime.startRun({ provider: "codex", projectId: "project-1", prompt: "synthetic" });
     const live: string[] = [];
@@ -45,6 +49,7 @@ describe("native desktop runtime", () => {
 
     expect(live).toEqual(["safe output"]);
     expect(await runtime.getRun(accepted.runId)).toMatchObject({ status: "completed", resultText: "done" });
+    expect(runtime.listRuns({ projectId: "project-1" }).map((run) => run.runId)).toContain(accepted.runId);
     await runtime.close();
   });
 
@@ -56,6 +61,17 @@ describe("native desktop runtime", () => {
     });
     const failed = runtime.db.prepare("SELECT status FROM agent_runs").get() as { status: string };
     expect(failed.status).toBe("failed");
+    await runtime.close();
+  });
+
+  it("imports and scaffolds a fishing project with its portable profile", async () => {
+    const dataRoot = testRoot();
+    const manuscriptRoot = testRoot();
+    const runtime = new NativeDesktopRuntime(join(dataRoot, "book-writer.db"));
+    const imported = runtime.importProject(manuscriptRoot, { profile: "nonfiction", preset: "fly-night-fishing" });
+    expect(imported).toMatchObject({ profile: { profile: "nonfiction", memoryLabel: "Knowledge Base" }, profileSource: "project" });
+    expect(existsSync(join(manuscriptRoot, "world", "claims", "claims-ledger.md"))).toBe(true);
+    expect(readFileSync(join(manuscriptRoot, ".book-writer", "project.json"), "utf-8")).toContain("fly-night-fishing");
     await runtime.close();
   });
 });

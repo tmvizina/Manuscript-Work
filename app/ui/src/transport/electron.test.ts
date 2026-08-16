@@ -8,15 +8,30 @@ function nativeBridge(): BookWriterReadOnlyBridge {
       list: async () => [{ projectId: "project-1", name: "Project", rootPath: "C:/project", active: true }],
       get: async () => ({ projectId: "project-1", name: "Project", rootPath: "C:/project", active: true, worldRoot: "C:/project/world" }),
       open: async () => ({ projectId: "project-1", name: "Project", rootPath: "C:/project", active: true }),
+      import: async () => null,
     },
     content: {
       listChapters: async (projectId) => [{ chapterId: `${projectId}:chapter-1`, book: "book-1", relPath: "chapters/one.txt", number: 1, title: "One", wordCount: 4, active: true }],
       getChapter: async (_projectId, chapterId) => ({ chapterId, book: "book-1", relPath: "chapters/one.txt", number: 1, title: "One", wordCount: 4, active: true, text: "text" }),
       listWorld: async () => [{ documentId: "world:one.md", relPath: "one.md", title: "One" }],
       getWorld: async (_projectId, relPath) => ({ documentId: `world:${relPath}`, relPath, title: "One", text: "# One" }),
+      listReviews: async () => [],
+      getReview: async (_projectId, relPath) => ({ relPath, kind: "review", updatedAt: "2026-08-16T00:00:00.000Z", bytes: 4, text: "text" }),
     },
     search: {
       query: async () => [{ resultId: "world:one.md", scope: "world", relPath: "one.md", title: "One", snippet: "dragon", score: 1 }],
+    },
+    settings: {
+      get: async (projectId, key) => ({ projectId, key, value: key === "preferredProvider" ? "codex" : "base", updatedAt: "2026-08-16T00:00:00.000Z" }),
+      set: async (projectId, key, value) => ({ projectId, key, value, updatedAt: "2026-08-16T00:01:00.000Z" }),
+    },
+    runs: {
+      start: async (request) => ({ runId: "run-1", provider: request.provider, status: "queued" }),
+      list: async () => [{ runId: "run-1", projectId: "project-1", provider: "claude", skillId: "book-reviewer-v2", variant: "base", status: "completed", prompt: "review", createdAt: "2026-08-16T00:00:00.000Z" }],
+      get: async (runId) => ({ runId, projectId: "project-1", provider: "claude", variant: "base", status: "completed", prompt: "review", createdAt: "2026-08-16T00:00:00.000Z" }),
+      cancel: async (runId) => ({ runId, cancelled: true }),
+      subscribe: async (runId) => ({ subscriptionId: "sub-1", runId, replayCursor: -1, replayTruncated: false }),
+      unsubscribe: async (subscriptionId) => ({ subscriptionId, unsubscribed: true }),
     },
   };
 }
@@ -43,6 +58,9 @@ describe("Electron transport", () => {
     await expect(transport.search.query({ projectId: "project-1", query: "dragon", scope: "world", limit: 2 })).resolves.toEqual([
       { resultId: "world:one.md", scope: "world", relPath: "one.md", title: "One", snippet: "dragon", score: 1 },
     ]);
+    await expect(transport.settings.get("project-1", "preferredProvider")).resolves.toMatchObject({ value: "codex" });
+    await expect(transport.settings.set("project-1", "runVariant", "rag")).resolves.toMatchObject({ key: "runVariant", value: "rag" });
+    await expect(transport.runs.list({ projectId: "project-1" })).resolves.toHaveLength(1);
   });
 
   it("requires a project ID for native content and search", async () => {

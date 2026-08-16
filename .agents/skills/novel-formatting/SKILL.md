@@ -1,9 +1,11 @@
 ---
 name: novel-formatting
-description: Format manuscript files — consistent chapter headings, scene breaks, paragraph spacing; preserves prose untouched
+description: Format fiction or nonfiction manuscript files consistently while preserving prose, procedures, lists, chapter order, and audiobook readability
 ---
 
 # novel-formatting
+
+When `.book-writer/project.json` selects nonfiction, also read [skills/nonfiction-profile.md](../../../skills/nonfiction-profile.md) and apply its overrides.
 
 Use the repository's canonical workflow rather than duplicating it here:
 

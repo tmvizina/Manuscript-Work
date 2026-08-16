@@ -114,4 +114,9 @@ describe("HTTP transport", () => {
     ]);
     expect(String(mocked.calls[0]?.input)).toBe("/api/health");
   });
+
+  it("reports project settings as an explicit desktop-only capability", async () => {
+    const transport = createHttpTransport({ fetch: mockedFetch().fetch });
+    await expect(transport.settings.get("legacy", "preferredProvider")).rejects.toMatchObject({ code: "FEATURE_UNAVAILABLE", operation: "settings.get" });
+  });
 });

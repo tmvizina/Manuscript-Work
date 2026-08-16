@@ -35,6 +35,7 @@ describe("preload exposure", () => {
     expect(exposed).not.toHaveProperty("send");
     expect(exposed).toHaveProperty("providers.list");
     expect(exposed).toHaveProperty("projects.list");
+    expect(exposed).toHaveProperty("projects.import");
     expect(exposed).toHaveProperty("content.listChapters");
     expect(exposed).toHaveProperty("runs.start");
     expect(exposed).toHaveProperty("search.query");

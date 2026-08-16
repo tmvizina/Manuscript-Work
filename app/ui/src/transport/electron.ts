@@ -7,9 +7,19 @@ import type {
   ChapterSummary,
   ContentTransport,
   ProjectDetail,
+  ProjectProfileConfig,
   ProjectSummary,
   SearchRequest,
   SearchResult,
+  ProjectSettingKey,
+  ProjectSettingValue,
+  SettingRecord,
+  RunAccepted,
+  RunEvent,
+  RunRecord,
+  RunRequest,
+  ReviewDocument,
+  ReviewSummary,
   WorldDocument,
   WorldSummary,
 } from "./types.js";
@@ -45,7 +55,16 @@ function projectDetail(value: unknown, operation: string): ProjectDetail {
     ...(typeof value.manuscriptRoot === "string" ? { manuscriptRoot: value.manuscriptRoot } : {}),
     ...(typeof value.worldRoot === "string" ? { worldRoot: value.worldRoot } : {}),
     ...(typeof value.description === "string" ? { description: value.description } : {}),
+    ...(isProjectProfile(value.profile) ? { profile: value.profile } : {}),
+    ...(value.profileSource === "default" || value.profileSource === "project" ? { profileSource: value.profileSource } : {}),
   };
+}
+
+function isProjectProfile(value: unknown): value is ProjectProfileConfig {
+  if (!isRecord(value) || value.schemaVersion !== 1 || value.memoryRoot !== "world") return false;
+  return value.profile === "fantasy"
+    ? value.preset === undefined && value.editorialMode === "narrative" && value.claimsPolicy === "canon" && value.memoryLabel === "World"
+    : value.profile === "nonfiction" && value.preset === "fly-night-fishing" && value.editorialMode === "practical-narrative" && value.claimsPolicy === "experience-led" && value.memoryLabel === "Knowledge Base";
 }
 
 function chapterSummary(value: unknown, operation: string): ChapterSummary {
@@ -87,6 +106,17 @@ function worldDocument(value: unknown, operation: string): WorldDocument {
   return { ...worldSummary(value, operation), text: value.text };
 }
 
+function reviewSummary(value: unknown, operation: string): ReviewSummary {
+  const kinds = ["review", "decisions", "rewrites", "plan", "findings", "state"];
+  if (!isRecord(value) || typeof value.relPath !== "string" || typeof value.name !== "string" || typeof value.ext !== "string" || !kinds.includes(String(value.kind)) || typeof value.updatedAt !== "string" || !isRecord(value.stats)) throw invalidTransportResponse(operation, "Native review response is invalid");
+  return value as unknown as ReviewSummary;
+}
+
+function reviewDocument(value: unknown, operation: string): ReviewDocument {
+  if (!isRecord(value) || typeof value.relPath !== "string" || typeof value.kind !== "string" || typeof value.updatedAt !== "string" || typeof value.bytes !== "number" || typeof value.text !== "string") throw invalidTransportResponse(operation, "Native review document is invalid");
+  return value as unknown as ReviewDocument;
+}
+
 function searchResult(value: unknown, operation: string): SearchResult {
   if (!isRecord(value)) throw invalidTransportResponse(operation, "Native search response item is not an object");
   const scope = value.scope;
@@ -101,6 +131,21 @@ function searchResult(value: unknown, operation: string): SearchResult {
     snippet: typeof value.snippet === "string" ? value.snippet : "",
     ...(typeof value.score === "number" && Number.isFinite(value.score) ? { score: value.score } : {}),
   };
+}
+
+const SETTING_KEYS: readonly ProjectSettingKey[] = ["preferredProvider", "defaultModel", "permissionMode", "runVariant"];
+function settingRecord(value: unknown, operation: string): SettingRecord {
+  if (!isRecord(value) || typeof value.projectId !== "string" || typeof value.key !== "string" || !SETTING_KEYS.includes(value.key as ProjectSettingKey) || typeof value.updatedAt !== "string") {
+    throw invalidTransportResponse(operation, "Native setting response is invalid");
+  }
+  return { projectId: value.projectId, key: value.key as ProjectSettingKey, value: value.value as ProjectSettingValue, updatedAt: value.updatedAt };
+}
+
+function runRecord(value: unknown, operation: string): RunRecord {
+  if (!isRecord(value) || typeof value.runId !== "string" || (value.provider !== "claude" && value.provider !== "codex") || typeof value.status !== "string" || typeof value.prompt !== "string" || typeof value.createdAt !== "string" || (value.variant !== "base" && value.variant !== "rag")) {
+    throw invalidTransportResponse(operation, "Native run response is invalid");
+  }
+  return value as unknown as RunRecord;
 }
 
 function requireProjectId(projectId: string | undefined, operation: string): string {
@@ -135,6 +180,8 @@ export function createElectronTransport(bridge: BookWriterReadOnlyBridge): BookW
       value === null ? null : projectDetail(value, "projects.get")),
     open: (projectId: string) => callNative("projects.open", () => bridge.projects.open(projectId), (value) =>
       projectSummary(value, "projects.open")),
+    import: (input: { profile: "fantasy" | "nonfiction"; preset?: "fly-night-fishing" }) => callNative("projects.import", () => bridge.projects.import(input), (value) =>
+      value === null ? null : projectDetail(value, "projects.import")),
   };
 
   const chapters = {
@@ -187,13 +234,50 @@ export function createElectronTransport(bridge: BookWriterReadOnlyBridge): BookW
     },
   };
 
+  const settings = {
+    get: async (projectId: string, key: ProjectSettingKey) => {
+      const id = requireProjectId(projectId, "settings.get");
+      return callNative("settings.get", () => bridge.settings.get(id, key), (value) => value === null ? null : settingRecord(value, "settings.get"));
+    },
+    set: async (projectId: string, key: ProjectSettingKey, value: ProjectSettingValue) => {
+      const id = requireProjectId(projectId, "settings.set");
+      return callNative("settings.set", () => bridge.settings.set(id, key, value), (result) => settingRecord(result, "settings.set"));
+    },
+  };
+
+  const runs = {
+    start: (request: RunRequest) => callNative("runs.start", () => bridge.runs.start(request), (value) => {
+      if (!isRecord(value) || typeof value.runId !== "string" || (value.provider !== "claude" && value.provider !== "codex") || !["queued", "starting", "running"].includes(String(value.status))) throw invalidTransportResponse("runs.start", "Native run acceptance is invalid");
+      return value as unknown as RunAccepted;
+    }),
+    list: (request?: { projectId?: string; skillId?: string; limit?: number }) => callNative("runs.list", () => bridge.runs.list(request), (value) => {
+      if (!Array.isArray(value)) throw invalidTransportResponse("runs.list", "Native run history is not an array");
+      return value.map((run) => runRecord(run, "runs.list"));
+    }),
+    get: (runId: string) => callNative("runs.get", () => bridge.runs.get(runId), (value) => runRecord(value, "runs.get")),
+    cancel: (runId: string) => callNative("runs.cancel", () => bridge.runs.cancel(runId), (value) => value),
+    subscribe: (runId: string, listener: (event: RunEvent) => void, options?: { afterSequence?: number }, onError?: (error: { message: string }) => void) => callNative("runs.subscribe", () => bridge.runs.subscribe(runId, listener, options, onError), (value) => value),
+    unsubscribe: (subscriptionId: string) => callNative("runs.unsubscribe", () => bridge.runs.unsubscribe(subscriptionId), (value) => value),
+  };
+
   const content: ContentTransport = {
     listChapters: chapters.list,
     getChapter: chapters.get,
     listWorld: world.list,
     getWorld: world.get,
+    listReviews: async (projectId?: string) => {
+      const id = requireProjectId(projectId, "content.listReviews");
+      return callNative("content.listReviews", () => bridge.content.listReviews(id), (value) => {
+        if (!Array.isArray(value)) throw invalidTransportResponse("content.listReviews", "Native reviews response is not an array");
+        return value.map((entry) => reviewSummary(entry, "content.listReviews"));
+      });
+    },
+    getReview: async (projectId: string | undefined, relPath: string) => {
+      const id = requireProjectId(projectId, "content.getReview");
+      return callNative("content.getReview", () => bridge.content.getReview(id, relPath), (value) => reviewDocument(value, "content.getReview"));
+    },
   };
-  return { mode: "electron", projects, content, search, chapters, world };
+  return { mode: "electron", projects, content, search, settings, runs, chapters, world };
 }
 
 /** Detect the bridge and construct the native transport when present. */

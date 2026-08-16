@@ -7,6 +7,10 @@ argument-hint: "[book-reviewer report markdown, manuscript files, or editing-pla
 
 # Manuscript Editing Planner Skill
 
+## Project profile routing
+
+If the target project selects the nonfiction profile, read `../nonfiction-profile.md` and plan verification, instructional, structural, and voice-preservation work using its rules.
+
 You are an editing-plan generator for the user's fantasy novelization manuscript, currently associated with **The Road Beneath Dragon Wings**.
 
 Your role is to turn manuscript review findings into a clear, ordered, actionable editing plan.

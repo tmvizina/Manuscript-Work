@@ -6,12 +6,15 @@ import type {
   ChapterSummary,
   ContentTransport,
   ProjectDetail,
+  ProjectProfileConfig,
   ProjectSummary,
   ProjectTransport,
   SearchRequest,
   SearchResult,
   SearchScope,
   SearchTransport,
+  SettingsTransport,
+  RunsTransport,
   WorldDocument,
   WorldSummary,
   WorldTransport,
@@ -177,12 +180,23 @@ function projectDetail(row: unknown, operation: string): ProjectDetail {
   const manuscriptRoot = stringValue(firstValue(row, "manuscriptRoot", "manuscript_root"));
   const worldRoot = stringValue(firstValue(row, "worldRoot", "world_root"));
   const description = stringValue(row.description);
+  const profile = projectProfile(firstValue(row, "profile"));
+  const profileSource = row.profileSource === "default" || row.profileSource === "project" ? row.profileSource : undefined;
   return {
     ...summary,
     ...(manuscriptRoot ? { manuscriptRoot } : {}),
     ...(worldRoot ? { worldRoot } : {}),
     ...(description ? { description } : {}),
+    ...(profile ? { profile } : {}),
+    ...(profileSource ? { profileSource } : {}),
   };
+}
+
+function projectProfile(value: unknown): ProjectProfileConfig | undefined {
+  if (!isRecord(value) || value.schemaVersion !== 1 || value.memoryRoot !== "world") return undefined;
+  if (value.profile === "fantasy" && value.preset === undefined && value.editorialMode === "narrative" && value.claimsPolicy === "canon" && value.memoryLabel === "World") return value as unknown as ProjectProfileConfig;
+  if (value.profile === "nonfiction" && value.preset === "fly-night-fishing" && value.editorialMode === "practical-narrative" && value.claimsPolicy === "experience-led" && value.memoryLabel === "Knowledge Base") return value as unknown as ProjectProfileConfig;
+  return undefined;
 }
 
 function worldSummary(row: unknown, operation: string): WorldSummary {
@@ -254,13 +268,17 @@ function createProjects(fetchImpl: FetchLike, options: HttpTransportOptions): Pr
       return [{ projectId: legacyId, name: options.legacyProjectName ?? "Book Writer", rootPath, active: true }];
     },
     async get(projectId) {
-      const projects = await this.list();
-      return projects.find((project) => project.projectId === projectId) ?? null;
+      if (projectId !== legacyId) return null;
+      const payload = await requestJson<unknown>(fetchImpl, "/api/project", undefined, "projects.get");
+      return projectDetail(payload, "projects.get");
     },
     async open(projectId) {
       const project = await this.get(projectId);
       if (!project) throw new TransportError("Project was not found", { kind: "http", code: "NOT_FOUND", operation: "projects.open", status: 404 });
       return project;
+    },
+    async import() {
+      throw unsupportedTransport("projects.import");
     },
   };
 }
@@ -335,6 +353,25 @@ function createSearch(fetchImpl: FetchLike): SearchTransport {
   };
 }
 
+function createSettings(): SettingsTransport {
+  return {
+    async get() { throw unsupportedTransport("settings.get", "Project settings remain desktop-only during the Electron migration."); },
+    async set() { throw unsupportedTransport("settings.set", "Project settings remain desktop-only during the Electron migration."); },
+  };
+}
+
+function createRuns(): RunsTransport {
+  const unavailable = (operation: string) => unsupportedTransport(operation, "Native run transport is desktop-only; the compatibility UI keeps its legacy Claude bridge routes.");
+  return {
+    async start() { throw unavailable("runs.start"); },
+    async list() { throw unavailable("runs.list"); },
+    async get() { throw unavailable("runs.get"); },
+    async cancel() { throw unavailable("runs.cancel"); },
+    async subscribe() { throw unavailable("runs.subscribe"); },
+    async unsubscribe() { throw unavailable("runs.unsubscribe"); },
+  };
+}
+
 /** Build the browser/development transport over the current Fastify routes. */
 export function createHttpTransport(options: HttpTransportOptions = {}): BookWriterTransport {
   const fetchImpl = options.fetch ?? defaultFetch();
@@ -342,13 +379,17 @@ export function createHttpTransport(options: HttpTransportOptions = {}): BookWri
   const chapters = createChapters(fetchImpl);
   const world = createWorld(fetchImpl);
   const search = createSearch(fetchImpl);
+  const settings = createSettings();
+  const runs = createRuns();
   const content: ContentTransport = {
     listChapters: chapters.list,
     getChapter: chapters.get,
     listWorld: world.list,
     getWorld: world.get,
+    async listReviews() { throw unsupportedTransport("content.listReviews", "The compatibility Reviews page keeps its existing server routes."); },
+    async getReview() { throw unsupportedTransport("content.getReview", "The compatibility Reviews page keeps its existing server routes."); },
   };
-  return { mode: "http", projects, content, search, chapters, world };
+  return { mode: "http", projects, content, search, settings, runs, chapters, world };
 }
 
 /** Kept exported for focused tests and future compatibility adapters. */

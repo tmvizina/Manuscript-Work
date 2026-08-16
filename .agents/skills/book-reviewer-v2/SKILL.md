@@ -1,9 +1,11 @@
 ---
 name: book-reviewer-v2
-description: Enhanced lector — stable RV-NNN IDs, world/ memory, campaign-pending awareness, delta-review and sign-off modes
+description: Review fiction or nonfiction manuscripts with stable RV-NNN findings, project memory, voice protection, delta review, and sign-off modes
 ---
 
 # book-reviewer-v2
+
+When `.book-writer/project.json` selects nonfiction, also read [skills/nonfiction-profile.md](../../../skills/nonfiction-profile.md) and apply its overrides.
 
 Use the repository's canonical workflow rather than duplicating it here:
 

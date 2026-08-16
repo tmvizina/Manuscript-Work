@@ -24,6 +24,7 @@ export default function TopBar({
   projects,
   projectId,
   onProjectChange,
+  memoryLabel,
 }: {
   route: string;
   health: any;
@@ -32,6 +33,7 @@ export default function TopBar({
   projects: ProjectSummary[];
   projectId?: string;
   onProjectChange(projectId: string): void;
+  memoryLabel: string;
 }) {
   const [theme, setTheme] = useState(document.documentElement.dataset.theme === "light" ? "light" : "dark");
   const toggleTheme = () => {
@@ -48,9 +50,9 @@ export default function TopBar({
         Book <em>Writer</em>
       </a>
       <a className={`navlink ${route === "/world" || route.startsWith("/world/") ? "active" : ""}`} href="#/world">
-        World
+        {memoryLabel}
       </a>
-      {mode === "electron" ? <a className={`navlink ${route === "/search" ? "active" : ""}`} href="#/search">Search</a> : <>
+      {mode === "electron" ? <><a className={`navlink ${route === "/search" ? "active" : ""}`} href="#/search">Search</a><a className={`navlink ${route.startsWith("/reviews") ? "active" : ""}`} href="#/reviews">Reviews</a></> : <>
         <a className={`navlink ${route === "/reviews" || route.startsWith("/reviews/") ? "active" : ""}`} href="#/reviews">Reviews</a>
         <a className={`navlink ${route === "/rag" ? "active" : ""}`} href="#/rag">RAG</a>
       </>}
@@ -59,6 +61,9 @@ export default function TopBar({
         {!projectId && <option value="" disabled>Select project</option>}
         {projects.map((project) => <option key={project.projectId} value={project.projectId}>{project.name}</option>)}
       </select>}
+      {mode === "electron" && <a className="iconbtn" href="#/projects" title="Add a project">+</a>}
+      {mode === "electron" && <a className={`iconbtn ${route === "/settings" ? "active" : ""}`} href="#/settings" title="Project settings">&#9881;</a>}
+      {mode === "electron" && <a className="iconbtn help" href="#/help" title="Guides & help">?</a>}
       {activeRuns.length > 0 && (
         <a
           className="runchip"

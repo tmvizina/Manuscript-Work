@@ -1,9 +1,11 @@
 ---
 name: outline-enhancer
-description: The dramaturg — deepen a human sketch into an enriched outline (OB-NNN beats) while seeding world/ memory
+description: Deepen a fiction sketch or nonfiction book concept into a structured outline while seeding the project's canon or Knowledge Base
 ---
 
 # outline-enhancer
+
+When `.book-writer/project.json` selects nonfiction, also read [skills/nonfiction-profile.md](../../../skills/nonfiction-profile.md) and apply its overrides.
 
 Use the repository's canonical workflow rather than duplicating it here:
 

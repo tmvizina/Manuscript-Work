@@ -12,6 +12,7 @@ function runtime(overrides: Partial<DesktopRuntime> = {}): DesktopRuntime {
     listProjects: () => [],
     getProject: () => null,
     openProject: (projectId) => ({ projectId, name: "Project", rootPath: "C:/project", active: true }),
+    importProject: (rootPath) => ({ projectId: "project-imported", name: "Imported", rootPath, active: true }),
     listChapters: () => [],
     getChapter: (_projectId, chapterId) => ({ chapterId, book: "book-1", relPath: "chapters/one.txt", number: 1, title: "One", wordCount: 1, active: true, text: "one" }),
     listWorld: () => [],
@@ -28,7 +29,7 @@ function runtime(overrides: Partial<DesktopRuntime> = {}): DesktopRuntime {
   };
 }
 
-function harness(runtimeValue = runtime()) {
+function harness(runtimeValue = runtime(), pickProjectRoot?: () => Promise<string | null>) {
   const handlers = new Map<string, Handler>();
   const sent: Array<{ channel: string; value: unknown }> = [];
   let destroyed = false;
@@ -54,6 +55,7 @@ function harness(runtimeValue = runtime()) {
     runtime: runtimeValue,
     isAllowedFrameUrl: (url) => url.startsWith("book-writer://app/"),
     allowedSettingKeys: new Set(["preferredProvider"]),
+    pickProjectRoot,
   });
   const invokeArgs = async (channel: string, args: unknown[], invokeEvent = event): Promise<IpcResponse<unknown>> => {
     const handler = handlers.get(channel);
@@ -66,6 +68,15 @@ function harness(runtimeValue = runtime()) {
 }
 
 describe("desktop IPC boundary", () => {
+  it("imports only a main-process-selected project root", async () => {
+    const importProject = vi.fn((rootPath: string) => ({ projectId: "project-imported", name: "Imported", rootPath, active: true }));
+    const test = harness(runtime({ importProject }), async () => "C:/trusted/fishing-book");
+    expect(await test.invoke(IPC_CHANNELS.projects.import, { profile: "nonfiction", preset: "fly-night-fishing" })).toMatchObject({ ok: true, value: { rootPath: "C:/trusted/fishing-book" } });
+    expect(importProject).toHaveBeenCalledWith("C:/trusted/fishing-book", { profile: "nonfiction", preset: "fly-night-fishing" });
+    expect(await test.invoke(IPC_CHANNELS.projects.import, { profile: "nonfiction", preset: "fly-night-fishing", rootPath: "C:/untrusted" })).toMatchObject({ ok: false, error: { code: "INVALID_ARGUMENT" } });
+    test.dispose();
+  });
+
   it("accepts only the configured application main frame", async () => {
     const test = harness();
     expect(await test.invoke(IPC_CHANNELS.projects.list)).toEqual({ ok: true, value: [] });

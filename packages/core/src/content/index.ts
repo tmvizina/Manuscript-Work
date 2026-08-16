@@ -2,6 +2,7 @@ export * from "./common.js";
 export * from "./paths.js";
 export * from "./chapters.js";
 export * from "./projectChapters.js";
+export * from "./projectProfile.js";
 export * from "./skills.js";
 export * from "./help.js";
 export * from "./world.js";

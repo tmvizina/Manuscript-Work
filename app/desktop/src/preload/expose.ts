@@ -20,6 +20,9 @@ import {
   type RunEventDelivery,
   type RunEventListener,
   type RunRecord,
+  type RunListRequest,
+  type ReviewDocument,
+  type ReviewSummary,
   type RunRequest,
   RUN_REPLAY_LIMIT,
   type RunSubscription,
@@ -38,6 +41,7 @@ import {
 } from "../shared/contracts.js";
 import {
   assertExecutionProvider,
+  assertProjectImportInput,
   assertRequestString,
   assertRunRequest,
   assertRunSubscriptionOptions,
@@ -54,6 +58,9 @@ import {
   isRunCancelResult,
   isRunEventDelivery,
   isRunRecord,
+  isRunRecordList,
+  isReviewDocument,
+  isReviewSummaryList,
   isRunSubscriptionAccepted,
   isRunUnsubscribeResult,
   isSearchResultList,
@@ -117,6 +124,10 @@ function createProjectsApi(ipcRenderer: IpcRendererLike): ProjectApi {
       assertRequestString(projectId, "projectId", "projects.open");
       return call(ipcRenderer, IPC_CHANNELS.projects.open, "projects.open", isProjectSummary, { projectId });
     },
+    import: (input) => {
+      assertProjectImportInput(input, "projects.import");
+      return call<ProjectDetail | null>(ipcRenderer, IPC_CHANNELS.projects.import, "projects.import", (value): value is ProjectDetail | null => value === null || isProjectDetail(value), input);
+    },
   };
 }
 
@@ -135,11 +146,20 @@ function createContentApi(ipcRenderer: IpcRendererLike): ContentApi {
       assertRequestString(projectId, "projectId", "content.listWorld");
       return call<WorldSummary[]>(ipcRenderer, IPC_CHANNELS.content.listWorld, "content.listWorld", isWorldSummaryList, { projectId });
     },
-    getWorld: (projectId, relPath) => {
+      getWorld: (projectId, relPath) => {
       assertRequestString(projectId, "projectId", "content.getWorld");
       assertRequestString(relPath, "relPath", "content.getWorld");
       return call<WorldDocument>(ipcRenderer, IPC_CHANNELS.content.getWorld, "content.getWorld", isWorldDocument, { projectId, relPath });
-    },
+      },
+      listReviews: (projectId) => {
+        assertRequestString(projectId, "projectId", "content.listReviews");
+        return call<ReviewSummary[]>(ipcRenderer, IPC_CHANNELS.content.listReviews, "content.listReviews", isReviewSummaryList, { projectId });
+      },
+      getReview: (projectId, relPath) => {
+        assertRequestString(projectId, "projectId", "content.getReview");
+        assertRequestString(relPath, "relPath", "content.getReview");
+        return call<ReviewDocument>(ipcRenderer, IPC_CHANNELS.content.getReview, "content.getReview", isReviewDocument, { projectId, relPath });
+      },
   };
 }
 
@@ -150,6 +170,10 @@ function createRunsApi(ipcRenderer: IpcRendererLike): RunApi {
     start: (request: RunRequest) => {
       assertRunRequest(request, "runs.start");
       return call<RunAccepted>(ipcRenderer, IPC_CHANNELS.runs.start, "runs.start", isRunAccepted, request);
+    },
+    list: (request?: RunListRequest) => {
+      if (request !== undefined && (typeof request !== "object" || request === null)) throw new BookWriterError({ code: "INVALID_ARGUMENT", message: "run list request must be an object", operation: "runs.list" });
+      return call<RunRecord[]>(ipcRenderer, IPC_CHANNELS.runs.list, "runs.list", isRunRecordList, request);
     },
     get: (runId) => {
       assertRequestString(runId, "runId", "runs.get");

@@ -152,6 +152,10 @@ See `templates/` for `enriched-outline-template.md`, `character-profile-template
 - Mark genuinely open directions campaign-pending and write the question down.
 - Hand a clean enriched outline + open-questions list to the arc reviewer.
 
+## Nonfiction project override
+
+If the target project selects the nonfiction profile, read `../nonfiction-profile.md`. Enhance reader promise, instructional progression, prerequisites, and story placement; its rules override fantasy-only arc and campaign assumptions above.
+
 ## Final Operating Principle
 
 The dramaturg turns a human spark into a structure the machine can build on — and into a memory the whole pipeline will trust. It deepens without deciding what is the author's to decide. Every thread it opens has a place to be planted and a place to pay off; every open question it leaves is written down, not guessed. The author should look at the enriched outline and recognize their own idea — only clearer, deeper, and ready for the arc gate.

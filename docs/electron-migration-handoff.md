@@ -335,10 +335,12 @@ Project list/open and selection, chapter list/read/refresh, flat native world
 list/read, and native bounded search are wired through the transport. Native
 Markdown is rendered as inert text because the desktop boundary returns source
 text, while the compatibility server retains its existing rendered-HTML path.
-Still-unmigrated skill, review, RAG, help, health, and run polling are gated in
-Electron so a packaged renderer does not silently fall back to `/api` or
-localhost. A fresh desktop database displays an explicit no-project state until
-the first-run project import ticket supplies a trusted project record.
+Project settings, bundled skill metadata, provider-neutral run history/start/
+cancel/replay-safe subscription, review documents, desktop Help, project import,
+and nonfiction/fantasy profiles are now migrated. Native review documents remain
+inert source text. Real provider execution is deliberately unavailable, and RAG
+remains explicitly gated, so a packaged renderer never silently falls back to
+`/api` or localhost.
 
 Validation completed through `aa2ce89` on 2026-08-16:
 
@@ -365,20 +367,17 @@ The renderer root is also protected by an error boundary that replaces unexpecte
 component failures with a details-free reload action. Its focused recovery test and
 UI production build passed after `6a7313d`.
 
+Additional Phase 3 validation on 2026-08-16 passed the root TypeScript surfaces
+and the full Vitest suite with 18 files and 85 tests. The suite required the
+documented repository-scoped sandbox exception for Vitest/esbuild.
+
 ## Exact next actions
 
-1. Migrate project settings through the existing validated native settings IPC,
-   preserving the browser path or an explicit compatibility-only state.
-2. Migrate run history/start/cancel/subscription through the replay-safe native run
-   API and deterministic fake seam. Do not enable a real provider process in Phase 3.
-3. Migrate skills, reviews,
-   and remaining workflows in independently testable slices. The native production
-   runner may remain unavailable until Phase 4, but the deterministic transport
-   path must be testable with the fake seam.
-4. Add a project import/onboarding seam that creates the first trusted project,
-   then prove the packaged chapter/world/search slice against repository-local test
-   data without Fastify or a listening localhost port.
-5. In Phase 4, implement the offline-first provider payload manifest and wizard
+1. Add focused renderer interaction tests for Settings, Native Skill runs, and
+   Reviews, plus a packaged smoke proving those pages never issue HTTP requests.
+2. Decide whether RAG becomes an embedded native index or remains an optional
+   external compatibility service; do not disguise semantic RAG as literal search.
+3. In Phase 4, implement the offline-first provider payload manifest and wizard
    flow above only after release engineering confirms redistribution rights and
    selects the pinned Claude and Codex artifacts.
 

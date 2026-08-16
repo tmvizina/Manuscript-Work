@@ -1,9 +1,11 @@
 ---
 name: manuscript-writer-v2
-description: Enhanced writer — voice fingerprint, precedent ledger, proactive findings, self-diff voice gate before commit
+description: Draft or revise fiction and nonfiction with voice fingerprinting, precedent memory, provenance safeguards, and a self-diff voice gate
 ---
 
 # manuscript-writer-v2
+
+When `.book-writer/project.json` selects nonfiction, also read [skills/nonfiction-profile.md](../../../skills/nonfiction-profile.md) and apply its overrides.
 
 Use the repository's canonical workflow rather than duplicating it here:
 

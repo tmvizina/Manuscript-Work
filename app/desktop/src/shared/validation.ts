@@ -8,6 +8,8 @@ import {
   type InstallResult,
   type JsonValue,
   type ProjectDetail,
+  type ProjectImportInput,
+  type ProjectProfileConfig,
   type ProjectSummary,
   PROJECT_SETTING_KEYS,
   type ProviderSummary,
@@ -144,9 +146,28 @@ export function isProjectSummary(value: unknown): value is ProjectSummary {
 }
 
 export function isProjectDetail(value: unknown): value is ProjectDetail {
-  if (!isRecord(value) || !hasOnlyKeys(value, ["projectId", "name", "rootPath", "active", "createdAt", "updatedAt", "manuscriptRoot", "worldRoot", "description"])) return false;
-  const { manuscriptRoot, worldRoot, description, ...summary } = value;
-  return isProjectSummary(summary) && isOptionalString(manuscriptRoot) && isOptionalString(worldRoot) && isOptionalString(description);
+  if (!isRecord(value) || !hasOnlyKeys(value, ["projectId", "name", "rootPath", "active", "createdAt", "updatedAt", "manuscriptRoot", "worldRoot", "description", "profile", "profileSource"])) return false;
+  const { manuscriptRoot, worldRoot, description, profile, profileSource, ...summary } = value;
+  return isProjectSummary(summary) && isOptionalString(manuscriptRoot) && isOptionalString(worldRoot) && isOptionalString(description) &&
+    (profile === undefined || isProjectProfileConfig(profile)) &&
+    (profileSource === undefined || profileSource === "default" || profileSource === "project");
+}
+
+export function isProjectProfileConfig(value: unknown): value is ProjectProfileConfig {
+  if (!isRecord(value) || !hasOnlyKeys(value, ["schemaVersion", "profile", "preset", "editorialMode", "claimsPolicy", "memoryRoot", "memoryLabel"])) return false;
+  if (value.schemaVersion !== 1 || value.memoryRoot !== "world") return false;
+  if (value.profile === "fantasy") return value.preset === undefined && value.editorialMode === "narrative" && value.claimsPolicy === "canon" && value.memoryLabel === "World";
+  return value.profile === "nonfiction" && value.preset === "fly-night-fishing" && value.editorialMode === "practical-narrative" && value.claimsPolicy === "experience-led" && value.memoryLabel === "Knowledge Base";
+}
+
+export function assertProjectImportInput(value: unknown, operation: string): asserts value is ProjectImportInput {
+  if (!isRecord(value) || !hasOnlyKeys(value, ["profile", "preset"])) {
+    throw new BookWriterError({ code: IPC_ERROR_CODES.invalidArgument, message: "project import contains unsupported fields", operation });
+  }
+  const valid = value.profile === "fantasy"
+    ? value.preset === undefined
+    : value.profile === "nonfiction" && value.preset === "fly-night-fishing";
+  if (!valid) throw new BookWriterError({ code: IPC_ERROR_CODES.invalidArgument, message: "project import profile/preset is invalid", operation });
 }
 
 export function isChapterSummary(value: unknown): value is ChapterSummary {
@@ -233,6 +254,18 @@ export function isRunRecord(value: unknown): value is RunRecord {
     isOptionalString(value.finishedAt) &&
     (value.usage === undefined || isRunUsage(value.usage))
   );
+}
+
+export function isRunRecordList(value: unknown): value is RunRecord[] {
+  return Array.isArray(value) && value.every(isRunRecord);
+}
+
+export function isReviewSummaryList(value: unknown): value is import("./contracts.js").ReviewSummary[] {
+  return Array.isArray(value) && value.every((item) => isRecord(item) && isNonEmptyString(item.relPath) && isNonEmptyString(item.name) && typeof item.ext === "string" && isNonEmptyString(item.kind) && isNonEmptyString(item.updatedAt) && isRecord(item.stats));
+}
+
+export function isReviewDocument(value: unknown): value is import("./contracts.js").ReviewDocument {
+  return isRecord(value) && isNonEmptyString(value.relPath) && isNonEmptyString(value.kind) && isNonEmptyString(value.updatedAt) && typeof value.bytes === "number" && typeof value.text === "string";
 }
 
 export function isRunEvent(value: unknown): value is RunEvent {

@@ -1,5 +1,6 @@
 import {
   createAgentRun,
+  createProject as createStoredProject,
   finishAgentRun,
   getAgentRun,
   getProject as getStoredProject,
@@ -7,11 +8,16 @@ import {
   getProjectSetting,
   listProjectChapters,
   listProjects,
+  listAgentRuns,
   listWorld as scanWorldDocuments,
+  loadProjectProfile,
   markAgentRunStarted,
   openDb,
   openProject as openStoredProject,
   readWorldFile,
+  readReviewFile,
+  scanReviewDocs,
+  scaffoldProjectProfile,
   resolveOrphanedAgentRuns,
   searchProject,
   SearchInputError,
@@ -21,18 +27,23 @@ import {
   type DB,
   type ProjectDetail as CoreProjectDetail,
 } from "@book-writer/core";
+import { basename, resolve } from "node:path";
 import { PROJECT_SETTING_KEYS } from "../shared/contracts.js";
 import type {
   ChapterDocument,
   ChapterSummary,
   ExecutionProvider,
   ProjectDetail,
+  ProjectImportInput,
   ProjectSummary,
   ProviderSummary,
   RunAccepted,
   RunCancelResult,
   RunEventDelivery,
   RunRecord,
+  RunListRequest,
+  ReviewDocument,
+  ReviewSummary,
   RunRequest,
   RunSubscribeRequest,
   RunSubscriptionAccepted,
@@ -69,6 +80,7 @@ function notFound(entity: string, operation: string): never {
 }
 
 function mapProject(project: CoreProjectDetail): ProjectDetail {
+  const profile = loadProjectProfile(project.rootPath);
   return {
     projectId: project.projectId,
     name: project.name,
@@ -78,6 +90,8 @@ function mapProject(project: CoreProjectDetail): ProjectDetail {
     updatedAt: project.updatedAt,
     manuscriptRoot: project.manuscriptRoot,
     worldRoot: project.worldRoot,
+    profile: profile.config,
+    profileSource: profile.source,
   };
 }
 
@@ -208,6 +222,24 @@ export class NativeDesktopRuntime implements DesktopRuntime {
     return mapProjectSummary(project);
   }
 
+  importProject(rootPath: string, input: ProjectImportInput): ProjectDetail {
+    const resolved = resolve(rootPath);
+    const existing = listProjects(this.db, { includeInactive: true }).find((project) => project.rootPath === resolved);
+    if (existing) {
+      const detail = getStoredProject(this.db, existing.projectId);
+      if (!detail) notFound("Project", "projects.import");
+      const current = loadProjectProfile(detail.rootPath).config;
+      if (current.profile !== input.profile || current.preset !== input.preset) {
+        throw new BookWriterError({ code: IPC_ERROR_CODES.invalidArgument, message: "The folder is already registered with a different project profile", operation: "projects.import" });
+      }
+      return mapProject(detail);
+    }
+    scaffoldProjectProfile(resolved, input);
+    const project = createStoredProject(this.db, { name: basename(resolved), rootPath: resolved });
+    this.syncChapters(project);
+    return mapProject(project);
+  }
+
   listChapters(projectId: string): ChapterSummary[] {
     const project = this.requireProject(projectId, "content.listChapters");
     this.syncChapters(project);
@@ -266,6 +298,18 @@ export class NativeDesktopRuntime implements DesktopRuntime {
     };
   }
 
+  listReviews(projectId: string): ReviewSummary[] {
+    const project = this.requireProject(projectId, "content.listReviews");
+    return scanReviewDocs(project.rootPath).map((document) => ({ relPath: document.rel_path, name: document.name, ext: document.ext, kind: document.kind, date: document.date, scope: document.scope, title: document.title, updatedAt: document.mtime, stats: document.stats as ReviewSummary["stats"] }));
+  }
+
+  getReview(projectId: string, relPath: string): ReviewDocument {
+    const project = this.requireProject(projectId, "content.getReview");
+    const document = readReviewFile(project.rootPath, relPath);
+    if (!document) notFound("Review document", "content.getReview");
+    return { relPath: document.rel_path, kind: document.kind, updatedAt: document.mtime, bytes: document.bytes, text: document.text };
+  }
+
   startRun(request: RunRequest): Promise<RunAccepted> {
     if (request.projectId) this.requireProject(request.projectId, "runs.start");
     return this.runs.startRun(request);
@@ -273,6 +317,11 @@ export class NativeDesktopRuntime implements DesktopRuntime {
 
   getRun(runId: string): Promise<RunRecord> {
     return this.runs.getRun(runId);
+  }
+
+  listRuns(request: RunListRequest = {}): RunRecord[] {
+    if (request.projectId) this.requireProject(request.projectId, "runs.list");
+    return listAgentRuns(this.db, request).map(mapRun);
   }
 
   cancelRun(runId: string): Promise<RunCancelResult> {

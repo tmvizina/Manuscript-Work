@@ -62,10 +62,30 @@ export interface ProjectSummary {
   updatedAt?: string;
 }
 
+export type ProjectProfileId = "fantasy" | "nonfiction";
+export type ProjectPresetId = "fly-night-fishing";
+
+export interface ProjectProfileConfig {
+  schemaVersion: 1;
+  profile: ProjectProfileId;
+  preset?: ProjectPresetId;
+  editorialMode: "narrative" | "practical-narrative";
+  claimsPolicy: "canon" | "experience-led";
+  memoryRoot: "world";
+  memoryLabel: "World" | "Knowledge Base";
+}
+
+export interface ProjectImportInput {
+  profile: ProjectProfileId;
+  preset?: ProjectPresetId;
+}
+
 export interface ProjectDetail extends ProjectSummary {
   manuscriptRoot?: string;
   worldRoot?: string;
   description?: string;
+  profile?: ProjectProfileConfig;
+  profileSource?: "default" | "project";
 }
 
 export interface ChapterSummary {
@@ -94,6 +114,9 @@ export interface WorldSummary {
 export interface WorldDocument extends WorldSummary {
   text: string;
 }
+
+export interface ReviewSummary { relPath: string; name: string; ext: string; kind: "review" | "decisions" | "rewrites" | "plan" | "findings" | "state"; date: string | null; scope: string | null; title: string | null; updatedAt: string; stats: Record<string, JsonValue> }
+export interface ReviewDocument { relPath: string; kind: ReviewSummary["kind"]; updatedAt: string; bytes: number; text: string }
 
 export interface RunRequest {
   provider: ExecutionProvider;
@@ -136,6 +159,12 @@ export interface RunRecord {
   createdAt: string;
   startedAt?: string;
   finishedAt?: string;
+}
+
+export interface RunListRequest {
+  projectId?: string;
+  skillId?: string;
+  limit?: number;
 }
 
 export interface RunCancelResult {
@@ -280,6 +309,7 @@ export interface ProjectApi {
   list(): Promise<ProjectSummary[]>;
   get(projectId: string): Promise<ProjectDetail | null>;
   open(projectId: string): Promise<ProjectSummary>;
+  import(input: ProjectImportInput): Promise<ProjectDetail | null>;
 }
 
 export interface ContentApi {
@@ -287,12 +317,15 @@ export interface ContentApi {
   getChapter(projectId: string, chapterId: string): Promise<ChapterDocument>;
   listWorld(projectId: string): Promise<WorldSummary[]>;
   getWorld(projectId: string, relPath: string): Promise<WorldDocument>;
+  listReviews(projectId: string): Promise<ReviewSummary[]>;
+  getReview(projectId: string, relPath: string): Promise<ReviewDocument>;
 }
 
 export type RunEventListener = (event: RunEvent) => void;
 
 export interface RunApi {
   start(request: RunRequest): Promise<RunAccepted>;
+  list(request?: RunListRequest): Promise<RunRecord[]>;
   get(runId: string): Promise<RunRecord>;
   cancel(runId: string): Promise<RunCancelResult>;
   subscribe(runId: string, listener: RunEventListener, options?: RunSubscriptionOptions, onError?: (error: StructuredError) => void): Promise<RunSubscription>;
@@ -330,15 +363,19 @@ export const IPC_CHANNELS = {
     list: "book-writer/projects/list",
     get: "book-writer/projects/get",
     open: "book-writer/projects/open",
+    import: "book-writer/projects/import",
   },
   content: {
     listChapters: "book-writer/content/list-chapters",
     getChapter: "book-writer/content/get-chapter",
     listWorld: "book-writer/content/list-world",
     getWorld: "book-writer/content/get-world",
+    listReviews: "book-writer/content/list-reviews",
+    getReview: "book-writer/content/get-review",
   },
   runs: {
     start: "book-writer/runs/start",
+    list: "book-writer/runs/list",
     get: "book-writer/runs/get",
     cancel: "book-writer/runs/cancel",
     subscribe: "book-writer/runs/subscribe",

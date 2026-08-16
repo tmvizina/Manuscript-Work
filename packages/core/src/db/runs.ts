@@ -130,6 +130,23 @@ export function getAgentRun(db: DB, runId: string): AgentRunRecord | null {
   return row ? mapRun(row) : null;
 }
 
+export interface ListAgentRunsOptions {
+  projectId?: string;
+  skillId?: string;
+  limit?: number;
+}
+
+export function listAgentRuns(db: DB, options: ListAgentRunsOptions = {}): AgentRunRecord[] {
+  const clauses: string[] = [];
+  const values: unknown[] = [];
+  if (options.projectId !== undefined) { clauses.push("project_id = ?"); values.push(options.projectId); }
+  if (options.skillId !== undefined) { clauses.push("skill_id = ?"); values.push(options.skillId); }
+  const limit = Math.max(1, Math.min(100, Math.trunc(options.limit ?? 20)));
+  const where = clauses.length > 0 ? ` WHERE ${clauses.join(" AND ")}` : "";
+  const rows = db.prepare(`SELECT ${RUN_COLUMNS} FROM agent_runs${where} ORDER BY created_at DESC LIMIT ?`).all(...values, limit) as AgentRunRow[];
+  return rows.map(mapRun);
+}
+
 export function markAgentRunStarted(db: DB, runId: string): boolean {
   return db.prepare(
     `UPDATE agent_runs SET status = 'running', started_at = ?

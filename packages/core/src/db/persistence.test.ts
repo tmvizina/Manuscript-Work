@@ -7,6 +7,7 @@ import {
   getProject,
   getProjectChapter,
   getProjectSetting,
+  listAgentRuns,
   listProjectChapters,
   listProjects,
   markAgentRunStarted,
@@ -117,7 +118,10 @@ describe("agent run persistence", () => {
     });
 
     createAgentRun(db, { runId: "run_orphan", provider: "claude", prompt: "Continue" });
-    expect(resolveOrphanedAgentRuns(db)).toBe(1);
+    db.prepare("INSERT INTO skills(skill_id, display_name, pipeline_order, phase, blurb, image_path) VALUES (?, ?, ?, ?, ?, ?)").run("book-reviewer-v2", "Reviewer", 1, "revision", "Review", "/review.svg");
+    createAgentRun(db, { runId: "run_other", projectId: "project_one", provider: "codex", skillId: "book-reviewer-v2", prompt: "Review" });
+    expect(listAgentRuns(db, { projectId: "project_one", skillId: "book-reviewer-v2", limit: 10 }).map((run) => run.runId)).toEqual(["run_other"]);
+    expect(resolveOrphanedAgentRuns(db)).toBe(2);
     expect(getAgentRun(db, "run_orphan")).toMatchObject({
       status: "failed",
       error: "interrupted by application restart",

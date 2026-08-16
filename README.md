@@ -58,6 +58,26 @@ No docker? `cd app/server && npm install && npm start` serves the app alone
 See `docs/guides/claude-bridge.md` (how runs reach claude),
 `docs/guides/rag-overview.md`, and `docs/guides/rag-maintenance.md`.
 
+### Project profiles
+
+Book Writer defaults to the original fantasy workflow when a manuscript checkout has no profile file. A portable `.book-writer/project.json` can instead select a reusable nonfiction profile. The first bundled preset is `fly-night-fishing`, designed for a practical book supported by personal fishing stories:
+
+```json
+{
+  "schemaVersion": 1,
+  "profile": "nonfiction",
+  "preset": "fly-night-fishing",
+  "editorialMode": "practical-narrative",
+  "claimsPolicy": "experience-led",
+  "memoryRoot": "world",
+  "memoryLabel": "Knowledge Base"
+}
+```
+
+The desktop first-run screen can import a folder with this preset and safely scaffold its Knowledge Base. The physical folder stays `world/` for compatibility, but the UI and workflows use nonfiction labels for author voice, audience, topics, techniques, equipment, species, conditions, places, people, stories, claims, sources, safety/regulations, terminology, and continuity. Existing files are never overwritten.
+
+Experience-led means the author's observations and recollections are valid attributed sources; it does not make changing safety or regulation claims timeless. Those entries retain jurisdiction, checked date, source, and verification status.
+
 ---
 
 ## What goes in, what comes out

@@ -15,6 +15,7 @@ import ragRoutes from "./routes/rag.js";
 import helpRoutes from "./routes/help.js";
 import worldRoutes from "./routes/world.js";
 import reviewRoutes from "./routes/reviews.js";
+import { loadProjectProfile, ProjectProfileError } from "../../../packages/core/src/index.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -73,6 +74,25 @@ app.get("/api/health", async () => {
     rag,
     bridge,
   };
+});
+
+app.get("/api/project", async (_req, reply) => {
+  try {
+    const profile = loadProjectProfile(MANUSCRIPT_ROOT);
+    return {
+      projectId: "legacy",
+      name: MANUSCRIPT_ROOT.split(/[\\/]/).filter(Boolean).at(-1) ?? "Book Writer",
+      rootPath: MANUSCRIPT_ROOT,
+      manuscriptRoot: MANUSCRIPT_ROOT,
+      worldRoot: join(MANUSCRIPT_ROOT, profile.config.memoryRoot),
+      active: true,
+      profile: profile.config,
+      profileSource: profile.source,
+    };
+  } catch (error) {
+    if (error instanceof ProjectProfileError) return reply.code(422).send({ error: error.message });
+    throw error;
+  }
 });
 
 chapterRoutes(app, db);

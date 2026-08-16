@@ -1,9 +1,11 @@
 ---
 name: manuscript-planner
-description: Generation planner — turn a validated outline into a writer-ready generation guide (chapter targets, scene briefs, thread beats)
+description: Turn a validated fiction or nonfiction outline into writer-ready chapter targets, briefs, dependencies, stories, and voice anchors
 ---
 
 # manuscript-planner
+
+When `.book-writer/project.json` selects nonfiction, also read [skills/nonfiction-profile.md](../../../skills/nonfiction-profile.md) and apply its overrides.
 
 Use the repository's canonical workflow rather than duplicating it here:
 

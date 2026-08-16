@@ -1,9 +1,11 @@
 ---
 name: world-notes-seeder
-description: Seed world/ canon from handwritten/raw worldbuilding notes — run BEFORE the outline-enhancer
+description: Seed a project's world canon or nonfiction Knowledge Base from handwritten notes, field notes, interviews, photographs, and raw sources before outline development
 ---
 
 # world-notes-seeder
+
+When `.book-writer/project.json` selects nonfiction, also read [skills/nonfiction-profile.md](../../../skills/nonfiction-profile.md) and apply its overrides.
 
 Use the repository's canonical workflow rather than duplicating it here:
 

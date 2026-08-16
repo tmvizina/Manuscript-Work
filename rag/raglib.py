@@ -1,11 +1,9 @@
-"""Shared corpus discovery, chunking, and Chroma client config for the Dragon Wings canon RAG.
-
-Corpus = world/ (canon memory, .md) + Book 1 chapters + Book 2 chapters + prequel chapters (.txt).
-"""
+"""Project-scoped corpus discovery, chunking, and Chroma client configuration."""
 from __future__ import annotations
 
 import os
 import re
+import hashlib
 from pathlib import Path
 
 # The manuscript repo the corpus lives in. Defaults to this repo's root (the POC
@@ -13,14 +11,9 @@ from pathlib import Path
 # a manuscript checkout that lives elsewhere.
 REPO_ROOT = Path(os.environ.get("RAG_REPO_ROOT") or Path(__file__).resolve().parents[1]).resolve()
 DB_DIR = Path(__file__).resolve().parent / "chroma_db"
-COLLECTION = "dragonwings_canon"
-
-CORPUS_SPECS = [
-    ("world", REPO_ROOT / "world", (".md",)),
-    ("book-1", REPO_ROOT / "chapters", (".txt",)),
-    ("book-2", REPO_ROOT / "book-2" / "chapters", (".txt",)),
-    ("prequel", REPO_ROOT / "prequel-novella" / "chapters", (".txt",)),
-]
+PROJECT_IDENTITY = os.environ.get("RAG_PROJECT_KEY") or str(REPO_ROOT)
+PROJECT_KEY = hashlib.sha256(PROJECT_IDENTITY.casefold().encode("utf-8")).hexdigest()[:16]
+COLLECTION = os.environ.get("RAG_COLLECTION") or f"book_writer_{PROJECT_KEY}"
 
 CHUNK_CHARS = 1200   # soft cap per chunk
 OVERLAP_PARAS = 1    # paragraphs of overlap between adjacent chunks
@@ -28,7 +21,16 @@ OVERLAP_PARAS = 1    # paragraphs of overlap between adjacent chunks
 
 def corpus_files():
     """Yield (book, path) for every corpus file, sorted for stable ids."""
-    for book, root, exts in CORPUS_SPECS:
+    specs = [("world", REPO_ROOT / "world", (".md", ".json"))]
+    chapter_roots = sorted({
+        p for p in REPO_ROOT.glob("**/chapters")
+        if p.is_dir() and not any(part.startswith(".") or part in {"node_modules", "dist"} for part in p.relative_to(REPO_ROOT).parts)
+    })
+    for root in chapter_roots:
+        rel = root.relative_to(REPO_ROOT)
+        book = "book" if rel.as_posix() == "chapters" else rel.parent.as_posix()
+        specs.append((book, root, (".txt", ".md")))
+    for book, root, exts in specs:
         if not root.exists():
             continue
         for p in sorted(root.rglob("*")):
@@ -71,7 +73,7 @@ def chunk_file(book: str, path: Path) -> list[dict]:
     text = path.read_text(encoding="utf-8", errors="replace")
     rel = path.relative_to(REPO_ROOT).as_posix()
     title = path.stem
-    is_md = path.suffix.lower() == ".md"
+    is_md = path.suffix.lower() in {".md", ".json"}
 
     groups: list[tuple[str, list[str]]] = []  # (heading, paragraphs)
     heading = ""
