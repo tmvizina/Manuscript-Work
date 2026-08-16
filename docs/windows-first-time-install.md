@@ -3,6 +3,11 @@
 This guide takes a new user from an installer file to a first Book Writer
 workflow. It applies to the current Windows x64 desktop candidate.
 
+It assumes a reader who can verify a hash and read a signature status. For
+someone installing an unsigned family build who does not need that,
+[Installing Book Writer](windows-install-for-family.md) covers the same ground
+in plain language, including what to do at the SmartScreen warning.
+
 ## Before you install
 
 You need:
@@ -176,9 +181,18 @@ canceled it, retry. Book Writer stores status, not the credential itself.
   account information.
 
 An automated GUI benchmark produced repeated Electron exception dialogs on the
-development workstation and is disabled by default. Release owners must diagnose
-that path on a clean disposable Windows machine; normal users should not enable
-the experimental GUI benchmark.
+development workstation and remains disabled by default. The mechanism behind
+the hang is fixed: the main process no longer relies on Electron's default
+uncaught-exception handler, which displayed a modal dialog and left the process
+alive until someone dismissed it. A main-process fault now logs and exits under
+a bounded shutdown instead, so an unattended run fails rather than hanging.
+
+What produced the original faults is still unknown — they did not reproduce on
+the development workstation after the fix, and the crash guard converts such a
+fault into a log entry rather than explaining it. Release owners should still
+diagnose that path on a clean disposable Windows machine and check
+`%APPDATA%\Book Writer\logs` for recorded exceptions. Normal users should not
+enable the experimental GUI benchmark.
 
 ## More help
 
