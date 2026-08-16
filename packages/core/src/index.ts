@@ -2,6 +2,7 @@ export * from "./content/index.js";
 export * from "./execution/contracts.js";
 export * from "./execution/normalize.js";
 export * from "./search/index.js";
+export * from "./rag/index.js";
 export {
   createAgentRun,
   createProject,

@@ -158,3 +158,61 @@ CREATE TABLE IF NOT EXISTS agent_runs (
   started_at      TEXT,
   finished_at     TEXT
 );
+
+-- Migration 3: native project-scoped semantic RAG index.
+
+-- One row per corpus source file (world/*.md, world/*.json, **/chapters/*.txt|*.md),
+-- reusing the same mtime/size skip-if-unchanged cache pattern migration 2
+-- added to project_chapters (file_mtime, file_size >= 0 means "trust the cache").
+CREATE TABLE IF NOT EXISTS project_rag_files (
+  project_id   TEXT NOT NULL REFERENCES projects(project_id) ON DELETE CASCADE,
+  file_id      TEXT NOT NULL,              -- stable hash of rel_path, like raglib.py's "<rel>::<i>" scheme
+  rel_path     TEXT NOT NULL,
+  book         TEXT NOT NULL,              -- "world" | "book" | "book-2" | "prequel-novella" | ...
+  file_mtime   TEXT,
+  file_size    INTEGER NOT NULL DEFAULT -1,
+  content_sha256 TEXT NOT NULL,            -- detects content changes even if mtime is unreliable
+  chunk_count  INTEGER NOT NULL DEFAULT 0,
+  indexed_at   TEXT NOT NULL,
+  PRIMARY KEY (project_id, file_id),
+  UNIQUE (project_id, rel_path)
+);
+CREATE INDEX IF NOT EXISTS idx_project_rag_files_project ON project_rag_files(project_id);
+
+-- One row per chunk. Vector stored as a raw little-endian Float32 BLOB
+-- (embedding_dim * 4 bytes); no external vector-store format needed for
+-- brute-force cosine over a few thousand rows.
+CREATE TABLE IF NOT EXISTS project_rag_chunks (
+  project_id    TEXT NOT NULL REFERENCES projects(project_id) ON DELETE CASCADE,
+  chunk_id      TEXT NOT NULL,             -- e.g. "<file_id>::<index>"
+  file_id       TEXT NOT NULL,
+  rel_path      TEXT NOT NULL,             -- denormalized for cheap result mapping without a join
+  book          TEXT NOT NULL,
+  heading       TEXT NOT NULL DEFAULT '',
+  chunk_index   INTEGER NOT NULL,
+  text          TEXT NOT NULL,
+  char_count    INTEGER NOT NULL,
+  model_id      TEXT NOT NULL,             -- e.g. "Xenova/all-MiniLM-L6-v2"
+  model_sha256  TEXT NOT NULL,             -- ties a vector to the exact model bytes that produced it
+  embedding_dim INTEGER NOT NULL,
+  embedding     BLOB NOT NULL,
+  created_at    TEXT NOT NULL,
+  PRIMARY KEY (project_id, chunk_id),
+  FOREIGN KEY (project_id, file_id) REFERENCES project_rag_files(project_id, file_id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_project_rag_chunks_file ON project_rag_chunks(project_id, file_id);
+
+-- One row per project: index status for the health/status IPC call without
+-- rescanning or reloading vectors. Mirrors how runs/manager.ts keeps status
+-- in memory but this needs to survive app restarts.
+CREATE TABLE IF NOT EXISTS project_rag_index_state (
+  project_id     TEXT PRIMARY KEY REFERENCES projects(project_id) ON DELETE CASCADE,
+  status         TEXT NOT NULL DEFAULT 'never_indexed', -- never_indexed | indexing | ready | failed | cancelled
+  model_id       TEXT,
+  model_sha256   TEXT,
+  total_files    INTEGER NOT NULL DEFAULT 0,
+  total_chunks   INTEGER NOT NULL DEFAULT 0,
+  last_indexed_at TEXT,
+  last_error     TEXT,
+  updated_at     TEXT NOT NULL
+);

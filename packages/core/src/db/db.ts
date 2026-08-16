@@ -22,7 +22,7 @@ const schemaPath = fileURLToPath(new URL("./schema.sql", import.meta.url));
  * Existing databases have user_version 0 and are treated as the legacy
  * baseline by migration 1.
  */
-export const DATABASE_SCHEMA_VERSION = 2;
+export const DATABASE_SCHEMA_VERSION = 3;
 /** Backwards-friendly aliases for hosts that prefer a shorter name. */
 export const CURRENT_SCHEMA_VERSION = DATABASE_SCHEMA_VERSION;
 export const SCHEMA_VERSION = DATABASE_SCHEMA_VERSION;
@@ -143,6 +143,9 @@ const migrations: Readonly<Record<number, Migration>> = {
   2: (db) => {
     migrateChapterFileMetadataColumns(db);
   },
+  3: (db) => {
+    migrateRagSchema(db);
+  },
 };
 
 /** Apply all pending migrations atomically. */
@@ -233,6 +236,65 @@ function migrateChapterFileMetadataColumns(db: DB): void {
 
   addColumn("chapters");
   addColumn("project_chapters");
+}
+
+/**
+ * Add the native project-scoped semantic RAG tables. A fresh database (schema
+ * version 0) already gets these from the full schema.sql exec in migration 1;
+ * this statement is repeated here, matching migration 2's precedent of
+ * re-declaring additive SQL for databases that skipped straight to a later
+ * version, so an existing v1/v2 database gains them too. CREATE TABLE/INDEX
+ * IF NOT EXISTS keeps both paths idempotent.
+ */
+function migrateRagSchema(db: DB): void {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS project_rag_files (
+      project_id   TEXT NOT NULL REFERENCES projects(project_id) ON DELETE CASCADE,
+      file_id      TEXT NOT NULL,
+      rel_path     TEXT NOT NULL,
+      book         TEXT NOT NULL,
+      file_mtime   TEXT,
+      file_size    INTEGER NOT NULL DEFAULT -1,
+      content_sha256 TEXT NOT NULL,
+      chunk_count  INTEGER NOT NULL DEFAULT 0,
+      indexed_at   TEXT NOT NULL,
+      PRIMARY KEY (project_id, file_id),
+      UNIQUE (project_id, rel_path)
+    );
+    CREATE INDEX IF NOT EXISTS idx_project_rag_files_project ON project_rag_files(project_id);
+
+    CREATE TABLE IF NOT EXISTS project_rag_chunks (
+      project_id    TEXT NOT NULL REFERENCES projects(project_id) ON DELETE CASCADE,
+      chunk_id      TEXT NOT NULL,
+      file_id       TEXT NOT NULL,
+      rel_path      TEXT NOT NULL,
+      book          TEXT NOT NULL,
+      heading       TEXT NOT NULL DEFAULT '',
+      chunk_index   INTEGER NOT NULL,
+      text          TEXT NOT NULL,
+      char_count    INTEGER NOT NULL,
+      model_id      TEXT NOT NULL,
+      model_sha256  TEXT NOT NULL,
+      embedding_dim INTEGER NOT NULL,
+      embedding     BLOB NOT NULL,
+      created_at    TEXT NOT NULL,
+      PRIMARY KEY (project_id, chunk_id),
+      FOREIGN KEY (project_id, file_id) REFERENCES project_rag_files(project_id, file_id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_project_rag_chunks_file ON project_rag_chunks(project_id, file_id);
+
+    CREATE TABLE IF NOT EXISTS project_rag_index_state (
+      project_id     TEXT PRIMARY KEY REFERENCES projects(project_id) ON DELETE CASCADE,
+      status         TEXT NOT NULL DEFAULT 'never_indexed',
+      model_id       TEXT,
+      model_sha256   TEXT,
+      total_files    INTEGER NOT NULL DEFAULT 0,
+      total_chunks   INTEGER NOT NULL DEFAULT 0,
+      last_indexed_at TEXT,
+      last_error     TEXT,
+      updated_at     TEXT NOT NULL
+    );
+  `);
 }
 
 function normalizeBusyTimeout(value: number | undefined): number {
@@ -335,6 +397,9 @@ const requiredSchema: Readonly<Record<string, readonly string[]>> = {
   project_settings: ["project_id", "key", "value_json"],
   provider_settings: ["provider_setting_id", "provider", "config_json"],
   agent_runs: ["run_id", "provider", "status", "created_at"],
+  project_rag_files: ["project_id", "file_id", "rel_path", "book", "content_sha256", "chunk_count"],
+  project_rag_chunks: ["project_id", "chunk_id", "file_id", "rel_path", "embedding_dim", "embedding"],
+  project_rag_index_state: ["project_id", "status", "total_files", "total_chunks"],
 };
 
 function assertCurrentSchema(db: DB): void {
