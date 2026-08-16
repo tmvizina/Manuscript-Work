@@ -373,10 +373,10 @@ documented repository-scoped sandbox exception for Vitest/esbuild.
 
 ## Exact next actions
 
-Phase 4 implementation is substantially complete but is not release-accepted.
-Two gates remain: a successful real-provider acceptance smoke after interactive
-re-authentication, and either approved embedded payload evidence or an explicit
-decision to accept informed local/online installation as the release path.
+Phase 4 is accepted for the current informed installation release path. Embedded
+offline payload installation remains a conditional future release capability and
+must stay disabled until approved artifact, redistribution, hash, and publisher
+evidence exists.
 Main-process discovery resolves only the allow-listed `claude` and `codex` names,
 prefers direct executables, checks PATH plus known per-user install locations,
 records bounded versions, verifies authentication, and never accepts a renderer
@@ -410,17 +410,16 @@ New native projects without a preferred provider route to Provider Setup before
 workflow use. Validation on 2026-08-16: root typecheck passed; all 27 Vitest files and 134 tests
 passed; the full production build passed; and the per-user x64 NSIS installer
 `Book Writer-0.1.0-x64.exe` built successfully with the custom detection hook. The
-packaged Electron process remained responsive. A real native-runner Claude smoke
-reached the CLI and streamed normalized startup/status/failure events, but correctly
-failed because the machine's stored Claude OAuth session had expired and could not
-refresh. Claude's own visible `claude auth login` flow was opened; no credentials or
-terminal input are captured by Book Writer.
+packaged Electron process remained responsive. After authentication was refreshed
+in Claude's own visible terminal, the production native runner completed the
+exact-output synthetic prompt with `P4_SMOKE_OK` and normalized start, text, and
+completion events. No credentials or terminal input were captured by Book Writer.
 
-1. Complete the visible Claude sign-in and rerun the exact-output synthetic smoke.
-2. Commit Phase 4 after the successful smoke, then begin Phase 5 immediately.
-3. Decide whether RAG becomes an embedded native index or remains an optional
+1. Begin Phase 5 with database backup/transactional migration and installer
+   lifecycle recovery.
+2. Decide whether RAG becomes an embedded native index or remains an optional
    external compatibility service; do not disguise semantic RAG as literal search.
-4. Add embedded provider payloads only if release engineering later documents the
+3. Add embedded provider payloads only if release engineering later documents the
    selected artifacts, licenses, redistribution approval, hashes, and signatures.
 
 ## Known risks and decisions still requiring evidence
