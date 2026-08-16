@@ -2,6 +2,7 @@ import { existsSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { app, BrowserWindow, dialog, ipcMain, shell } from "electron";
+import { installCrashGuards } from "./crashGuards.js";
 import { registerIpcHandlers } from "./ipc.js";
 import { getUiRoot, getUserDataPaths, type DesktopUserDataPaths } from "./paths.js";
 import { NativeDesktopRuntime } from "./runtime.js";
@@ -12,11 +13,68 @@ import { ProviderInstallation } from "./providers/installation.js";
 
 const DEV_URL_ENV = ["BOOK_WRITER_DEV_URL", "ELECTRON_RENDERER_URL", "VITE_DEV_SERVER_URL"] as const;
 
+/** Upper bound on a crash shutdown, after which the process exits regardless. */
+const SHUTDOWN_GRACE_MS = 2_000;
+
 let mainWindow: BrowserWindow | null = null;
 let rendererOrigin: string | undefined;
 let desktopRuntime: NativeDesktopRuntime | null = null;
 let shutdownStarted = false;
 const mainDirectory = dirname(fileURLToPath(import.meta.url));
+
+// Replace Electron's default uncaught-exception dialog with a logged,
+// bounded shutdown. Unattended launches (automated benchmarking, CI, a
+// machine with no interactive session) never dismiss that dialog: the main
+// process hangs indefinitely while already-spawned renderer/GPU/utility
+// helper processes keep running, and an external harness that eventually
+// force-kills the hung process can still miss anything spawned or
+// reparented after its last process-tree snapshot. See crashGuards.ts.
+installCrashGuards({
+  log: (label, error) => console.error(`[desktop] ${label}`, error),
+  shutdown: () => {
+    if (shutdownStarted) return;
+    shutdownStarted = true;
+    try {
+      for (const window of BrowserWindow.getAllWindows()) {
+        try {
+          window.destroy();
+        } catch {
+          // Best effort: the window may already be closing.
+        }
+      }
+    } catch {
+      // BrowserWindow may be unusable this early or this late in shutdown.
+    }
+    const runtime = desktopRuntime;
+    desktopRuntime = null;
+
+    // app.exit() terminates immediately without waiting for further event-loop
+    // turns or emitting further quit-lifecycle events, unlike app.quit(). If
+    // the app never reached readiness, app.exit is not usable yet, so fall
+    // back to a direct process exit.
+    let exited = false;
+    const exitNow = () => {
+      if (exited) return;
+      exited = true;
+      if (app.isReady()) app.exit(1);
+      else process.exit(1);
+    };
+
+    // Closing the runtime is best effort and must be bounded. The process is
+    // already broken, so a close() that never settles would leave it alive and
+    // reintroduce exactly the unattended hang the crash guards exist to
+    // prevent. Exit regardless once the grace period elapses.
+    const watchdog = setTimeout(exitNow, SHUTDOWN_GRACE_MS);
+    Promise.resolve(runtime?.close())
+      .catch(() => {
+        // Already crashing; nothing more useful to do with a close failure.
+      })
+      .finally(() => {
+        clearTimeout(watchdog);
+        exitNow();
+      });
+  },
+});
 
 // Electron requires privileged schemes to be registered before app.ready.
 registerUiScheme();
