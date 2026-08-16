@@ -25,7 +25,7 @@ Writer instance, and then run:
 
 ```powershell
 npm.cmd --prefix app\desktop run package:dir
-npm.cmd run benchmark:phase6 -- -Mode launch -RequireLaunch
+npm.cmd run benchmark:phase6 -- -Mode launch -RequireLaunch -EnableExperimentalGuiLaunch
 ```
 
 The package section reads the existing `dist\desktop` output and records the
@@ -40,7 +40,7 @@ Useful focused modes and options are:
 
 | Command/option | Measurement |
 |---|---|
-| `-Mode launch` | fresh-profile cold launch, warm-profile bootstrap, warm launch, and process-tree working set |
+| `-Mode launch -EnableExperimentalGuiLaunch` | explicit clean-VM-only fresh/warm launch experiment; never run on a working desktop account |
 | `-Mode package` | installer and packaged directory bytes plus installer hash |
 | `-Mode scan` | two real compiled-core chapter syncs against a generated 250-file fixture |
 | `-ScanProject <manuscript-root>` | use a representative fixture instead of generating one |

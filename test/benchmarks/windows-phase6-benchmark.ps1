@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-  [ValidateSet("safe", "all", "launch", "package", "scan", "stream")]
+  [ValidateSet("safe", "launch", "package", "scan", "stream")]
   [string]$Mode = "safe",
   [string]$Executable = "",
   [string]$Installer = "",
@@ -31,7 +31,8 @@ param(
   [switch]$RequireLaunch,
   [switch]$RequirePackage,
   [switch]$RequireScan,
-  [switch]$RequireStream
+  [switch]$RequireStream,
+  [switch]$EnableExperimentalGuiLaunch
 )
 
 $ErrorActionPreference = "Stop"
@@ -611,6 +612,10 @@ try {
   $nodeCommand = $nodeCommandInfo.Source
   $result.system = Get-SystemMetadata
 
+  if ($Mode -eq "launch" -and -not $EnableExperimentalGuiLaunch) {
+    throw "GUI launch measurement is disabled by default after unsafe cleanup behavior. Use a clean Windows VM and pass -EnableExperimentalGuiLaunch only after reviewing docs/performance/phase6-windows-benchmarks.md."
+  }
+
   if ($BuildPackage) {
     $desktopPath = Join-Path $workspace "app\desktop"
     & $nodeCommandInfo.Source --version | Out-Null
@@ -623,10 +628,10 @@ try {
     }
   }
 
-  if (@("all", "launch") -contains $Mode) { $result.launch = Measure-LaunchSection }
-  if (@("safe", "all", "package") -contains $Mode) { $result.package = Measure-PackageSection }
-  if (@("safe", "all", "scan") -contains $Mode) { $result.scan = Measure-ScanSection }
-  if (@("safe", "all", "stream") -contains $Mode) { $result.stream = Measure-StreamSection }
+  if ($Mode -eq "launch") { $result.launch = Measure-LaunchSection }
+  if (@("safe", "package") -contains $Mode) { $result.package = Measure-PackageSection }
+  if (@("safe", "scan") -contains $Mode) { $result.scan = Measure-ScanSection }
+  if (@("safe", "stream") -contains $Mode) { $result.stream = Measure-StreamSection }
 
   if ($RequireLaunch -and ($null -eq $result.launch -or $result.launch.status -ne "ok")) {
     throw "Launch measurements were required but did not complete."

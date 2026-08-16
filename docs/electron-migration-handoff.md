@@ -230,6 +230,12 @@ Initial release budgets to validate and revise with real measurements:
 Acceptance: release checklist is signed off using a clean low-end Windows machine,
 the installer hash is published, and all known limitations are documented.
 
+The release-owner checklist, standard-user matrix, provider smoke privacy rules,
+known-limitations register, rollback policy, and release-specific database
+compatibility statement are maintained in [Phase 7 Windows release
+qualification](windows-release-qualification.md) and [Windows rollback and
+database compatibility](windows-rollback-and-database-compatibility.md).
+
 ## Current implementation state
 
 Branch: `feature/Swapping-To-Native-Electron-App`
@@ -453,18 +459,39 @@ was disabled by default after repeated exception dialogs; cold/warm launch,
 idle working set, renderer long-task profiling, a 30-minute provider stream,
 and representative low-end hardware remain Phase 7 qualification evidence.
 
-1. Complete Phase 6 validation, package audit, and checkpoint commit, then begin
-   Phase 7 release qualification.
-2. Decide whether RAG becomes an embedded native index or remains an optional
+Phase 7 repository qualification is implemented. The headless matrix covers
+neither/either/both CLIs, standard-user paths with spaces, pre-launch auth
+cancellation, offline embedded-payload refusal, local installer handoff errors,
+safe command-shim quoting, schema-1 upgrade/backup, and failed-migration rollback.
+The full local suite passes with 31 files and 158 tests, and all TypeScript
+surfaces pass. Both local provider CLIs report authenticated without exposing
+credentials; Claude's real sentinel smoke was already completed in Phase 4.
+
+Release acceptance remains `HOLD`, not complete: the candidate is unsigned,
+GitHub CLI is not authenticated to run the clean Windows workflow, no clean
+low-end Windows machine/account is available for the signed checklist, the GUI
+launch harness surfaced exception dialogs and is now double-opt-in, and no real
+Codex model call has been authorized. The checklist deliberately records these
+as `Not run`; repository automation cannot manufacture that external evidence.
+
+1. On a clean low-end Windows x64 standard-user VM, diagnose the launch dialog,
+   run the assisted installer/upgrade/remove-data/provider/performance matrix,
+   and sign the release checklist.
+2. Supply an approved Authenticode certificate and authenticate GitHub CLI (or
+   run the workflow in GitHub) before creating a tagged non-family candidate.
+3. Obtain explicit approval for one bounded real Codex sentinel call, then retain
+   only the redacted result described by the provider-smoke privacy rules.
+4. Decide whether RAG becomes an embedded native index or remains an optional
    external compatibility service; do not disguise semantic RAG as literal search.
-3. Add embedded provider payloads only if release engineering later documents the
+5. Add embedded provider payloads only if release engineering later documents the
    selected artifacts, licenses, redistribution approval, hashes, and signatures.
 
 ## Known risks and decisions still requiring evidence
 
-- The unpacked packaged Electron runtime can load native `better-sqlite3`, the
-  embedded schema, and the native service facade. A clean installed-app test remains
-  a Phase 5 qualification item.
+- Local silent installer lifecycle checks pass, but automated GUI launch
+  measurement later surfaced repeated exception dialogs and orphaned child
+  processes. Default benchmarking is headless; GUI diagnosis must occur on the
+  clean Phase 7 machine with retained logs and graceful shutdown.
 - Vitest and esbuild require execution outside the managed filesystem sandbox on
   this machine; the full suite passes when granted repository-scoped access.
 - `electron-rebuild` changes the shared workspace `better-sqlite3` binary to the

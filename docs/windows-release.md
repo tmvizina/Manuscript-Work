@@ -3,6 +3,11 @@
 User-facing install, data, uninstall, and recovery guidance is in
 [Windows installation, upgrade, and recovery](windows-installation.md).
 
+Release owners should use the [Phase 7 Windows release qualification checklist](windows-release-qualification.md)
+and [rollback and database compatibility policy](windows-rollback-and-database-compatibility.md) for each
+candidate. Those documents define required evidence and do not turn an unrun
+check into a release claim.
+
 The `Windows x64 release` workflow in `.github/workflows/windows-release.yml`
 is the reproducible packaging path for the Electron desktop app. It runs on a
 clean `windows-2022` runner when a `v*` tag is pushed, and can also be started
@@ -28,7 +33,9 @@ The package configuration produces a per-user x64 NSIS installer in
 `dist/desktop/`. The workflow uploads the single `Book Writer-<version>-x64.exe`
 installer and a matching `.exe.sha256` sidecar. The sidecar uses the conventional
 `<sha256> *<filename>` format and is computed after packaging from the exact
-installer bytes.
+installer bytes. Workflow artifacts are retained for 90 days; the release owner
+must copy approved candidate and prior-version artifacts into the longer-lived
+rollback pack described in the qualification documentation.
 
 Manual runs may produce an unsigned family-test candidate. Tagged releases are
 blocked unless the resulting installer has a valid Authenticode signature.
