@@ -35,4 +35,17 @@ describe("desktop path policy", () => {
     expect(getPackagedResourcePath(root, "")).toBeNull();
     expect(getPackagedResourcePath(root, "assets/evil\0.js")).toBeNull();
   });
+
+  it("refuses rooted requests that resolve outside the resource root", () => {
+    const root = resolve("C:/installed/resources/ui");
+
+    // Reachable through the UI protocol: `book-writer://app/%5C%5Chost%5Cshare`
+    // decodes to a UNC path, which resolve() honors instead of containing.
+    expect(getPackagedResourcePath(root, "\\\\attacker-host\\share\\payload")).toBeNull();
+    expect(getPackagedResourcePath(root, "\\\\127.0.0.1\\C$\\Windows\\win.ini")).toBeNull();
+    expect(getPackagedResourcePath(root, "C:\\Windows\\System32\\calc.exe")).toBeNull();
+    expect(getPackagedResourcePath(root, "C:/Windows/System32/calc.exe")).toBeNull();
+    expect(getPackagedResourcePath(root, "/etc/passwd")).toBeNull();
+    expect(getPackagedResourcePath(root, "assets\\..\\..\\secret.txt")).toBeNull();
+  });
 });

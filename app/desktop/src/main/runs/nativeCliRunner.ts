@@ -292,8 +292,11 @@ export class NativeCliRunner implements ProviderRunner {
       shell: false,
       stdio: ["pipe", "pipe", "pipe"],
     });
-    const extension = extname(status.executablePath).toLowerCase();
-    const needsTreeKill = this.platform === "win32" && (extension === ".cmd" || extension === ".bat");
+    // Cancellation must reap descendants, not just the process we spawned. A
+    // command shim makes that obvious because cmd.exe is the direct child, but a
+    // provider distributed as a plain .exe can equally spawn its own helpers, and
+    // child.kill() would strand them. Tree-kill covers every win32 spawn.
+    const needsTreeKill = this.platform === "win32";
     return new NativeCliRunHandle(request, child, needsTreeKill ? this.killProcessTree : undefined);
   }
 }

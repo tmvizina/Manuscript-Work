@@ -94,16 +94,36 @@ describe("native CLI runner", () => {
       .toThrow(/cannot be invoked safely/);
   });
 
-  it("cancels the owned provider process", async () => {
+  it("cancels the owned provider process directly off Windows", async () => {
     const child = new FakeChild();
     const runner = new NativeCliRunner({
-      discovery: readyDiscovery("codex", "C:\\Tools\\codex.exe"),
+      discovery: readyDiscovery("codex", "/usr/local/bin/codex"),
       spawnProcess: () => child as unknown as ChildProcessWithoutNullStreams,
-      platform: "win32",
+      platform: "linux",
     });
     const handle = await runner.start({ runId: "run-5", provider: "codex", prompt: "test" });
     expect(await handle.cancel()).toBe(true);
     expect(child.kill).toHaveBeenCalledOnce();
+    child.emit("close", null, "SIGTERM");
+    await expect(handle.wait()).resolves.toMatchObject({ status: "cancelled" });
+  });
+
+  it("cancels a direct Windows executable as a scoped process tree", async () => {
+    // A standalone .exe can spawn its own helpers; killing only the process we
+    // own would strand them after a cancelled run.
+    const child = new FakeChild();
+    Object.defineProperty(child, "pid", { value: 9876 });
+    const killProcessTree = vi.fn();
+    const runner = new NativeCliRunner({
+      discovery: readyDiscovery("codex", "C:\\Tools\\codex.exe"),
+      spawnProcess: () => child as unknown as ChildProcessWithoutNullStreams,
+      killProcessTree,
+      platform: "win32",
+    });
+    const handle = await runner.start({ runId: "run-5a", provider: "codex", prompt: "test" });
+    expect(await handle.cancel()).toBe(true);
+    expect(killProcessTree).toHaveBeenCalledWith(9876);
+    expect(child.kill).not.toHaveBeenCalled();
     child.emit("close", null, "SIGTERM");
     await expect(handle.wait()).resolves.toMatchObject({ status: "cancelled" });
   });

@@ -1,4 +1,4 @@
-import { join, relative, resolve, sep } from "node:path";
+import { isAbsolute, join, relative, resolve, sep } from "node:path";
 import { existsSync } from "node:fs";
 
 export interface DesktopUserDataPaths {
@@ -55,9 +55,19 @@ export function getUiRoot(options: UiRootOptions): string {
  */
 export function getPackagedResourcePath(resourcesPath: string, relativePath: string): string | null {
   if (!relativePath || relativePath.includes("\0")) return null;
+
+  // A relative() comparison alone does not contain a rooted path. On win32 a UNC
+  // request such as `\\host\share\payload` (reachable as %5C%5C... through the UI
+  // protocol) resolves to itself, and relative() then returns another rooted path
+  // rather than a `..` prefix. Reject anything rooted before resolving, matching
+  // resolveInside() in @book-writer/core. Backslashes are refused outright: served
+  // UI assets are URL paths, so a separator only arrives here as an escape attempt.
+  if (relativePath.includes("\\") || relativePath.startsWith("/") || isAbsolute(relativePath)) return null;
+  if (/^[a-zA-Z]:/.test(relativePath)) return null;
+
   const root = resolve(resourcesPath);
   const candidate = resolve(root, relativePath);
   const child = relative(root, candidate);
-  if (child === ".." || child.startsWith(`..${sep}`) || child === "") return null;
+  if (child === ".." || child.startsWith(`..${sep}`) || child === "" || isAbsolute(child)) return null;
   return candidate;
 }
