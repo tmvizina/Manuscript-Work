@@ -9,6 +9,7 @@ export default function ProviderOnboardingPage({ transport, projectId }: { trans
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [authenticating, setAuthenticating] = useState<ExecutionProvider | null>(null);
+  const [installing, setInstalling] = useState<ExecutionProvider | null>(null);
 
   const scan = () => {
     setProviders(null); setError("");
@@ -56,6 +57,19 @@ export default function ProviderOnboardingPage({ transport, projectId }: { trans
     }
   };
 
+  const install = async (provider: ExecutionProvider, source: "executable" | "local" | "online") => {
+    setInstalling(provider); setError(""); setMessage("");
+    try {
+      const result = await transport.providers.install(provider, source);
+      setMessage(result.message ?? "Installation handoff completed. Rescan after finishing the provider installer.");
+      if (result.installed) scan();
+    } catch (reason: any) {
+      setError(String(reason?.message ?? reason));
+    } finally {
+      setInstalling(null);
+    }
+  };
+
   if (!projectId) return <><h1>Provider setup</h1><p className="hint">Import or select a project before choosing its provider.</p></>;
 
   return <>
@@ -72,12 +86,12 @@ export default function ProviderOnboardingPage({ transport, projectId }: { trans
           {provider.status === "auth_required" && (authenticating === provider.provider
             ? <button className="btn" onClick={() => cancelAuthentication(provider.provider)}>Cancel sign-in</button>
             : <button className="btn" disabled={authenticating !== null} onClick={() => authenticate(provider.provider)}>{`Sign in to ${LABELS[provider.provider]}`}</button>)}
-          {detected ? <button className="btn" onClick={() => choose(provider.provider)}>{selected === provider.provider ? "Selected" : `Use ${LABELS[provider.provider]}`}</button> : <button className="btn" disabled title="Embedded payload requires license, hash, and publisher approval before installation is enabled">Install {LABELS[provider.provider]} (pending payload approval)</button>}
+          {detected ? <button className="btn" onClick={() => choose(provider.provider)}>{selected === provider.provider ? "Selected" : `Use ${LABELS[provider.provider]}`}</button> : <div className="provider-actions"><button className="btn" disabled={installing !== null} onClick={() => install(provider.provider, "online")}>Official install instructions</button><button className="btn ghost" disabled={installing !== null} onClick={() => install(provider.provider, "executable")}>Choose installed executable</button><button className="btn ghost" disabled={installing !== null} onClick={() => install(provider.provider, "local")}>Choose local installer</button></div>}
         </div>;
       })}
     </div>
     <p><button className="btn ghost" onClick={scan} disabled={providers === null}>Rescan PATH</button></p>
-    <div className="card provider-notice"><strong>Security boundary</strong><p>Sign-in opens the detected provider CLI in its own terminal; Book Writer does not receive passwords, tokens, or terminal output. Embedded installation stays disabled until a pinned payload manifest, redistribution approval, SHA-256, and publisher verification are checked in.</p></div>
+    <div className="card provider-notice"><strong>Security boundary</strong><p>Sign-in opens the detected provider CLI in its own terminal; Book Writer does not receive passwords, tokens, or terminal output. Official installation opens a fixed provider documentation page. Local installers require main-process selection and confirmation. Offline embedded installation stays disabled until a pinned payload manifest, redistribution approval, SHA-256, and publisher verification are checked in.</p></div>
     {message && <p>{message}</p>}{error && <p className="err">{error}</p>}
   </>;
 }

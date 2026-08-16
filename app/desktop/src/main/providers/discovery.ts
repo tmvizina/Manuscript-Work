@@ -1,6 +1,6 @@
 import { execFile } from "node:child_process";
 import { realpathSync, statSync } from "node:fs";
-import { delimiter, extname, join, resolve } from "node:path";
+import { basename, delimiter, extname, join, resolve } from "node:path";
 import type { ExecutionProvider, ProviderSummary } from "../../shared/contracts.js";
 
 export interface DiscoveryEnvironment {
@@ -8,6 +8,9 @@ export interface DiscoveryEnvironment {
   path?: string;
   pathExt?: string;
   comSpec?: string;
+  appData?: string;
+  localAppData?: string;
+  userProfile?: string;
 }
 
 export interface VersionProbeResult {
@@ -28,6 +31,7 @@ export interface ProviderDiscoveryOptions {
   canonicalize?: (path: string) => string;
   probeVersion?: VersionProbe;
   probeAuthentication?: AuthenticationProbe;
+  knownDirectories?: Partial<Record<ExecutionProvider, readonly string[]>>;
 }
 
 const COMMANDS: Record<ExecutionProvider, string> = { claude: "claude", codex: "codex" };
@@ -39,7 +43,10 @@ function currentEnvironment(): DiscoveryEnvironment {
     platform: process.platform,
     path: process.env.PATH,
     pathExt: process.env.PATHEXT,
-    comSpec: process.env.ComSpec,
+    comSpec: join(process.env.SystemRoot || "C:\\Windows", "System32", "cmd.exe"),
+    appData: process.env.APPDATA,
+    localAppData: process.env.LOCALAPPDATA,
+    userProfile: process.env.USERPROFILE,
   };
 }
 
@@ -146,6 +153,8 @@ export class ProviderDiscovery {
   private readonly canonicalize: (path: string) => string;
   private readonly probeVersion: VersionProbe;
   private readonly probeAuthentication: AuthenticationProbe;
+  private readonly knownDirectories: Partial<Record<ExecutionProvider, readonly string[]>>;
+  private readonly selectedExecutables = new Map<ExecutionProvider, string>();
 
   constructor(options: ProviderDiscoveryOptions = {}) {
     this.environment = options.environment ?? currentEnvironment();
@@ -153,6 +162,16 @@ export class ProviderDiscovery {
     this.canonicalize = options.canonicalize ?? ((path) => realpathSync(path));
     this.probeVersion = options.probeVersion ?? defaultProbe;
     this.probeAuthentication = options.probeAuthentication ?? defaultAuthenticationProbe;
+    this.knownDirectories = options.knownDirectories ?? {
+      claude: [
+        ...(this.environment.userProfile ? [join(this.environment.userProfile, ".local", "bin")] : []),
+        ...(this.environment.appData ? [join(this.environment.appData, "npm")] : []),
+      ],
+      codex: [
+        ...(this.environment.appData ? [join(this.environment.appData, "npm")] : []),
+        ...(this.environment.localAppData ? [join(this.environment.localAppData, "Programs", "Codex", "bin")] : []),
+      ],
+    };
   }
 
   async scan(provider?: ExecutionProvider): Promise<ProviderSummary[]> {
@@ -160,8 +179,33 @@ export class ProviderDiscovery {
     return Promise.all(providers.map((item) => this.inspect(item)));
   }
 
+  async selectExecutable(provider: ExecutionProvider, inputPath: string): Promise<ProviderSummary> {
+    const candidate = resolve(inputPath);
+    const extension = extname(candidate).toLowerCase();
+    const expectedName = `${COMMANDS[provider]}${extension}`;
+    if (![".exe", ".cmd", ".bat"].includes(extension) || basename(candidate).toLowerCase() !== expectedName) {
+      throw new Error(`The selected file must be named ${provider}.exe, ${provider}.cmd, or ${provider}.bat`);
+    }
+    if (!this.isFile(candidate)) throw new Error("The selected provider executable is not a file");
+    let canonical = candidate;
+    try { canonical = this.canonicalize(candidate); } catch { /* Keep the resolved user-selected path. */ }
+    this.selectedExecutables.set(provider, canonical);
+    return this.inspect(provider);
+  }
+
   private resolveExecutable(provider: ExecutionProvider): string | undefined {
-    for (const directory of pathDirectories(this.environment)) {
+    const selected = this.selectedExecutables.get(provider);
+    if (selected && this.isFile(selected)) return selected;
+    const seen = new Set<string>();
+    const directories = [...pathDirectories(this.environment), ...(this.knownDirectories[provider] ?? [])]
+      .map((directory) => resolve(directory))
+      .filter((directory) => {
+        const key = this.environment.platform === "win32" ? directory.toLowerCase() : directory;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    for (const directory of directories) {
       for (const extension of extensions(this.environment)) {
         const candidate = join(directory, `${COMMANDS[provider]}${extension}`);
         if (!this.isFile(candidate)) continue;

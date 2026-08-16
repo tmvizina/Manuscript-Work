@@ -97,7 +97,7 @@ function isProviderStatus(value: unknown): boolean {
 }
 
 function isInstallStatus(value: unknown): boolean {
-  return typeof value === "string" && ["installed", "already_installed", "not_installed", "failed"].includes(value);
+  return typeof value === "string" && ["installed", "already_installed", "not_installed", "manual_action_required", "opened_external", "cancelled", "pending_approval", "failed"].includes(value);
 }
 
 function isAuthStatus(value: unknown): boolean {

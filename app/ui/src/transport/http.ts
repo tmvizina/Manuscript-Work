@@ -377,6 +377,7 @@ function createProviders(): ProvidersTransport {
   return {
     async list() { throw unsupportedTransport("providers.list", "Provider discovery is available only in the native desktop app."); },
     async status() { throw unsupportedTransport("providers.status", "Provider discovery is available only in the native desktop app."); },
+    async install() { throw unsupportedTransport("providers.install", "Provider installation recovery is available only in the native desktop app."); },
     async auth() { throw unsupportedTransport("providers.auth", "Provider authentication is available only in the native desktop app."); },
     async cancelAuth() { throw unsupportedTransport("providers.authCancel", "Provider authentication is available only in the native desktop app."); },
   };

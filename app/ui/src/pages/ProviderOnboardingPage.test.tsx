@@ -122,16 +122,18 @@ function transportFor(sequence: ProviderSummary[], setting?: "claude" | "codex")
   });
   const auth = vi.fn(async (provider: "claude" | "codex") => ({ provider, status: "authenticated" as const, ok: true, authenticated: true }));
   const cancelAuth = vi.fn(async (provider: "claude" | "codex") => ({ provider, cancelled: true }));
+  const install = vi.fn(async (provider: "claude" | "codex", source: "executable" | "local" | "online") => ({ provider, status: source === "online" ? "opened_external" as const : source === "executable" ? "already_installed" as const : "manual_action_required" as const, ok: true, installed: source === "executable", message: `${source} handoff` }));
   const transport = {
     mode: "electron" as const,
     providers: {
       status,
       auth,
       cancelAuth,
+      install,
     },
     settings,
   } as unknown as BookWriterTransport;
-  return { transport, settings, status, auth, cancelAuth, scanCount: () => scanCount };
+  return { transport, settings, status, auth, cancelAuth, install, scanCount: () => scanCount };
 }
 
 async function settle() {
@@ -141,7 +143,7 @@ async function settle() {
 }
 
 describe("ProviderOnboardingPage", () => {
-  it("keeps installation disabled when a provider is not installed", async () => {
+  it("offers informed official and local recovery when a provider is not installed", async () => {
     const fake = transportFor([
       { provider: "claude", status: "not_installed", message: "Claude CLI was not found." },
       { provider: "codex", status: "not_installed", message: "Codex CLI was not found." },
@@ -150,8 +152,11 @@ describe("ProviderOnboardingPage", () => {
     await settle();
     const tree = rendered.session.render(ProviderOnboardingPage, { transport: fake.transport, projectId: "project-1" });
 
-    expect(buttonContaining(tree, "Install Claude CLI").props?.disabled).toBe(true);
-    expect(buttonContaining(tree, "Install Codex CLI").props?.disabled).toBe(true);
+    const official = buttonContaining(tree, "Official install instructions");
+    expect(official.props?.disabled).not.toBe(true);
+    await official.props?.onClick();
+    expect(fake.install).toHaveBeenCalledWith("claude", "online");
+    expect(buttonContaining(tree, "Choose local installer").props?.disabled).not.toBe(true);
     expect(fake.status).toHaveBeenCalledOnce();
   });
 
@@ -193,7 +198,7 @@ describe("ProviderOnboardingPage", () => {
     const rendered = hookRuntime.session(ProviderOnboardingPage, { transport: fake.transport, projectId: "project-1" });
     await settle();
     let tree = rendered.session.render(ProviderOnboardingPage, { transport: fake.transport, projectId: "project-1" });
-    expect(buttonContaining(tree, "Install Claude CLI").props?.disabled).toBe(true);
+    expect(buttonContaining(tree, "Official install instructions").props?.disabled).not.toBe(true);
 
     await buttonContaining(tree, "Rescan PATH").props?.onClick();
     await settle();

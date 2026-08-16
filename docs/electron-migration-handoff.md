@@ -338,9 +338,9 @@ text, while the compatibility server retains its existing rendered-HTML path.
 Project settings, bundled skill metadata, provider-neutral run history/start/
 cancel/replay-safe subscription, review documents, desktop Help, project import,
 and nonfiction/fantasy profiles are now migrated. Native review documents remain
-inert source text. Real provider execution is deliberately unavailable, and RAG
-remains explicitly gated, so a packaged renderer never silently falls back to
-`/api` or localhost.
+inert source text. At this Phase 3 checkpoint real provider execution was deliberately
+unavailable; Phase 4 replaces that historical stub. RAG remains explicitly gated,
+so a packaged renderer never silently falls back to `/api` or localhost.
 
 Validation completed through `aa2ce89` on 2026-08-16:
 
@@ -373,57 +373,55 @@ documented repository-scoped sandbox exception for Vitest/esbuild.
 
 ## Exact next actions
 
-Phase 4 began on 2026-08-16 with main-process-only Windows provider discovery.
-The discovery service resolves allow-listed `claude` and `codex` names from PATH,
-prefers direct executables, supports Windows command shims, records bounded version
-output, and reports missing/version-failure states without accepting renderer paths.
-Native Provider Setup and Settings expose rescan and per-project provider selection.
-A detected CLI remains `auth_required`; workflow execution stays disabled until a
-separate authentication check marks it ready. Installation remains visibly gated
-because no provider payload has redistribution approval, publisher evidence, and a
-verified checked-in SHA-256 manifest yet. A strict offline-only manifest parser and
-local payload verifier now reject unknown fields, missing approvals, stale approval,
-unapproved sources, metadata mismatch, unreadable payloads, and SHA-256 mismatch;
-no actual provider manifest or payload is bundled. Focused Provider Setup and Native
-Skill renderer tests cover missing, detected/auth-required, selection, rescan, and
-run gating without network calls. Root typecheck, 22 test files/104 tests, the
-production build, and diff validation passed for these slices.
+Phase 4 implementation is substantially complete but is not release-accepted.
+Two gates remain: a successful real-provider acceptance smoke after interactive
+re-authentication, and either approved embedded payload evidence or an explicit
+decision to accept informed local/online installation as the release path.
+Main-process discovery resolves only the allow-listed `claude` and `codex` names,
+prefers direct executables, checks PATH plus known per-user install locations,
+records bounded versions, verifies authentication, and never accepts a renderer
+executable path. NSIS records advisory fixed-name `where.exe` results without making
+provider absence fatal; the application always repeats authoritative discovery.
 
-The next Phase 4 slice now adds explicit authentication readiness probes and a
-main-process-owned interactive sign-in service. Claude uses `claude auth login`
-and verifies with the ephemeral, non-persisted `claude auth status --json` result;
-Codex uses `codex login` and verifies by the documented exit status of
-`codex login status`. Only those probes can produce `ready`; a version check or
-zero exit from the login command is not sufficient. On Windows the provider is
-started with hardcoded arguments in its own visible console, inherited terminal
-I/O, no shell for direct executables, and no Book Writer stdout, input, credential,
-or token capture. Command shims are constrained to the discovered canonical path,
-trusted `ComSpec`, hardcoded arguments, and metacharacter rejection. Authentication
-requests are deduplicated per provider, can be cancelled through a provider-only
-IPC request, and are cancelled during runtime shutdown. Provider Setup supports
-sign-in/cancel, and Settings supports provider switching and re-authentication.
-Installation remains gated exactly as above.
+Provider Setup and Settings support provider selection, rescan, switching,
+re-authentication, fixed official online-installation documentation, and a
+main-process-only local `.exe`/`.msi` picker. A separate main-process picker verifies
+an already-installed provider-named `.exe`, `.cmd`, or `.bat` without accepting a
+renderer path. Local installer launch requires a second dialog
+showing the exact path and privilege/publisher warning. Book Writer never downloads
+or executes bootstrap scripts. Embedded installation fails closed as
+`pending_approval`: the strict manifest/hash verifier exists, but no payload is
+bundled because selected-artifact redistribution and publisher approval have not
+been established. That conditional release gate is not treated as permission to
+ship an unapproved binary.
 
-Validation for this slice on 2026-08-16: root typecheck passed; all 25 Vitest files
-and 117 tests passed; the full production build and unpacked x64 package passed;
-the packaged GUI launched without a parent console, remained responsive, and
-contained the authentication main module and narrow preload. Native Settings and
-Reviews tests also prove their Electron transports issue no HTTP requests. A manual
-sign-in smoke is still required to visually prove the separate provider terminal,
-keyboard interaction, cancellation, and post-auth readiness before this
-authentication slice is treated as release-accepted.
+Production workflow execution now re-discovers a ready provider immediately before
+launch, resolves the working directory from the stored project, sends prompts over
+stdin, consumes bounded provider JSONL, emits normalized/replayable events, and
+supports cancellation and shutdown. Direct executables use `shell: false`; Windows
+command shims use the fixed system `cmd.exe`, generated arguments, and scoped
+process-tree cancellation. Claude
+uses non-persisted stream JSON with `dontAsk`, `acceptEdits`, or `plan`; Codex uses
+ephemeral JSON with explicit read-only/workspace-write sandboxing and no interactive
+approval prompt. Model names, prompts, individual JSONL lines, queued event counts,
+and retained stderr are bounded.
 
-1. Package the current build and run a no-parent-console Windows smoke for Claude
-   and Codex authentication; verify visible keyboard interaction, terminal close,
-   explicit cancellation, post-auth readiness, and absence of credential logging.
-2. Run the remaining packaged page-navigation smoke and confirm Provider Setup,
-   Settings, Native Skill, and Reviews render without HTTP requests; their focused
-   transport tests are now present.
+New native projects without a preferred provider route to Provider Setup before
+workflow use. Validation on 2026-08-16: root typecheck passed; all 27 Vitest files and 134 tests
+passed; the full production build passed; and the per-user x64 NSIS installer
+`Book Writer-0.1.0-x64.exe` built successfully with the custom detection hook. The
+packaged Electron process remained responsive. A real native-runner Claude smoke
+reached the CLI and streamed normalized startup/status/failure events, but correctly
+failed because the machine's stored Claude OAuth session had expired and could not
+refresh. Claude's own visible `claude auth login` flow was opened; no credentials or
+terminal input are captured by Book Writer.
+
+1. Complete the visible Claude sign-in and rerun the exact-output synthetic smoke.
+2. Commit Phase 4 after the successful smoke, then begin Phase 5 immediately.
 3. Decide whether RAG becomes an embedded native index or remains an optional
    external compatibility service; do not disguise semantic RAG as literal search.
-4. Implement the offline-first provider payload manifest and install wizard
-   flow above only after release engineering confirms redistribution rights and
-   selects the pinned Claude and Codex artifacts.
+4. Add embedded provider payloads only if release engineering later documents the
+   selected artifacts, licenses, redistribution approval, hashes, and signatures.
 
 ## Known risks and decisions still requiring evidence
 
@@ -435,7 +433,7 @@ authentication slice is treated as release-accepted.
 - `electron-rebuild` changes the shared workspace `better-sqlite3` binary to the
   Electron ABI. After packaging, run `npm.cmd rebuild better-sqlite3` before the
   Node/Vitest suite; the packaged copy under `dist` remains Electron-compatible.
-- Bundling Claude and Codex payloads is the approved offline-first design, but the
+- Bundling Claude and Codex payloads is the approved offline-first architecture, but the
   exact artifacts, redistribution terms, signatures, update cadence, installer-size
   impact, and revocation response remain Phase 4 release gates. Never embed an
   unverified or unmaintained arbitrary download.

@@ -71,11 +71,14 @@ describe("native desktop runtime", () => {
     await runtime.close();
   });
 
-  it("keeps real provider execution unavailable until a runner is configured", async () => {
+  it("refuses a real run when the selected provider is not installed", async () => {
     const root = testRoot();
-    const runtime = new NativeDesktopRuntime(join(root, "data", "book-writer.db"));
+    const providerDiscovery = new ProviderDiscovery({
+      environment: { platform: "win32", path: "", pathExt: ".EXE" },
+    });
+    const runtime = new NativeDesktopRuntime(join(root, "data", "book-writer.db"), { providerDiscovery });
     await expect(runtime.startRun({ provider: "claude", prompt: "must not run" })).rejects.toMatchObject({
-      code: "FEATURE_UNAVAILABLE",
+      code: "PROVIDER_NOT_INSTALLED",
     });
     const failed = runtime.db.prepare("SELECT status FROM agent_runs").get() as { status: string };
     expect(failed.status).toBe("failed");

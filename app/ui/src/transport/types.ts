@@ -104,6 +104,9 @@ export interface SettingRecord {
 export type ExecutionProvider = "claude" | "codex";
 export type ProviderStatus = "unknown" | "checking" | "ready" | "not_installed" | "auth_required" | "unavailable" | "error";
 export interface ProviderSummary { provider: ExecutionProvider; status: ProviderStatus; version?: string; executablePath?: string; account?: string; message?: string; checkedAt?: string }
+export type InstallSource = "embedded" | "executable" | "local" | "online";
+export type InstallStatus = "installed" | "already_installed" | "not_installed" | "manual_action_required" | "opened_external" | "cancelled" | "pending_approval" | "failed";
+export interface InstallResult { provider: ExecutionProvider; status: InstallStatus; ok: boolean; installed: boolean; version?: string; executablePath?: string; message?: string }
 export type AuthStatus = "authenticated" | "auth_required" | "expired" | "unsupported" | "failed";
 export interface AuthResult { provider: ExecutionProvider; status: AuthStatus; ok: boolean; authenticated: boolean; account?: string; expiresAt?: string; message?: string }
 export interface AuthCancelResult { provider: ExecutionProvider; cancelled: boolean }
@@ -169,6 +172,7 @@ export interface RunsTransport {
 export interface ProvidersTransport {
   list(): Promise<ProviderSummary[]>;
   status(provider?: ExecutionProvider): Promise<ProviderSummary[]>;
+  install(provider: ExecutionProvider, source: InstallSource): Promise<InstallResult>;
   auth(provider: ExecutionProvider): Promise<AuthResult>;
   cancelAuth(provider: ExecutionProvider): Promise<AuthCancelResult>;
 }

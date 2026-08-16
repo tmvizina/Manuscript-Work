@@ -21,6 +21,8 @@ import type {
   ProviderSummary,
   AuthResult,
   AuthCancelResult,
+  InstallResult,
+  InstallSource,
   WorldDocument,
   WorldSummary,
 } from "./types.js";
@@ -34,7 +36,7 @@ export interface BookWriterReadOnlyBridge {
   readonly providers: {
     list(): Promise<ProviderSummary[]>;
     status(provider?: ExecutionProvider): Promise<ProviderSummary[]>;
-    install(provider: ExecutionProvider): Promise<unknown>;
+    install(provider: ExecutionProvider, source: InstallSource): Promise<InstallResult>;
     auth(provider: ExecutionProvider): Promise<AuthResult>;
     cancelAuth(provider: ExecutionProvider): Promise<AuthCancelResult>;
   };

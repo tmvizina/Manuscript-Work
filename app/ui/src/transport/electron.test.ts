@@ -7,7 +7,7 @@ function nativeBridge(): BookWriterReadOnlyBridge {
     providers: {
       list: async () => [{ provider: "claude", status: "ready", version: "claude 2.1.0", executablePath: "C:/Tools/claude.exe" }, { provider: "codex", status: "not_installed" }],
       status: async (provider) => [{ provider: provider ?? "claude", status: "ready" }],
-      install: async () => ({}),
+      install: async (provider) => ({ provider, status: "opened_external", ok: true, installed: false }),
       auth: async (provider) => ({ provider, status: "authenticated", ok: true, authenticated: true }),
       cancelAuth: async (provider) => ({ provider, cancelled: true }),
     },
@@ -52,6 +52,7 @@ describe("Electron transport", () => {
       { projectId: "project-1", name: "Project", rootPath: "C:/project", active: true },
     ]);
     await expect(transport.providers.list()).resolves.toEqual(expect.arrayContaining([expect.objectContaining({ provider: "claude", status: "ready" })]));
+    await expect(transport.providers.install("codex", "online")).resolves.toMatchObject({ provider: "codex", status: "opened_external" });
     await expect(transport.providers.auth("claude")).resolves.toMatchObject({ provider: "claude", authenticated: true });
     await expect(transport.providers.cancelAuth("claude")).resolves.toEqual({ provider: "claude", cancelled: true });
     await expect(transport.projects.get("project-1")).resolves.toMatchObject({ worldRoot: "C:/project/world" });

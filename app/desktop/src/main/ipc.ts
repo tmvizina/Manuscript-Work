@@ -7,6 +7,8 @@ import {
   type ChapterSummary,
   type ExecutionProvider,
   type IpcResponse,
+  type InstallResult,
+  type InstallSource,
   type ProjectDetail,
   type ProjectImportInput,
   type ProjectSummary,
@@ -44,6 +46,7 @@ import {
   isProjectDetail,
   isProjectSummary,
   isProviderSummaryList,
+  isInstallResult,
   isAuthResult,
   isAuthCancelResult,
   isRecord,
@@ -98,6 +101,7 @@ export interface RegisterIpcOptions {
   isAllowedFrameUrl(url: string): boolean;
   allowedSettingKeys: ReadonlySet<string>;
   pickProjectRoot?: () => Promise<string | null>;
+  installProvider?: (provider: ExecutionProvider, source: InstallSource) => Promise<InstallResult>;
 }
 
 type Guard<T> = (value: unknown) => value is T;
@@ -232,18 +236,20 @@ export function registerIpcHandlers(options: RegisterIpcOptions): () => void {
     });
   });
 
-  const unavailableProviderInstall = (request: unknown): never => {
+  const providerInstall = (request: unknown): Promise<InstallResult> => {
     const operation = "providers.install";
-    assertOnlyKeys(request, ["provider"], operation);
+    assertOnlyKeys(request, ["provider", "source"], operation);
     assertExecutionProvider(request.provider, operation);
-    throw new BookWriterError({
-      code: IPC_ERROR_CODES.featureUnavailable,
-      message: "Provider installation is unavailable until an approved embedded payload is configured",
-      operation,
+    if (request.source !== "embedded" && request.source !== "executable" && request.source !== "local" && request.source !== "online") {
+      invalid("install source is invalid", operation);
+    }
+    if (!options.installProvider) throw new BookWriterError({ code: IPC_ERROR_CODES.featureUnavailable, message: "Provider installation recovery is unavailable", operation });
+    return options.installProvider(request.provider, request.source).then((result) => {
+      if (result.provider !== request.provider) invalidResponse("Provider installation did not match the request", operation);
+      return result;
     });
   };
-  register(IPC_CHANNELS.providers.install, "providers.install", (_value): _value is never => false, (request) =>
-    unavailableProviderInstall(request));
+  register(IPC_CHANNELS.providers.install, "providers.install", isInstallResult, providerInstall);
   register(IPC_CHANNELS.providers.auth, "providers.auth", isAuthResult, (request) => {
     assertOnlyKeys(request, ["provider"], "providers.auth");
     assertExecutionProvider(request.provider, "providers.auth");

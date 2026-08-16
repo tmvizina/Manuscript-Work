@@ -62,6 +62,7 @@ import { assertProjectSettingValue } from "../shared/validation.js";
 import type { DesktopRuntime } from "./ipc.js";
 import { RunManager } from "./runs/manager.js";
 import type { ProviderRunner, RunPersistence } from "./runs/contracts.js";
+import { NativeCliRunner } from "./runs/nativeCliRunner.js";
 import { ProviderDiscovery } from "./providers/discovery.js";
 import { ProviderAuthentication } from "./providers/authentication.js";
 
@@ -70,16 +71,6 @@ export interface NativeDesktopRuntimeOptions {
   providerDiscovery?: ProviderDiscovery;
   providerAuthentication?: ProviderAuthentication;
 }
-
-const unavailableRunner: ProviderRunner = {
-  start(): never {
-    throw new BookWriterError({
-      code: IPC_ERROR_CODES.featureUnavailable,
-      message: "Provider execution is unavailable until the native CLI runner is configured",
-      operation: "runs.start",
-    });
-  },
-};
 
 function notFound(entity: string, operation: string): never {
   throw new BookWriterError({ code: IPC_ERROR_CODES.notFound, message: `${entity} was not found`, operation });
@@ -174,7 +165,13 @@ export class NativeDesktopRuntime implements DesktopRuntime {
         });
       },
     };
-    this.runs = new RunManager({ runner: options.runner ?? unavailableRunner, persistence });
+    const runner = options.runner ?? new NativeCliRunner({
+      discovery: this.providerDiscovery,
+      resolveCwd: (request) => request.projectId
+        ? this.requireProject(request.projectId, "runs.start").rootPath
+        : process.cwd(),
+    });
+    this.runs = new RunManager({ runner, persistence });
   }
 
   async close(): Promise<void> {
@@ -199,6 +196,10 @@ export class NativeDesktopRuntime implements DesktopRuntime {
 
   getProviderStatus(provider?: ExecutionProvider): Promise<ProviderSummary[]> {
     return this.providerDiscovery.scan(provider);
+  }
+
+  selectProviderExecutable(provider: ExecutionProvider, executablePath: string): Promise<ProviderSummary> {
+    return this.providerDiscovery.selectExecutable(provider, executablePath);
   }
 
   authenticateProvider(provider: ExecutionProvider): Promise<AuthResult> {

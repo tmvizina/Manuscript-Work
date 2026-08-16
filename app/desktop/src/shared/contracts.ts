@@ -29,7 +29,8 @@ export interface ProviderSummary {
   checkedAt?: string;
 }
 
-export type InstallStatus = "installed" | "already_installed" | "not_installed" | "failed";
+export type InstallSource = "embedded" | "executable" | "local" | "online";
+export type InstallStatus = "installed" | "already_installed" | "not_installed" | "manual_action_required" | "opened_external" | "cancelled" | "pending_approval" | "failed";
 
 export interface InstallResult {
   provider: ExecutionProvider;
@@ -306,7 +307,7 @@ export interface SettingRecord {
 export interface ProviderApi {
   list(): Promise<ProviderSummary[]>;
   status(provider?: ExecutionProvider): Promise<ProviderSummary[]>;
-  install(provider: ExecutionProvider): Promise<InstallResult>;
+  install(provider: ExecutionProvider, source: InstallSource): Promise<InstallResult>;
   auth(provider: ExecutionProvider): Promise<AuthResult>;
   cancelAuth(provider: ExecutionProvider): Promise<AuthCancelResult>;
 }

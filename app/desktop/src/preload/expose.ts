@@ -10,6 +10,7 @@ import {
   type ContentApi,
   type ExecutionProvider,
   type InstallResult,
+  type InstallSource,
   type ProjectApi,
   type ProjectDetail,
   type ProjectSummary,
@@ -104,9 +105,12 @@ function createProvidersApi(ipcRenderer: IpcRendererLike): ProviderApi {
       if (provider !== undefined) assertExecutionProvider(provider, "providers.status");
       return call(ipcRenderer, IPC_CHANNELS.providers.status, "providers.status", isProviderSummaryList, provider ? { provider } : undefined);
     },
-    install: (provider) => {
+    install: (provider, source: InstallSource) => {
       assertExecutionProvider(provider, "providers.install");
-      return call<InstallResult>(ipcRenderer, IPC_CHANNELS.providers.install, "providers.install", isInstallResult, { provider });
+      if (source !== "embedded" && source !== "executable" && source !== "local" && source !== "online") {
+        throw new BookWriterError({ code: "INVALID_ARGUMENT", message: "install source is invalid", operation: "providers.install" });
+      }
+      return call<InstallResult>(ipcRenderer, IPC_CHANNELS.providers.install, "providers.install", isInstallResult, { provider, source });
     },
     auth: (provider) => {
       assertExecutionProvider(provider, "providers.auth");

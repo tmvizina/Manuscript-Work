@@ -1,12 +1,14 @@
 import { existsSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { app, BrowserWindow, dialog, ipcMain } from "electron";
+import { app, BrowserWindow, dialog, ipcMain, shell } from "electron";
 import { registerIpcHandlers } from "./ipc.js";
 import { getUiRoot, getUserDataPaths, type DesktopUserDataPaths } from "./paths.js";
 import { NativeDesktopRuntime } from "./runtime.js";
 import { PROJECT_SETTING_KEYS } from "../shared/contracts.js";
 import { createUiUrl, isAllowedUiUrl, registerUiProtocol, registerUiScheme } from "./uiProtocol.js";
+import type { ExecutionProvider } from "../shared/contracts.js";
+import { ProviderInstallation } from "./providers/installation.js";
 
 const DEV_URL_ENV = ["BOOK_WRITER_DEV_URL", "ELECTRON_RENDERER_URL", "VITE_DEV_SERVER_URL"] as const;
 
@@ -111,6 +113,56 @@ export async function createMainWindow(runtime: NativeDesktopRuntime): Promise<B
     },
   });
 
+  const providerInstallation = new ProviderInstallation({
+    confirmOnline: async (provider, page) => {
+      const confirmation = await dialog.showMessageBox(window, {
+        type: "info",
+        buttons: ["Open official instructions", "Cancel"],
+        defaultId: 0,
+        cancelId: 1,
+        noLink: true,
+        title: `Install ${provider === "claude" ? "Claude CLI" : "Codex CLI"}`,
+        message: "Open the provider's official installation instructions?",
+        detail: `${page}\n\nBook Writer will not download or run scripts. Authentication and hosted model use require network access.`,
+      });
+      return confirmation.response === 0;
+    },
+    chooseLocal: async (provider) => {
+      const selection = await dialog.showOpenDialog(window, {
+      title: `Choose a local ${provider === "claude" ? "Claude CLI" : "Codex CLI"} installer`,
+      buttonLabel: "Review installer",
+      properties: ["openFile"],
+      filters: [{ name: "Windows installers", extensions: ["exe", "msi"] }],
+    });
+      return selection.canceled ? null : selection.filePaths[0] ?? null;
+    },
+    chooseExecutable: async (provider) => {
+      const selection = await dialog.showOpenDialog(window, {
+        title: `Choose an installed ${provider === "claude" ? "Claude CLI" : "Codex CLI"} executable`,
+        buttonLabel: "Use executable",
+        properties: ["openFile"],
+        filters: [{ name: "Provider executables", extensions: ["exe", "cmd", "bat"] }],
+      });
+      return selection.canceled ? null : selection.filePaths[0] ?? null;
+    },
+    selectExecutable: (provider, path) => runtime.selectProviderExecutable(provider, path),
+    confirmLocal: async (provider, installerPath) => {
+      const confirmation = await dialog.showMessageBox(window, {
+      type: "warning",
+      buttons: ["Launch installer", "Cancel"],
+      defaultId: 1,
+      cancelId: 1,
+      noLink: true,
+      title: "Review local installer",
+      message: `Launch the selected ${provider === "claude" ? "Claude CLI" : "Codex CLI"} installer?`,
+      detail: `${installerPath}\n\nThis file was selected from your computer and is not verified by Book Writer. It may request privileges. Verify its publisher in Windows before continuing.`,
+    });
+      return confirmation.response === 0;
+    },
+    openExternal: (page) => shell.openExternal(page),
+    openPath: (path) => shell.openPath(path),
+  });
+
   const disposeIpc = registerIpcHandlers({
     ipcMain,
     webContents: window.webContents,
@@ -124,6 +176,7 @@ export async function createMainWindow(runtime: NativeDesktopRuntime): Promise<B
       });
       return result.canceled ? null : result.filePaths[0] ?? null;
     },
+    installProvider: (provider, source) => providerInstallation.install(provider, source),
   });
   installNavigationGuards(window);
   window.webContents.session.setPermissionCheckHandler(() => false);

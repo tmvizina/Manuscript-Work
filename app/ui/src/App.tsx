@@ -66,6 +66,10 @@ export default function App() {
         await transport.projects.open(next);
         const detail = await transport.projects.get(next);
         if (alive) { setProjectId(next); setProject(detail); }
+        if (native) {
+          const preferred = await transport.settings.get(next, "preferredProvider");
+          if (alive && !preferred) location.hash = "#/providers";
+        }
       })
       .catch((error) => {
         if (!alive) return;
@@ -99,7 +103,7 @@ export default function App() {
       localStorage.setItem("bw-project-id", imported.projectId);
       setProjectId(imported.projectId);
       setProject(imported);
-      location.hash = "#/world";
+      location.hash = native ? "#/providers" : "#/world";
     } catch (error: any) {
       setProjectError(String(error?.message ?? error));
     }

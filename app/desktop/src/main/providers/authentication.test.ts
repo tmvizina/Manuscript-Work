@@ -74,6 +74,15 @@ describe("provider authentication", () => {
       launchInteractive: () => ({ completion: Promise.resolve({ exitCode: 0, signal: null }), cancel: vi.fn(() => true) }),
     });
     await expect(unverified.authenticate("codex")).resolves.toMatchObject({ status: "auth_required", authenticated: false, ok: false });
+
+    const rejected = new ProviderAuthentication({
+      discovery: discovery([{ provider: "claude", status: "auth_required", executablePath: "C:\\Tools\\claude.exe" }]),
+      environment: { platform: "win32" },
+      launchInteractive: () => ({ completion: Promise.resolve({ exitCode: 1, signal: null }), cancel: () => true }),
+    });
+    await expect(rejected.authenticate("claude")).resolves.toMatchObject({
+      status: "failed", authenticated: false, message: "The provider sign-in command did not complete successfully",
+    });
   });
 
   it("deduplicates concurrent sign-in requests and cancels the owned process idempotently", async () => {

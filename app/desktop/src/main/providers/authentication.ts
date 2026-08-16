@@ -1,5 +1,5 @@
 import { spawn, type SpawnOptions } from "node:child_process";
-import { extname } from "node:path";
+import { extname, join } from "node:path";
 import type { AuthResult, ExecutionProvider, ProviderSummary } from "../../shared/contracts.js";
 import { ProviderDiscovery, type DiscoveryEnvironment } from "./discovery.js";
 
@@ -43,7 +43,7 @@ function currentEnvironment(): DiscoveryEnvironment {
     platform: process.platform,
     path: process.env.PATH,
     pathExt: process.env.PATHEXT,
-    comSpec: process.env.ComSpec,
+    comSpec: join(process.env.SystemRoot || "C:\\Windows", "System32", "cmd.exe"),
   };
 }
 

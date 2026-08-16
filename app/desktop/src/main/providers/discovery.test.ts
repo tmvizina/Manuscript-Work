@@ -43,6 +43,20 @@ describe("provider discovery", () => {
     await expect(service.scan("codex")).resolves.toEqual([expect.objectContaining({ provider: "codex", status: "auth_required" })]);
   });
 
+  it("checks known per-user locations when a newly installed CLI is not yet on PATH", async () => {
+    const path = "C:\\Users\\Writer\\.local\\bin\\claude.exe";
+    const service = new ProviderDiscovery({
+      environment: { platform: "win32", path: "", pathExt: ".EXE;.CMD", userProfile: "C:\\Users\\Writer" },
+      isFile: (candidate) => candidate === path,
+      canonicalize: (candidate) => candidate,
+      probeVersion: async () => ({ stdout: "claude 2.1.0", stderr: "" }),
+      probeAuthentication: async () => false,
+    });
+    await expect(service.scan("claude")).resolves.toEqual([
+      expect.objectContaining({ provider: "claude", status: "auth_required", executablePath: path }),
+    ]);
+  });
+
   it("reports ready only after the provider authentication probe succeeds", async () => {
     const service = new ProviderDiscovery({
       environment: { platform: "win32", path: "C:\\Tools", pathExt: ".EXE" },
@@ -54,5 +68,19 @@ describe("provider discovery", () => {
     await expect(service.scan("claude")).resolves.toEqual([
       expect.objectContaining({ provider: "claude", status: "ready", message: "CLI detected and authenticated" }),
     ]);
+  });
+
+  it("accepts only a main-process-selected provider-named executable", async () => {
+    const selected = "C:\\Portable Tools\\codex.exe";
+    const service = new ProviderDiscovery({
+      environment: { platform: "win32", path: "", pathExt: ".EXE;.CMD" },
+      isFile: (path) => path === selected,
+      canonicalize: (path) => path,
+      probeVersion: async () => ({ stdout: "codex 1.0", stderr: "" }),
+      probeAuthentication: async () => true,
+    });
+    await expect(service.selectExecutable("codex", selected)).resolves.toMatchObject({ status: "ready", executablePath: selected });
+    await expect(service.scan("codex")).resolves.toEqual([expect.objectContaining({ executablePath: selected })]);
+    await expect(service.selectExecutable("codex", "C:\\Portable Tools\\other.exe")).rejects.toThrow(/must be named codex/);
   });
 });

@@ -63,7 +63,7 @@ export default function NativeSkillPage({ transport, projectId, skill }: { trans
         <button className="btn" disabled={!prompt.trim() || !!current || !providerReady} onClick={start}>Run</button>
         {current && <button className="btn danger" onClick={() => transport.runs.cancel(current.runId).then(load)}>Cancel</button>}
       </div>
-      <p className="hint">{providerReady ? `${provider} is detected. Real execution remains disabled until the native runner slice lands.` : <>Choose an installed CLI in <a href="#/providers">Provider setup</a> before running workflows.</>}</p>
+      <p className="hint">{providerReady ? `${provider} is authenticated and ready for native execution.` : <>Choose and authenticate an installed CLI in <a href="#/providers">Provider setup</a> before running workflows.</>}</p>
       {error && <p className="err">{error}</p>}
       {events.length > 0 && <div className="stream">{events.map((event) => <p className="txt" key={event.sequence}>{event.text ?? event.result ?? event.output ?? event.error?.message ?? event.type}</p>)}</div>}
     </div>

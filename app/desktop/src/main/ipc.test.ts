@@ -31,7 +31,7 @@ function runtime(overrides: Partial<DesktopRuntime> = {}): DesktopRuntime {
   };
 }
 
-function harness(runtimeValue = runtime(), pickProjectRoot?: () => Promise<string | null>) {
+function harness(runtimeValue = runtime(), pickProjectRoot?: () => Promise<string | null>, installProvider?: RegisterIpcOptions["installProvider"]) {
   const handlers = new Map<string, Handler>();
   const sent: Array<{ channel: string; value: unknown }> = [];
   let destroyed = false;
@@ -58,6 +58,7 @@ function harness(runtimeValue = runtime(), pickProjectRoot?: () => Promise<strin
     isAllowedFrameUrl: (url) => url.startsWith("book-writer://app/"),
     allowedSettingKeys: new Set(["preferredProvider"]),
     pickProjectRoot,
+    installProvider,
   });
   const invokeArgs = async (channel: string, args: unknown[], invokeEvent = event): Promise<IpcResponse<unknown>> => {
     const handler = handlers.get(channel);
@@ -126,12 +127,29 @@ describe("desktop IPC boundary", () => {
   it("keeps provider installation unavailable and forwards allow-listed authentication", async () => {
     const authenticateProvider = vi.fn((provider: "claude" | "codex") => ({ provider, status: "authenticated" as const, ok: true, authenticated: true }));
     const test = harness(runtime({ authenticateProvider }));
-    expect(await test.invoke(IPC_CHANNELS.providers.install, { provider: "claude" })).toMatchObject({ ok: false, error: { code: "FEATURE_UNAVAILABLE" } });
+    expect(await test.invoke(IPC_CHANNELS.providers.install, { provider: "claude", source: "online" })).toMatchObject({ ok: false, error: { code: "FEATURE_UNAVAILABLE" } });
     expect(await test.invoke(IPC_CHANNELS.providers.auth, { provider: "codex" })).toEqual({ ok: true, value: { provider: "codex", status: "authenticated", ok: true, authenticated: true } });
     expect(authenticateProvider).toHaveBeenCalledWith("codex");
     expect(await test.invoke(IPC_CHANNELS.providers.auth, { provider: "codex", executablePath: "C:/untrusted.exe" })).toMatchObject({ ok: false, error: { code: "INVALID_ARGUMENT" } });
     expect(await test.invoke(IPC_CHANNELS.providers.authCancel, { provider: "codex" })).toEqual({ ok: true, value: { provider: "codex", cancelled: false } });
     test.dispose();
+  });
+
+  it("forwards only allow-listed provider installation recovery choices", async () => {
+    const installProvider = vi.fn(async (provider: "claude" | "codex", source: "embedded" | "executable" | "local" | "online") => ({
+      provider, status: "opened_external" as const, ok: true, installed: false, message: `${source} opened`,
+    }));
+    const test = harness(runtime(), undefined, installProvider);
+    expect(await test.invoke(IPC_CHANNELS.providers.install, { provider: "codex", source: "online" })).toMatchObject({
+      ok: true, value: { provider: "codex", status: "opened_external" },
+    });
+    expect(installProvider).toHaveBeenCalledWith("codex", "online");
+    expect(await test.invoke(IPC_CHANNELS.providers.install, { provider: "codex", source: "download", path: "C:/bad.exe" })).toMatchObject({ ok: false, error: { code: "INVALID_ARGUMENT" } });
+    test.dispose();
+
+    const mismatched = harness(runtime(), undefined, async () => ({ provider: "claude", status: "opened_external", ok: true, installed: false }));
+    expect(await mismatched.invoke(IPC_CHANNELS.providers.install, { provider: "codex", source: "online" })).toMatchObject({ ok: false, error: { code: "INVALID_RESPONSE" } });
+    mismatched.dispose();
   });
 
   it("forwards an event emitted before subscription snapshot resolution", async () => {

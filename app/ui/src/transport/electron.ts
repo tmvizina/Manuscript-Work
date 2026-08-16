@@ -23,6 +23,8 @@ import type {
   ReviewDocument,
   ReviewSummary,
   ProviderSummary,
+  InstallResult,
+  InstallSource,
   WorldDocument,
   WorldSummary,
 } from "./types.js";
@@ -166,6 +168,15 @@ function authResult(value: unknown, operation: string): AuthResult {
   return value as unknown as AuthResult;
 }
 
+function installResult(value: unknown, operation: string): InstallResult {
+  const statuses = ["installed", "already_installed", "not_installed", "manual_action_required", "opened_external", "cancelled", "pending_approval", "failed"];
+  if (!isRecord(value) || (value.provider !== "claude" && value.provider !== "codex") ||
+      !statuses.includes(String(value.status)) || typeof value.ok !== "boolean" || typeof value.installed !== "boolean") {
+    throw invalidTransportResponse(operation, "Native installation response is invalid");
+  }
+  return value as unknown as InstallResult;
+}
+
 function authCancelResult(value: unknown, operation: string): AuthCancelResult {
   if (!isRecord(value) || (value.provider !== "claude" && value.provider !== "codex") || typeof value.cancelled !== "boolean") {
     throw invalidTransportResponse(operation, "Native authentication cancellation response is invalid");
@@ -204,6 +215,11 @@ export function createElectronTransport(bridge: BookWriterReadOnlyBridge): BookW
     status: (provider?: "claude" | "codex") => callNative("providers.status", () => bridge.providers.status(provider), (value) => {
       if (!Array.isArray(value)) throw invalidTransportResponse("providers.status", "Native provider response is not an array");
       return value.map((item) => providerSummary(item, "providers.status"));
+    }),
+    install: (provider: "claude" | "codex", source: InstallSource) => callNative("providers.install", () => bridge.providers.install(provider, source), (value) => {
+      const result = installResult(value, "providers.install");
+      if (result.provider !== provider) throw invalidTransportResponse("providers.install", "Native installation response does not match the requested provider");
+      return result;
     }),
     auth: (provider: "claude" | "codex") => callNative("providers.auth", () => bridge.providers.auth(provider), (value) =>
       authResult(value, "providers.auth")),
