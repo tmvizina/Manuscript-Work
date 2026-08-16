@@ -5,6 +5,7 @@ __pycache__/
 
 # local demo/run output
 /tmp-*/
+.tmp-tests/
 
 # book-writer app
 node_modules/

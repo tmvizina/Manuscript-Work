@@ -1,8 +1,8 @@
 import { createHash } from "node:crypto";
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, lstatSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { ContentDatabase, nowIso, rootValue } from "./common.js";
-import { resolveInside } from "./paths.js";
+import { isPathInside, resolveInside } from "./paths.js";
 
 /** Book roots under a manuscript project. Keep these IDs stable: they are part
  * of the chapter table's public identity. */
@@ -64,13 +64,22 @@ export function scanChapterFiles(options: ChapterSyncOptions | string): ChapterF
   const files: ChapterFile[] = [];
 
   for (const { book, dir } of BOOK_ROOTS) {
-    const bookRoot = join(root, dir);
-    if (!existsSync(bookRoot)) continue;
+    // Keep the fixed book roots beneath the caller's trusted manuscript root.
+    // `lstatSync` deliberately rejects a symlinked book directory: following a
+    // link here could make a project index files outside its registered root.
+    const bookRoot = resolveInside(root, dir, false);
+    if (!bookRoot || !existsSync(bookRoot)) continue;
+    const bookRootStat = lstatSync(bookRoot);
+    if (!bookRootStat.isDirectory() || bookRootStat.isSymbolicLink()) continue;
     for (const name of readdirSync(bookRoot).sort()) {
       if (!name.toLowerCase().endsWith(".txt")) continue;
-      const fullPath = join(bookRoot, name);
+      const fullPath = resolveInside(bookRoot, name, false);
+      if (!fullPath || !isPathInside(root, fullPath, false)) continue;
+      const entryStat = lstatSync(fullPath);
+      // Do not follow file symlinks either. This keeps the snapshot's source
+      // path physically contained by the registered manuscript root.
+      if (entryStat.isSymbolicLink() || !entryStat.isFile()) continue;
       const stat = statSync(fullPath);
-      if (!stat.isFile()) continue;
 
       const text = readFileSync(fullPath, "utf-8");
       const hash = createHash("sha256").update(text).digest("hex");
