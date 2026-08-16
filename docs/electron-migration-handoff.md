@@ -1,6 +1,6 @@
 # Native Electron Migration: Plan and Implementation Handoff
 
-Last updated: 2026-08-15
+Last updated: 2026-08-16
 
 ## Objective
 
@@ -228,87 +228,74 @@ Committed checkpoints:
 | `624b0a3` | P0-02 synthetic provider and benchmark fixtures | Complete |
 | `e605e0e` | P0-03 Windows baseline workflow/documentation | Complete |
 | `ee1dbd4` | P1 shared database, content, and execution core | Complete |
+| `25446a6` | Temporary P2 shell/contract checkpoint used to verify repository commit access | Superseded by review fixes |
+| `68a065a` | Reject lexical traversal segments in shared content paths | Complete |
+| `6ca8e2b` | Integrate and validate the secure Electron preload boundary | Complete |
 
-Phase 1 validation completed before commit:
+### Reviewed P2-01/P2-02 foundation
 
-- root, core, and server TypeScript checks passed;
-- direct SQLite schema smoke check passed; and
-- Vitest could not start in the managed sandbox because esbuild reported
-  `Cannot read directory "../..": Access is denied`. No test assertion failed.
+The original combined checkpoint in `25446a6` was created only to verify that the
+session could write repository Git metadata. It was subsequently reviewed and
+corrected in `6ca8e2b`; do not treat the checkpoint itself as an acceptance gate.
 
-### Uncommitted Phase 2 work
+P2-01 now provides the single-instance lifecycle, ESM-safe main path resolution,
+secure BrowserWindow settings, default-denied permission handlers, packaged/dev
+navigation isolation, a traversal-safe local UI protocol, a production CSP,
+user-data paths, and an allow-listed builder layout. The obsolete empty preload
+was removed.
 
-The working tree intentionally contains a combined P2-01/P2-02 implementation.
-It has not been integrated or committed. Do not run a cleanup/reset that would
-discard it.
+P2-02 now provides the typed allow-listed `window.bookWriter` bridge with stricter
+request, response, event, structured-error, and JSON validation. Private/unknown
+event fields, invalid callbacks, non-finite JSON numbers, cyclic values, and
+unsupported request properties are rejected. Decimal chapter numbers remain
+supported.
 
-P2-01 files:
+The sandboxed Electron preload is bundled as one CommonJS file at
+`dist/preload/index.cjs`; main/shared code remains ESM. Electron `36.9.5`,
+electron-builder `26.15.3`, and esbuild `0.25.0` are pinned and locked.
 
-- `app/desktop/package.json`
-- `app/desktop/electron-builder.yml`
-- `app/desktop/tsconfig.json`
-- `app/desktop/src/main/main.ts`
-- `app/desktop/src/main/ipc.ts`
-- `app/desktop/src/main/paths.ts`
-- `app/desktop/src/main/preload.ts`
-- `app/desktop/src/main/uiProtocol.ts`
+Validation completed on 2026-08-16:
 
-Implemented: single-instance window lifecycle; secure BrowserWindow options;
-navigation/window/webview guards; packaged/development path resolution; a secure
-local UI protocol with CSP, `nosniff`, and traversal protection; user-data paths;
-builder configuration; and an IPC registration placeholder.
+- root typecheck passed for server, core, desktop, and UI;
+- the full Vitest suite passed: 6 files and 30 tests;
+- the full production build passed;
+- electron-builder produced `dist/desktop/win-unpacked` successfully;
+- the packaged ASAR contained only the allow-listed main/shared JS, bundled
+  preload, and package metadata, with the built UI under `resources/ui`;
+- the unpacked executable remained running during a five-second launch smoke test
+  using repository-local temporary user data, then was stopped cleanly; and
+- `git diff --check` and staged checks passed.
 
-Validation: JSON and builder YAML parsed; `git diff --check` found no content
-errors. Full desktop TypeScript validation is blocked until Electron dependencies
-are installed and locked.
-
-P2-02 files:
-
-- `app/desktop/src/shared/contracts.ts`
-- `app/desktop/src/shared/errors.ts`
-- `app/desktop/src/shared/validation.ts`
-- `app/desktop/src/shared/window.d.ts`
-- `app/desktop/src/preload/expose.ts`
-- `app/desktop/src/preload/index.ts`
-- `app/desktop/src/shared/contracts.test.ts`
-- `app/desktop/src/preload/expose.test.ts`
-
-Implemented: typed provider/project/content/run/search/settings contracts; fixed
-IPC channel allow-list; request/response/event validators; serializable structured
-errors; a context-isolated `window.bookWriter` API; filtered run subscriptions; and
-unsubscribe behavior. Raw `ipcRenderer` is not exposed.
-
-Validation: a targeted strict TypeScript check passed for the shared/preload
-implementation. Vitest hit the same sandbox/esbuild startup error before executing
-assertions.
+Phase 2 is still in progress because P2-03 handlers and P2-04 IPC/lifecycle tests
+are not implemented.
 
 ## Exact next actions
 
-1. Review the entire uncommitted desktop diff for contract mismatches and security
-   issues. In particular, reconcile the P2-01 preload path with the P2-02 preload
-   entry and remove the intentionally empty placeholder if it is no longer needed.
-2. Install/update workspace dependencies and lock `electron`/`electron-builder`
-   versions. Review the lockfile diff before accepting it.
-3. Run desktop and root typechecks, focused tests, production build, package smoke
-   test, and `git diff --check` outside the current esbuild-restricted sandbox.
-4. Commit P2-01 and P2-02 separately if their file boundaries remain separable;
-   otherwise make one clearly labeled P2 shell/boundary integration commit.
-5. Implement P2-03 main-process handlers against `@book-writer/core`. Do not add
-   renderer migration until IPC handler integration tests pass.
-6. Continue with Phases 3-7 in order, updating this document after each accepted
-   ticket and recording commit hashes, validation, deviations, and known issues.
-
-Suggested immediate commit messages after review:
-
-- `feat(P2-01): add secure Electron application shell`
-- `feat(P2-02): expose validated desktop IPC contracts`
+1. Resolve the P2-03 contract/service blockers before registering handlers:
+   project-scope chapters/settings in the schema, define project onboarding/open
+   semantics, change world listing to lightweight summaries, and remove the run
+   subscription race with an explicit subscription/replay design.
+2. Add core project, project-settings, run-history, and bounded literal-search
+   repositories/services with focused migrations and multi-project collision tests.
+3. Establish a packaged core strategy that emits core runtime code, includes
+   `schema.sql`, packages/rebuilds `better-sqlite3` for Electron, and verifies the
+   native module from the unpacked application.
+4. Implement an injected desktop runtime and main-process IPC handlers. Revalidate
+   every request in main, authorize the sender/main frame, resolve filesystem roots
+   only from trusted project records, sanitize responses, and return a disposer.
+5. Add P2-04 IPC, origin/frame authorization, lifecycle, replay/cancellation,
+   traversal, and packaged native-module tests. Do not begin renderer migration
+   until these tests and the Phase 2 acceptance criteria pass.
+6. Keep provider install/auth handlers explicitly unavailable until Phase 4 rather
+   than implementing unsafe placeholders or collecting credentials.
 
 ## Known risks and decisions still requiring evidence
 
-- Electron 36 and native `better-sqlite3` packaging/ABI compatibility must be
-  verified in a clean packaged build, not inferred from typechecks.
-- The current root Vitest startup failure appears sandbox-specific but must be
-  rerun outside that restriction before calling tests green.
+- The Electron shell packages and launches, but native `better-sqlite3` is not yet
+  imported by the desktop bundle. Its Electron ABI, ASAR-unpack policy, schema
+  resource path, and clean packaged startup still require direct verification.
+- Vitest and esbuild require execution outside the managed filesystem sandbox on
+  this machine; the full suite passes when granted repository-scoped access.
 - Claude and Codex installation/auth commands can change. Pin or verify official
   commands during Phase 4 and avoid embedding an unmaintained arbitrary download.
 - Code signing, certificate ownership, distribution location, and update policy
@@ -332,7 +319,6 @@ npm.cmd run test
 npm.cmd run build
 ```
 
-Expected at this handoff: the four commits above are present and the Phase 2 files
-listed above are modified/untracked. Typecheck/build may require dependency
-installation. If Vitest reports the documented esbuild access error before loading
-tests, record it as an environment blocker rather than a passing or failing test.
+Expected at this handoff: the checkpoint table above is present, the working tree
+is clean, dependencies are installed/locked, and the listed checks pass when run
+with repository-scoped access outside the managed esbuild filesystem restriction.
