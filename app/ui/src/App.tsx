@@ -21,6 +21,7 @@ const NativeSkillPage = lazy(() => import("./pages/NativeSkillPage"));
 const NativeReviewsPage = lazy(() => import("./pages/NativeReviewsPage"));
 const NativeHelpPage = lazy(() => import("./pages/NativeHelpPage"));
 const ProviderOnboardingPage = lazy(() => import("./pages/ProviderOnboardingPage"));
+const NativeRagPage = lazy(() => import("./pages/NativeRagPage"));
 
 const transport = createTransport();
 
@@ -32,18 +33,6 @@ export function useHashRoute(): string {
     return () => window.removeEventListener("hashchange", onChange);
   }, []);
   return hash;
-}
-
-function PendingDesktopPage({ feature }: { feature: string }) {
-  return (
-    <>
-      <h1>{feature}</h1>
-      <div className="empty">
-        <p><strong>This feature is not connected to native IPC yet.</strong></p>
-        <p>The desktop app will not fall back to a localhost server. Use the browser compatibility app until this migration slice lands.</p>
-      </div>
-    </>
-  );
 }
 
 export default function App() {
@@ -179,7 +168,7 @@ export default function App() {
   } else if (native && route.startsWith("/help")) {
     page = <NativeHelpPage />;
   } else if (native && route === "/rag") {
-    page = <PendingDesktopPage feature={route.startsWith("/help") ? "Help" : route.startsWith("/reviews") ? "Reviews" : route === "/rag" ? "RAG" : "Skills"} />;
+    page = <NativeRagPage transport={transport} projectId={projectId} />;
   } else if (route.startsWith("/skill/")) {
     const id = decodeURIComponent(route.slice("/skill/".length));
     page = <SkillPage key={id} skillId={id} bridgeOk={!!health?.bridge?.ok} ragOk={!!health?.rag?.ok} />;

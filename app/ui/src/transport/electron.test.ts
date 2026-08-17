@@ -4,7 +4,15 @@ import type { BookWriterReadOnlyBridge } from "./bridge.js";
 
 function nativeBridge(): BookWriterReadOnlyBridge {
   return {
-    providers: {
+    rag: {
+    status: async () => ({ projectId: "p", status: "never_indexed", totalFiles: 0, totalChunks: 0, modelId: null, lastIndexedAt: null, lastError: null, available: false }),
+    query: async () => ({ projectId: "p", query: "", k: 5, results: [] }),
+    reindex: async () => ({ projectId: "p", status: "indexing" }),
+    cancel: async () => ({ projectId: "p", status: "ready" }),
+    subscribe: async () => ({ subscriptionId: "sub-1" }),
+    unsubscribe: async () => ({ subscriptionId: "sub-1", released: true }),
+  },
+  providers: {
       list: async () => [{ provider: "claude", status: "ready", version: "claude 2.1.0", executablePath: "C:/Tools/claude.exe" }, { provider: "codex", status: "not_installed" }],
       status: async (provider) => [{ provider: provider ?? "claude", status: "ready" }],
       install: async (provider) => ({ provider, status: "opened_external", ok: true, installed: false }),

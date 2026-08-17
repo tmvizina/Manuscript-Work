@@ -26,8 +26,13 @@ import {
   type AgentRunRecord,
   type DB,
   type ProjectDetail as CoreProjectDetail,
+  type TrustedProjectRecord,
 } from "@book-writer/core";
 import { basename, resolve } from "node:path";
+import { RagService } from "./rag/service.js";
+import { UtilityEmbedder } from "./rag/utilityEmbedder.js";
+import { createRagUtilityProcess } from "./rag/utilityProcessFactory.js";
+import { resolveVerifiedRagModel } from "./rag/modelManifest.js";
 import { PROJECT_SETTING_KEYS } from "../shared/contracts.js";
 import type {
   AuthResult,
@@ -68,6 +73,8 @@ import { ProviderAuthentication } from "./providers/authentication.js";
 
 export interface NativeDesktopRuntimeOptions {
   runner?: ProviderRunner;
+  /** Injected by tests to exercise indexing without loading a real model. */
+  ragService?: RagService;
   providerDiscovery?: ProviderDiscovery;
   providerAuthentication?: ProviderAuthentication;
   databaseBackupDirectory?: string;
@@ -133,6 +140,7 @@ export class NativeDesktopRuntime implements DesktopRuntime {
   private readonly runs: RunManager;
   private readonly providerDiscovery: ProviderDiscovery;
   private readonly providerAuthentication: ProviderAuthentication;
+  readonly rag: RagService;
 
   constructor(dbPath: string, options: NativeDesktopRuntimeOptions = {}) {
     this.db = openDb(dbPath, options.databaseBackupDirectory ? { backupDirectory: options.databaseBackupDirectory } : {});
@@ -173,12 +181,29 @@ export class NativeDesktopRuntime implements DesktopRuntime {
         : process.cwd(),
     });
     this.runs = new RunManager({ runner, persistence });
+    this.rag = options.ragService ?? new RagService({
+      db: this.db,
+      // Resolved lazily: a build without bundled weights must still start and
+      // report the feature as unavailable rather than fail at construction.
+      resolveModel: () => resolveVerifiedRagModel(process.resourcesPath ?? ""),
+      createEmbedder: () => new UtilityEmbedder({
+        model: resolveVerifiedRagModel(process.resourcesPath ?? ""),
+        createChild: (model) => createRagUtilityProcess(model),
+      }),
+    });
   }
 
   async close(): Promise<void> {
     this.providerAuthentication.cancelAll();
     await this.runs.shutdown();
+    await this.rag.shutdown();
     this.db.close();
+  }
+
+  /** Resolve a project into the trusted record the RAG services require. */
+  ragProject(projectId: string, operation: string): TrustedProjectRecord {
+    const project = this.requireProject(projectId, operation);
+    return { projectId: project.projectId, rootPath: project.rootPath };
   }
 
   private requireProject(projectId: string, operation: string): CoreProjectDetail {

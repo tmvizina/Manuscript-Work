@@ -52,7 +52,7 @@ export default function TopBar({
       <a className={`navlink ${route === "/world" || route.startsWith("/world/") ? "active" : ""}`} href="#/world">
         {memoryLabel}
       </a>
-      {mode === "electron" ? <><a className={`navlink ${route === "/search" ? "active" : ""}`} href="#/search">Search</a><a className={`navlink ${route.startsWith("/reviews") ? "active" : ""}`} href="#/reviews">Reviews</a></> : <>
+      {mode === "electron" ? <><a className={`navlink ${route === "/search" ? "active" : ""}`} href="#/search">Search</a><a className={`navlink ${route === "/rag" ? "active" : ""}`} href="#/rag">Semantic</a><a className={`navlink ${route.startsWith("/reviews") ? "active" : ""}`} href="#/reviews">Reviews</a></> : <>
         <a className={`navlink ${route === "/reviews" || route.startsWith("/reviews/") ? "active" : ""}`} href="#/reviews">Reviews</a>
         <a className={`navlink ${route === "/rag" ? "active" : ""}`} href="#/rag">RAG</a>
       </>}

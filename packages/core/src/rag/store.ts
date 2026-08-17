@@ -156,6 +156,41 @@ export function replaceRagFileChunks(db: DB, projectId: string, fileId: string, 
   run(chunks);
 }
 
+/**
+ * File ids whose chunks are missing. `upsertRagFile` resets `chunk_count` to
+ * 0, so this covers new files, files whose text changed, and files a cancelled
+ * or failed run never reached — which is what makes resuming an interrupted
+ * index just another reindex rather than a special case.
+ */
+export function listRagFileIdsNeedingChunks(db: DB, projectId: string): string[] {
+  const rows = db
+    .prepare(`SELECT file_id FROM project_rag_files WHERE project_id = ? AND chunk_count = 0 ORDER BY file_id`)
+    .all(projectId) as Array<{ file_id: string }>;
+  return rows.map((row) => row.file_id);
+}
+
+/** Total chunks currently indexed for a project. */
+export function countRagChunks(db: DB, projectId: string): number {
+  const row = db
+    .prepare(`SELECT COUNT(*) AS total FROM project_rag_chunks WHERE project_id = ?`)
+    .get(projectId) as { total: number };
+  return row.total;
+}
+
+/**
+ * Drop every chunk in a project and reset the per-file counts so the next run
+ * re-embeds everything. Used when the active model no longer matches the one
+ * the stored vectors were produced with: mixing vectors from two models in one
+ * cosine comparison yields meaningless scores.
+ */
+export function clearRagChunksForProject(db: DB, projectId: string): void {
+  const run = db.transaction(() => {
+    db.prepare(`DELETE FROM project_rag_chunks WHERE project_id = ?`).run(projectId);
+    db.prepare(`UPDATE project_rag_files SET chunk_count = 0 WHERE project_id = ?`).run(projectId);
+  });
+  run();
+}
+
 export interface RagSearchCandidate {
   chunkId: string;
   relPath: string;

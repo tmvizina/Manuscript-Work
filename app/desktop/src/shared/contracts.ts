@@ -348,6 +348,91 @@ export interface SettingsApi {
   set(projectId: string, key: string, value: SettingValue): Promise<SettingRecord>;
 }
 
+export type RagIndexStatus = "never_indexed" | "indexing" | "ready" | "failed" | "cancelled";
+
+/** Bounds every RAG request, mirroring how search bounds its own. */
+export const RAG_LIMITS = Object.freeze({
+  minK: 1,
+  maxK: 20,
+  defaultK: 5,
+  maxQueryChars: 2_000,
+});
+
+export interface RagStatus {
+  projectId: string;
+  status: RagIndexStatus;
+  totalFiles: number;
+  totalChunks: number;
+  modelId: string | null;
+  lastIndexedAt: string | null;
+  /** Present only when the last run failed; never carries a path or secret. */
+  lastError: string | null;
+  /** False when the model was not bundled with this build. */
+  available: boolean;
+}
+
+export interface RagQueryRequest {
+  projectId: string;
+  query: string;
+  k?: number;
+}
+
+export interface RagQueryResult {
+  chunkId: string;
+  relPath: string;
+  book: string;
+  heading: string;
+  text: string;
+  /** Cosine similarity, not an occurrence count — this is not literal search. */
+  score: number;
+}
+
+export interface RagQueryResponse {
+  projectId: string;
+  query: string;
+  k: number;
+  results: RagQueryResult[];
+}
+
+export interface RagReindexRequest {
+  projectId: string;
+}
+
+export interface RagReindexAccepted {
+  projectId: string;
+  status: RagIndexStatus;
+}
+
+export interface RagProgressEvent {
+  projectId: string;
+  status: RagIndexStatus;
+  filesTotal: number;
+  filesIndexed: number;
+  chunksEmbedded: number;
+  currentPath: string | null;
+  error: string | null;
+}
+
+export type RagProgressListener = (event: RagProgressEvent) => void;
+
+export interface RagSubscription {
+  subscriptionId: string;
+}
+
+export interface RagUnsubscribeResult {
+  subscriptionId: string;
+  released: boolean;
+}
+
+export interface RagApi {
+  status(projectId: string): Promise<RagStatus>;
+  query(request: RagQueryRequest): Promise<RagQueryResponse>;
+  reindex(request: RagReindexRequest): Promise<RagReindexAccepted>;
+  cancel(projectId: string): Promise<RagReindexAccepted>;
+  subscribe(projectId: string, listener: RagProgressListener, onError?: (error: StructuredError) => void): Promise<RagSubscription>;
+  unsubscribe(subscriptionId: string): Promise<RagUnsubscribeResult>;
+}
+
 export interface BookWriterApi {
   providers: ProviderApi;
   projects: ProjectApi;
@@ -355,6 +440,7 @@ export interface BookWriterApi {
   runs: RunApi;
   search: SearchApi;
   settings: SettingsApi;
+  rag: RagApi;
 }
 
 export const BOOK_WRITER_WINDOW_KEY = "bookWriter" as const;
@@ -391,6 +477,15 @@ export const IPC_CHANNELS = {
     event: "book-writer/runs/event",
   },
   search: { query: "book-writer/search/query" },
+  rag: {
+    status: "book-writer/rag/status",
+    query: "book-writer/rag/query",
+    reindex: "book-writer/rag/reindex",
+    cancel: "book-writer/rag/cancel",
+    subscribe: "book-writer/rag/subscribe",
+    unsubscribe: "book-writer/rag/unsubscribe",
+    event: "book-writer/rag/event",
+  },
   settings: {
     get: "book-writer/settings/get",
     set: "book-writer/settings/set",

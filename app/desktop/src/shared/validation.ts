@@ -27,6 +27,15 @@ import {
   type RunSubscriptionOptions,
   type RunUnsubscribeRequest,
   type RunUnsubscribeResult,
+  RAG_LIMITS,
+  type RagProgressEvent,
+  type RagQueryRequest,
+  type RagQueryResponse,
+  type RagQueryResult,
+  type RagReindexAccepted,
+  type RagStatus,
+  type RagSubscription,
+  type RagUnsubscribeResult,
   type RunUsage,
   type SearchRequest,
   type SearchResult,
@@ -340,6 +349,127 @@ export function isSearchResultList(value: unknown): value is SearchResult[] {
 
 export function isSettingRecord(value: unknown): value is SettingRecord {
   return isRecord(value) && hasOnlyKeys(value, ["projectId", "key", "value", "updatedAt"]) && isNonEmptyString(value.projectId) && isNonEmptyString(value.key) && isJsonValue(value.value) && isNonEmptyString(value.updatedAt);
+}
+
+const RAG_INDEX_STATUSES = ["never_indexed", "indexing", "ready", "failed", "cancelled"];
+
+export function isRagStatus(value: unknown): value is RagStatus {
+  return (
+    isRecord(value) &&
+    hasOnlyKeys(value, ["projectId", "status", "totalFiles", "totalChunks", "modelId", "lastIndexedAt", "lastError", "available"]) &&
+    isNonEmptyString(value.projectId) &&
+    typeof value.status === "string" &&
+    RAG_INDEX_STATUSES.includes(value.status) &&
+    Number.isSafeInteger(value.totalFiles) &&
+    Number.isSafeInteger(value.totalChunks) &&
+    (value.modelId === null || isNonEmptyString(value.modelId)) &&
+    (value.lastIndexedAt === null || isNonEmptyString(value.lastIndexedAt)) &&
+    (value.lastError === null || typeof value.lastError === "string") &&
+    isBoolean(value.available)
+  );
+}
+
+export function isRagQueryResult(value: unknown): value is RagQueryResult {
+  return (
+    isRecord(value) &&
+    hasOnlyKeys(value, ["chunkId", "relPath", "book", "heading", "text", "score"]) &&
+    isNonEmptyString(value.chunkId) &&
+    typeof value.relPath === "string" &&
+    typeof value.book === "string" &&
+    typeof value.heading === "string" &&
+    typeof value.text === "string" &&
+    typeof value.score === "number" &&
+    Number.isFinite(value.score)
+  );
+}
+
+export function isRagQueryResponse(value: unknown): value is RagQueryResponse {
+  return (
+    isRecord(value) &&
+    hasOnlyKeys(value, ["projectId", "query", "k", "results"]) &&
+    isNonEmptyString(value.projectId) &&
+    typeof value.query === "string" &&
+    Number.isSafeInteger(value.k) &&
+    Array.isArray(value.results) &&
+    value.results.every(isRagQueryResult)
+  );
+}
+
+export function isRagReindexAccepted(value: unknown): value is RagReindexAccepted {
+  return (
+    isRecord(value) &&
+    hasOnlyKeys(value, ["projectId", "status"]) &&
+    isNonEmptyString(value.projectId) &&
+    typeof value.status === "string" &&
+    RAG_INDEX_STATUSES.includes(value.status)
+  );
+}
+
+export function isRagProgressEvent(value: unknown): value is RagProgressEvent {
+  return (
+    isRecord(value) &&
+    hasOnlyKeys(value, ["projectId", "status", "filesTotal", "filesIndexed", "chunksEmbedded", "currentPath", "error"]) &&
+    isNonEmptyString(value.projectId) &&
+    typeof value.status === "string" &&
+    RAG_INDEX_STATUSES.includes(value.status) &&
+    Number.isSafeInteger(value.filesTotal) &&
+    Number.isSafeInteger(value.filesIndexed) &&
+    Number.isSafeInteger(value.chunksEmbedded) &&
+    (value.currentPath === null || typeof value.currentPath === "string") &&
+    (value.error === null || typeof value.error === "string")
+  );
+}
+
+export function isRagEventDelivery(value: unknown): value is { subscriptionId: string; event: RagProgressEvent } {
+  return (
+    isRecord(value) &&
+    hasOnlyKeys(value, ["subscriptionId", "event"]) &&
+    isNonEmptyString(value.subscriptionId) &&
+    isRagProgressEvent(value.event)
+  );
+}
+
+export function isRagSubscription(value: unknown): value is RagSubscription {
+  return isRecord(value) && hasOnlyKeys(value, ["subscriptionId"]) && isNonEmptyString(value.subscriptionId);
+}
+
+export function isRagUnsubscribeResult(value: unknown): value is RagUnsubscribeResult {
+  return isRecord(value) && hasOnlyKeys(value, ["subscriptionId", "released"]) && isNonEmptyString(value.subscriptionId) && isBoolean(value.released);
+}
+
+/**
+ * Out-of-range values are rejected rather than clamped. The compatibility
+ * server clamps silently, which is fine for a forgiving HTTP route but wrong
+ * for a validated boundary: a caller asking for 500 results should be told no,
+ * not quietly handed 20.
+ */
+export function assertRagQueryRequest(value: unknown, operation = "rag.query"): asserts value is RagQueryRequest {
+  if (!isRecord(value)) {
+    throw new BookWriterError({ code: IPC_ERROR_CODES.invalidArgument, message: "rag request must be an object", operation });
+  }
+  if (!hasOnlyKeys(value, ["projectId", "query", "k"])) {
+    throw new BookWriterError({ code: IPC_ERROR_CODES.invalidArgument, message: "rag request contains unsupported fields", operation });
+  }
+  assertRequestString(value.projectId, "projectId", operation);
+  assertRequestString(value.query, "query", operation);
+  if ((value.query as string).length > RAG_LIMITS.maxQueryChars) {
+    throw new BookWriterError({ code: IPC_ERROR_CODES.invalidArgument, message: "query is too long", operation });
+  }
+  if (value.k !== undefined) {
+    if (!Number.isSafeInteger(value.k) || (value.k as number) < RAG_LIMITS.minK || (value.k as number) > RAG_LIMITS.maxK) {
+      throw new BookWriterError({ code: IPC_ERROR_CODES.invalidArgument, message: "k is out of range", operation });
+    }
+  }
+}
+
+export function assertRagProjectRequest(value: unknown, operation: string): asserts value is { projectId: string } {
+  if (!isRecord(value)) {
+    throw new BookWriterError({ code: IPC_ERROR_CODES.invalidArgument, message: "rag request must be an object", operation });
+  }
+  if (!hasOnlyKeys(value, ["projectId"])) {
+    throw new BookWriterError({ code: IPC_ERROR_CODES.invalidArgument, message: "rag request contains unsupported fields", operation });
+  }
+  assertRequestString(value.projectId, "projectId", operation);
 }
 
 export function assertSearchRequest(value: unknown, operation = "search.query"): asserts value is SearchRequest {
