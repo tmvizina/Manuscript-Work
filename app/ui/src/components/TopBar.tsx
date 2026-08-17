@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { ProjectSummary, TransportMode } from "../transport";
 
 function Dot({ ok, label, title }: { ok: boolean | undefined; label: string; title?: string }) {
   return (
@@ -19,10 +20,20 @@ export default function TopBar({
   route,
   health,
   activeRuns = [],
+  mode,
+  projects,
+  projectId,
+  onProjectChange,
+  memoryLabel,
 }: {
   route: string;
   health: any;
   activeRuns?: ActiveRun[];
+  mode: TransportMode;
+  projects: ProjectSummary[];
+  projectId?: string;
+  onProjectChange(projectId: string): void;
+  memoryLabel: string;
 }) {
   const [theme, setTheme] = useState(document.documentElement.dataset.theme === "light" ? "light" : "dark");
   const toggleTheme = () => {
@@ -39,15 +50,21 @@ export default function TopBar({
         Book <em>Writer</em>
       </a>
       <a className={`navlink ${route === "/world" || route.startsWith("/world/") ? "active" : ""}`} href="#/world">
-        World
+        {memoryLabel}
       </a>
-      <a className={`navlink ${route === "/reviews" || route.startsWith("/reviews/") ? "active" : ""}`} href="#/reviews">
-        Reviews
-      </a>
-      <a className={`navlink ${route === "/rag" ? "active" : ""}`} href="#/rag">
-        RAG
-      </a>
+      {mode === "electron" ? <><a className={`navlink ${route === "/search" ? "active" : ""}`} href="#/search">Search</a><a className={`navlink ${route.startsWith("/reviews") ? "active" : ""}`} href="#/reviews">Reviews</a></> : <>
+        <a className={`navlink ${route === "/reviews" || route.startsWith("/reviews/") ? "active" : ""}`} href="#/reviews">Reviews</a>
+        <a className={`navlink ${route === "/rag" ? "active" : ""}`} href="#/rag">RAG</a>
+      </>}
       <span className="spacer" />
+      {mode === "electron" && projects.length > 0 && <select className="project-picker" aria-label="Active project" value={projectId ?? ""} onChange={(event) => onProjectChange(event.target.value)}>
+        {!projectId && <option value="" disabled>Select project</option>}
+        {projects.map((project) => <option key={project.projectId} value={project.projectId}>{project.name}</option>)}
+      </select>}
+      {mode === "electron" && <a className="iconbtn" href="#/projects" title="Add a project">+</a>}
+      {mode === "electron" && <a className={`iconbtn ${route === "/settings" ? "active" : ""}`} href="#/settings" title="Project settings">&#9881;</a>}
+      {mode === "electron" && <a className={`iconbtn ${route === "/providers" ? "active" : ""}`} href="#/providers" title="Provider setup">&#9889;</a>}
+      {mode === "electron" && <a className="iconbtn help" href="#/help" title="Guides & help">?</a>}
       {activeRuns.length > 0 && (
         <a
           className="runchip"
@@ -59,16 +76,16 @@ export default function TopBar({
           {activeRuns.length > 1 && ` +${activeRuns.length - 1}`}
         </a>
       )}
-      <span className="dots">
+      {mode === "http" && <span className="dots">
         <Dot ok={health?.bridge?.ok} label="bridge" title={health?.bridge?.ok ? `claude ${health.bridge.version}` : health?.bridge?.hint ?? "bridge unreachable — see Help → Claude Bridge"} />
         <Dot ok={health?.rag?.ok} label="rag" title={health?.rag?.ok ? `${health.rag.chunks} chunks indexed` : "rag service unreachable"} />
-      </span>
+      </span>}
       <button className="iconbtn" onClick={toggleTheme} title="Toggle theme">
         {theme === "dark" ? "☾" : "☀"}
       </button>
-      <a className="iconbtn help" href="#/help" title="Guides & help">
+      {mode === "http" && <a className="iconbtn help" href="#/help" title="Guides & help">
         ?
-      </a>
+      </a>}
     </header>
   );
 }

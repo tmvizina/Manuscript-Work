@@ -1,0 +1,11 @@
+{"type":"thread.started","thread_id":"thread-syn-codex-001"}
+{"type":"turn.started"}
+{"type":"item.started","item":{"id":"item-syn-reasoning-001","type":"reasoning","text":"Checking the synthetic fixture manifest and its referenced files."}}
+{"type":"item.completed","item":{"id":"item-syn-reasoning-001","type":"reasoning","text":"The manifest references two chapters and three world files."}}
+{"type":"item.started","item":{"id":"item-syn-command-001","type":"command_execution","command":"Get-Content test/fixtures/project/manifest.json","status":"in_progress"}}
+{"type":"item.completed","item":{"id":"item-syn-command-001","type":"command_execution","command":"Get-Content test/fixtures/project/manifest.json","aggregated_output":"{\"fixture_id\":\"project-synthetic-001\",\"synthetic_only\":true}","exit_code":0,"status":"completed"}}
+{"type":"item.started","item":{"id":"item-syn-message-001","type":"agent_message","text":""}}
+{"type":"item.updated","item":{"id":"item-syn-message-001","type":"agent_message","text":"The fixture is "}}
+{"type":"item.updated","item":{"id":"item-syn-message-001","type":"agent_message","text":"The fixture is synthetic and internally consistent."}}
+{"type":"item.completed","item":{"id":"item-syn-message-001","type":"agent_message","text":"The fixture is synthetic and internally consistent."}}
+{"type":"turn.completed","usage":{"input_tokens":506,"cached_input_tokens":102,"output_tokens":68}}

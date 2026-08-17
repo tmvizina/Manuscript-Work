@@ -1,9 +1,11 @@
 ---
 name: manuscript-editing-planner-v2
-description: Enhanced editing planner — EP-NNN plan IDs, dependency graph, conflict detection, risk register, pass scoping
+description: Turn fiction or nonfiction review findings into stable EP-NNN editing work with dependencies, conflicts, risks, and pass scoping
 ---
 
 # manuscript-editing-planner-v2
+
+When `.book-writer/project.json` selects nonfiction, also read [skills/nonfiction-profile.md](../../../skills/nonfiction-profile.md) and apply its overrides.
 
 Use the repository's canonical workflow rather than duplicating it here:
 

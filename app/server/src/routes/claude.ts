@@ -2,6 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { CLAUDE_BRIDGE_TOKEN, CLAUDE_BRIDGE_URL } from "../config.js";
 import type { DB } from "../db/db.js";
 import { cancelRun, getLiveRun, readTranscript, startRun } from "../claudeRuns.js";
+import { MANUSCRIPT_ROOT } from "../config.js";
 
 const PERMISSION_MODES = new Set(["default", "acceptEdits", "plan"]);
 const RUN_COLS = `run_id, skill_id, variant, prompt, permission_mode, status, result_text, error,
@@ -36,7 +37,7 @@ export default function claudeRoutes(app: FastifyInstance, db: DB): void {
       }
       skillId = skill.skill_id;
       // Slash commands resolve because the bridge runs claude with cwd = repo root.
-      prompt = `/${skillId}${variant === "rag" ? "-rag" : ""} ${userText}`;
+      prompt = `/${skillId}${variant === "rag" ? "-rag" : ""} Project root: ${MANUSCRIPT_ROOT}\nRead .book-writer/project.json from that project root when present and follow its profile before acting.\n\n${userText}`;
     }
 
     const runId = startRun(db, { skillId, variant, prompt, permissionMode });

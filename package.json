@@ -1,0 +1,25 @@
+{
+  "name": "book-writer-workspace",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0 <25"
+  },
+  "workspaces": [
+    "app/server",
+    "app/ui",
+    "packages/core",
+    "app/desktop"
+  ],
+  "scripts": {
+    "typecheck": "npm.cmd run typecheck --workspaces --if-present && npm.cmd exec --workspace app/ui -- tsc --noEmit",
+    "test": "vitest run --config vitest.config.mjs",
+    "build": "npm.cmd run build --workspaces --if-present",
+    "benchmark:phase6": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File test/benchmarks/windows-phase6-benchmark.ps1"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.9"
+  }
+}

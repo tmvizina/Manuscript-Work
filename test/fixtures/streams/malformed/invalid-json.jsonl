@@ -1,0 +1,3 @@
+{"type":"thread.started","thread_id":"thread-syn-malformed-001"}
+this is not JSON and should be rejected by a JSONL parser
+{"type":"turn.completed","usage":{"input_tokens":1,"output_tokens":1}}

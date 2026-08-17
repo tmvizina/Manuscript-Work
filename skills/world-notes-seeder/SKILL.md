@@ -99,6 +99,10 @@ Then summarize the report conversationally and ask the author the open questions
 
 After seeding, the `outline-enhancer` reads `world/` before deepening any sketch — that is the entire point of running this skill first. The enhancer augments your seed (opening arcs, extending threads); it must not contradict it. If you are asked to intake an outline in the same session, invoke the enhancer and point it at the seeded `world/`.
 
+## Nonfiction project override
+
+If the target project selects the nonfiction profile, read `../nonfiction-profile.md` and treat its intake translation and stable nonfiction IDs as authoritative over fantasy-specific buckets, campaign terminology, and rules below.
+
 ## Hard rules
 
 1. **Never invent canon.** If the notes don't say it, it's TBD.

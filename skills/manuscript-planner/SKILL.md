@@ -129,6 +129,10 @@ See `templates/generation-guide-template.md`, `templates/chapter-brief-template.
 - Emit `GP` IDs the writer references.
 - Hand a complete generation guide to the writer.
 
+## Nonfiction project override
+
+If the target project selects the nonfiction profile, read `../nonfiction-profile.md` and produce instructional chapter briefs, demonstrations, story placements, verification needs, and voice anchors instead of fiction-only scene/arc coverage.
+
 ## Final Operating Principle
 
 The generation planner is the last front-of-pipeline stage before prose exists. It takes a story the author has *confirmed* and turns it into a guide concrete enough that the writer can open any chapter brief and know exactly what to dramatize, which threads to plant or pay off, whose voice to write in, and which facts to hold true. It commits chapters only to arcs the author validated, and it never resolves what the campaign has left open.

@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "modelId": "Xenova/all-MiniLM-L6-v2",
+  "upstreamModelId": "sentence-transformers/all-MiniLM-L6-v2",
+  "license": "Apache-2.0",
+  "publisher": "Xenova (ONNX conversion of sentence-transformers/all-MiniLM-L6-v2)",
+  "embeddingDim": 384,
+  "quantization": "8-bit dynamic (q8) ONNX Runtime quantization of the fp32 ONNX export",
+  "files": [
+    {
+      "fileName": "model_quantized.onnx",
+      "role": "model",
+      "sourceUrl": "https://huggingface.co/Xenova/all-MiniLM-L6-v2/resolve/main/onnx/model_quantized.onnx",
+      "sha256": "afdb6f1a0e45b715d0bb9b11772f032c399babd23bfc31fed1c170afc848bdb1",
+      "sizeBytes": 22972370
+    },
+    {
+      "fileName": "tokenizer.json",
+      "role": "tokenizer",
+      "sourceUrl": "https://huggingface.co/Xenova/all-MiniLM-L6-v2/resolve/main/tokenizer.json",
+      "sha256": "da0e79933b9ed51798a3ae27893d3c5fa4a201126cef75586296df9b4d2c62a0",
+      "sizeBytes": 711661
+    },
+    {
+      "fileName": "tokenizer_config.json",
+      "role": "tokenizer",
+      "sourceUrl": "https://huggingface.co/Xenova/all-MiniLM-L6-v2/resolve/main/tokenizer_config.json",
+      "sha256": "9261e7d79b44c8195c1cada2b453e55b00aeb81e907a6664974b4d7776172ab3",
+      "sizeBytes": 366
+    },
+    {
+      "fileName": "config.json",
+      "role": "tokenizer",
+      "sourceUrl": "https://huggingface.co/Xenova/all-MiniLM-L6-v2/resolve/main/config.json",
+      "sha256": "7135149f7cffa1a573466c6e4d8423ed73b62fd2332c575bf738a0d033f70df7",
+      "sizeBytes": 650
+    }
+  ]
+}

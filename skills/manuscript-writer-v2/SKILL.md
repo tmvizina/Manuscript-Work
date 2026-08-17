@@ -245,6 +245,10 @@ After the writer's pass:
 
 See `reference/loop-conventions.md` for the Writer/Lector task-board format and severity rubric inherited from v1.
 
+## Nonfiction project override
+
+If the target project selects the nonfiction profile, read `../nonfiction-profile.md`. Its provenance, non-invention, safety, practical-utility, and voice rules override fantasy-only assumptions above.
+
 ## Final Operating Principle
 
 The v1 writer made the loop tractable. The v2 writer makes the loop **cumulative** — every pass strengthens the fingerprint and the precedent ledger, every Implement is voice-audited before it lands, and the writer arrives at each pass remembering which arguments it has already won and lost. The writer is still not the lector and still not the author. The writer is the craftsperson who learns the book's voice well enough to defend it without asking, and humble enough to know when its own gate has caught it drifting.

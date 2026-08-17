@@ -67,3 +67,61 @@ CREATE TABLE IF NOT EXISTS settings (
   key   TEXT PRIMARY KEY,
   value TEXT NOT NULL
 );
+
+-- Shared workspace metadata. These tables are additive; claude_runs above is
+-- deliberately retained as the legacy Claude-bridge history ledger.
+CREATE TABLE IF NOT EXISTS projects (
+  project_id TEXT PRIMARY KEY,
+  name       TEXT NOT NULL,
+  root_path  TEXT NOT NULL UNIQUE,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  active     INTEGER NOT NULL DEFAULT 1
+);
+CREATE INDEX IF NOT EXISTS idx_projects_active ON projects(active, updated_at DESC);
+
+-- Provider settings are scoped to a project when project_id is supplied. A
+-- keychain/environment reference belongs in setting_value; raw secrets do not.
+CREATE TABLE IF NOT EXISTS provider_settings (
+  provider_setting_id TEXT PRIMARY KEY,
+  project_id          TEXT REFERENCES projects(project_id) ON DELETE CASCADE,
+  provider            TEXT NOT NULL,
+  setting_key        TEXT,
+  setting_value      TEXT,
+  config_json        TEXT NOT NULL DEFAULT '{}',
+  enabled            INTEGER NOT NULL DEFAULT 1,
+  created_at         TEXT NOT NULL,
+  updated_at         TEXT NOT NULL,
+  UNIQUE(project_id, provider, setting_key)
+);
+CREATE INDEX IF NOT EXISTS idx_provider_settings_project
+  ON provider_settings(project_id, provider);
+
+-- Provider-neutral run ledger for Claude, Codex, and future agent providers.
+-- Existing Claude runs remain in claude_runs and are never renamed or removed.
+CREATE TABLE IF NOT EXISTS agent_runs (
+  run_id          TEXT PRIMARY KEY,
+  project_id      TEXT REFERENCES projects(project_id) ON DELETE SET NULL,
+  provider        TEXT NOT NULL,
+  model           TEXT,
+  skill_id        TEXT REFERENCES skills(skill_id),
+  variant         TEXT NOT NULL DEFAULT 'base',
+  prompt          TEXT NOT NULL,
+  permission_mode TEXT NOT NULL DEFAULT 'default',
+  status          TEXT NOT NULL,
+  result_text     TEXT NOT NULL DEFAULT '',
+  error           TEXT,
+  transcript_path TEXT,
+  num_turns       INTEGER,
+  duration_ms     INTEGER,
+  total_cost_usd  REAL,
+  input_tokens    INTEGER,
+  output_tokens   INTEGER,
+  created_at      TEXT NOT NULL,
+  started_at      TEXT,
+  finished_at     TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_agent_runs_project
+  ON agent_runs(project_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_agent_runs_provider
+  ON agent_runs(provider, created_at DESC);

@@ -1,0 +1,48 @@
+Book Writer desktop app — bundled embedding model attribution
+===============================================================
+
+This directory ships a redistributed, third-party machine-learning model
+used entirely offline by the Book Writer desktop app's native semantic RAG
+feature. It is not source code written by this project. It is included here,
+under Apache License 2.0 Section 4(d), to travel with the redistributed
+artifact.
+
+Upstream model
+  sentence-transformers/all-MiniLM-L6-v2
+  https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2
+
+ONNX conversion actually shipped
+  Xenova/all-MiniLM-L6-v2 (an ONNX export/conversion of the upstream model)
+  https://huggingface.co/Xenova/all-MiniLM-L6-v2
+
+License
+  Apache License 2.0 (see the LICENSE file in this same directory), as
+  declared by both the upstream model card and the Xenova ONNX-conversion
+  model card.
+
+Files redistributed by this app (see manifest.json in this directory for
+exact SHA-256 digests, byte sizes, and source URLs)
+  - model_quantized.onnx  (the model weights)
+  - tokenizer.json
+  - tokenizer_config.json
+  - config.json
+
+Notice of modification (Apache License 2.0, Section 4(b))
+  The redistributed model weights are NOT the original upstream fp32
+  weights. Xenova converted the upstream PyTorch model to the ONNX format
+  and applied 8-bit dynamic quantization ("q8") to produce
+  model_quantized.onnx. Book Writer performs no further modification of the
+  model weights; it downloads the exact bytes published by Xenova at the
+  source URL recorded in manifest.json, verifies their SHA-256 digest before
+  every load (see app/desktop/src/main/rag/modelManifest.ts), and
+  repackages those verified bytes, unmodified, inside its installer.
+
+No network access
+  The app ships this model as a local, offline resource. It does not
+  download the model at runtime, and nothing in the shipped app is
+  configured to fetch model or tokenizer files from Hugging Face or any
+  other remote host at runtime.
+
+This NOTICE file is provided for informational purposes and does not modify
+the License. See the accompanying LICENSE file for the full Apache License
+2.0 terms.

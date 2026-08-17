@@ -1,9 +1,11 @@
 ---
 name: story-arc-reviewer
-description: The arc gate (human in the loop) — turn enriched arcs into AQ-NNN confirmation questions, record answers as canon, emit the validated outline
+description: Run the human checkpoint for fictional arcs or nonfiction structure, audience, coverage, omissions, and unresolved author decisions
 ---
 
 # story-arc-reviewer
+
+When `.book-writer/project.json` selects nonfiction, also read [skills/nonfiction-profile.md](../../../skills/nonfiction-profile.md) and apply its overrides.
 
 Use the repository's canonical workflow rather than duplicating it here:
 

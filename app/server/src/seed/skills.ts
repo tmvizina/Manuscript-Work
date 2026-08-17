@@ -133,3 +133,14 @@ export const PHASE_LABELS: Record<SkillSeed["phase"], string> = {
   output: "Output",
   archived: "Archived",
 };
+
+export const NONFICTION_SKILL_OVERRIDES: Readonly<Record<string, { display_name: string; blurb: string }>> = {
+  "world-notes-seeder": { display_name: "Knowledge Intake", blurb: "Ingests field notes, interviews, photographs, firsthand observations, and research into the Knowledge Base without inventing experiences or claims." },
+  "outline-enhancer": { display_name: "Content Architecture Enhancer", blurb: "Develops the reader promise, topic progression, instructional coverage, and placement of personal fishing stories." },
+  "story-arc-reviewer": { display_name: "Structure & Coverage Gate", blurb: "A human checkpoint for audience, organization, omissions, instructional sequence, and anecdote placement." },
+  "manuscript-planner": { display_name: "Nonfiction Manuscript Planner", blurb: "Builds chapter briefs with learning goals, technique prerequisites, demonstrations, stories, and safety callouts." },
+  "book-reviewer-v2": { display_name: "Nonfiction Reviewer v2", blurb: "Reviews practical usefulness, factual boundaries, safety, structure, repetition, provenance, and preservation of the author's voice." },
+  "manuscript-editing-planner-v2": { display_name: "Nonfiction Editing Planner v2", blurb: "Turns nonfiction review findings into dependency-aware, traceable editing work." },
+  "manuscript-writer-v2": { display_name: "Nonfiction Writer v2", blurb: "Drafts and revises practical narrative nonfiction while distinguishing lived experience from general advice." },
+  "novel-formatting": { display_name: "Manuscript Formatting", blurb: "Applies consistent book formatting without assuming the manuscript is a novel or changing prose." },
+};

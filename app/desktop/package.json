@@ -1,0 +1,36 @@
+{
+  "name": "book-writer-desktop",
+  "version": "0.1.0",
+  "description": "A local-first manuscript planning, drafting, and review desktop application.",
+  "private": true,
+  "type": "module",
+  "main": "dist/main/main.js",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "build:core": "npm.cmd run build --workspace @book-writer/core",
+    "build:main": "tsc -p tsconfig.main.json",
+    "build:preload": "esbuild ./src/preload/index.ts --bundle --platform=node --format=cjs --target=node22 --external:electron --outfile=dist/preload/index.cjs",
+    "rebuild:electron": "electron-rebuild --force --which-module better-sqlite3 --version 36.9.5 --module-dir ../..",
+    "build": "npm.cmd run typecheck && npm.cmd run build:core && npm.cmd run build:main && npm.cmd run build:preload",
+    "dev": "npm.cmd --prefix ../ui run build && npm.cmd run build && electron .",
+    "start": "npm.cmd run build && electron .",
+    "package": "npm.cmd --prefix ../ui run build && npm.cmd run build && npm.cmd run rebuild:electron && electron-builder --config electron-builder.yml && npm.cmd run detach:package && npm.cmd run audit:package",
+    "package:dir": "npm.cmd --prefix ../ui run build && npm.cmd run build && npm.cmd run rebuild:electron && electron-builder --config electron-builder.yml --dir && npm.cmd run detach:package && npm.cmd run audit:package",
+    "detach:package": "node ../../test/packaging/detach-native-modules.mjs",
+    "audit:package": "node ../../test/packaging/audit-package.mjs",
+    "smoke:onnx": "node ../../test/packaging/onnx-native-smoke.mjs",
+    "fetch:rag-model": "node ../../test/packaging/fetch-rag-model.mjs"
+  },
+  "dependencies": {
+    "@book-writer/core": "0.1.0"
+  },
+  "devDependencies": {
+    "@electron/asar": "^3.4.1",
+    "@electron/rebuild": "^4.2.0",
+    "@types/node": "^22.0.0",
+    "electron": "36.9.5",
+    "electron-builder": "26.15.3",
+    "esbuild": "0.25.0",
+    "typescript": "^5.6.0"
+  }
+}

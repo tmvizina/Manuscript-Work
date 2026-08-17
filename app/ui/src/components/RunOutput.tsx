@@ -1,9 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { streamRun } from "../lib/api";
+import { createBufferedBatch } from "../lib/bufferedBatch";
 
-interface Line {
+export interface Line {
   kind: "text" | "tool" | "info" | "error";
   text: string;
+}
+
+/** Append HTTP stream entries without changing event-level formatting. */
+export function appendStreamLines(previous: Line[], incoming: readonly Line[]): Line[] {
+  return [...previous, ...incoming];
 }
 
 function describeEvent(o: any): Line | null {
@@ -55,22 +61,33 @@ export default function RunOutput({
   };
 
   useEffect(() => {
+    let active = true;
     const t0 = Date.now();
     const tick = setInterval(() => setElapsed(Math.round((Date.now() - t0) / 1000)), 1000);
+    const bufferedLines = createBufferedBatch<Line>((batch) => {
+      if (active) setLines((previous) => appendStreamLines(previous, batch));
+    });
     const stop = streamRun(
       runId,
       (o) => {
+        if (!active) return;
         const line = describeEvent(o);
-        if (line) setLines((prev) => [...prev, line]);
+        if (line) bufferedLines.push(line);
         if (o.type === "result") setMeta(o);
       },
       () => {
+        if (!active) return;
+        // Flush the final replayed events before marking the run finished so
+        // the output does not lose the tail of a fast stream.
+        bufferedLines.flush();
         setRunning(false);
         clearInterval(tick);
         onFinished();
       },
     );
     return () => {
+      active = false;
+      bufferedLines.dispose();
       stop();
       clearInterval(tick);
     };

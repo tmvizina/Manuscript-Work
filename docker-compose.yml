@@ -30,6 +30,7 @@ services:
       - "8323:8801" # host access = RAG-aware skills' fallback + debugging
     environment:
       - RAG_REPO_ROOT=/manuscript
+      - RAG_PROJECT_KEY=${MANUSCRIPT_DIR:-.}
       - CHROMA_HOST=chromadb
       - CHROMA_PORT=8000
     volumes:

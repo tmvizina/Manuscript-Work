@@ -1,0 +1,6 @@
+{"type":"thread.started","thread_id":"thread-syn-codex-002"}
+{"type":"turn.started"}
+{"type":"item.started","item":{"id":"item-syn-command-error-001","type":"command_execution","command":"Get-Content test/fixtures/project/world/missing.md","status":"in_progress"}}
+{"type":"item.completed","item":{"id":"item-syn-command-error-001","type":"command_execution","command":"Get-Content test/fixtures/project/world/missing.md","aggregated_output":"","exit_code":1,"status":"failed"}}
+{"type":"turn.failed","error":{"message":"Synthetic command failed: file not found"}}
+{"type":"error","message":"Synthetic Codex turn failed before producing an agent message."}

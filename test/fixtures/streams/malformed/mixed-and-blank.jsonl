@@ -1,0 +1,7 @@
+
+  
+{"type":"system","subtype":"init","session_id":"sess-syn-malformed-003"}
+
+{"type":"item.completed","item":{"id":"item-syn-mixed-001","type":"agent_message","text":"A valid Codex-shaped event follows a Claude-shaped event."}}
+not-json
+{"type":"bridge_done","exit_code":0}
