@@ -17,6 +17,7 @@ files:
       - 'main/**/*.js'
       - '!main/runs/fakeRunner.js'
       - '!main/runs/index.js'
+      - '!main/rag/fakeEmbedder.js'
       - 'shared/**/*.js'
       - 'preload/index.cjs'
   - package.json
