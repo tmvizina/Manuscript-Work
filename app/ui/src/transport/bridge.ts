@@ -25,6 +25,9 @@ import type {
   InstallSource,
   WorldDocument,
   WorldSummary,
+  RagProgressEvent,
+  RagQueryResult,
+  RagStatus,
 } from "./types.js";
 
 /**
@@ -69,6 +72,14 @@ export interface BookWriterReadOnlyBridge {
     subscribe(runId: string, listener: (event: RunEvent) => void, options?: { afterSequence?: number }, onError?: (error: { message: string }) => void): Promise<RunSubscription>;
     unsubscribe(subscriptionId: string): Promise<{ subscriptionId: string; unsubscribed: boolean }>;
   };
+  readonly rag: {
+    status(projectId: string): Promise<RagStatus>;
+    query(request: { projectId: string; query: string; k?: number }): Promise<{ results: RagQueryResult[] }>;
+    reindex(request: { projectId: string }): Promise<{ projectId: string; status: string }>;
+    cancel(projectId: string): Promise<{ projectId: string; status: string }>;
+    subscribe(projectId: string, listener: (event: RagProgressEvent) => void): Promise<{ subscriptionId: string }>;
+    unsubscribe(subscriptionId: string): Promise<{ subscriptionId: string; released: boolean }>;
+  };
 }
 
 type UnknownRecord = Record<string, unknown>;
@@ -98,13 +109,15 @@ export function isBookWriterReadOnlyBridge(value: unknown): value is BookWriterR
   const search = value.search;
   const settings = value.settings;
   const runs = value.runs;
+  const rag = value.rag;
   return (
     hasMethods(providers, ["list", "status", "install", "auth", "cancelAuth"]) &&
     hasMethods(projects, ["list", "get", "open", "import"]) &&
     hasMethods(content, ["listChapters", "getChapter", "listWorld", "getWorld", "listReviews", "getReview"]) &&
     hasMethods(search, ["query"]) &&
     hasMethods(settings, ["get", "set"]) &&
-    hasMethods(runs, ["start", "list", "get", "cancel", "subscribe", "unsubscribe"])
+    hasMethods(runs, ["start", "list", "get", "cancel", "subscribe", "unsubscribe"]) &&
+    hasMethods(rag, ["status", "query", "reindex", "cancel", "subscribe", "unsubscribe"])
   );
 }
 

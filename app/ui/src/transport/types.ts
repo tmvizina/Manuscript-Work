@@ -177,6 +177,48 @@ export interface ProvidersTransport {
   cancelAuth(provider: ExecutionProvider): Promise<AuthCancelResult>;
 }
 
+export type RagIndexStatus = "never_indexed" | "indexing" | "ready" | "failed" | "cancelled";
+
+export interface RagStatus {
+  projectId: string;
+  status: RagIndexStatus;
+  totalFiles: number;
+  totalChunks: number;
+  modelId: string | null;
+  lastIndexedAt: string | null;
+  lastError: string | null;
+  available: boolean;
+}
+
+export interface RagQueryResult {
+  chunkId: string;
+  relPath: string;
+  book: string;
+  heading: string;
+  text: string;
+  /** Cosine similarity. Not an occurrence count: this is not literal search. */
+  score: number;
+}
+
+export interface RagProgressEvent {
+  projectId: string;
+  status: RagIndexStatus;
+  filesTotal: number;
+  filesIndexed: number;
+  chunksEmbedded: number;
+  currentPath: string | null;
+  error: string | null;
+}
+
+export interface RagTransport {
+  status(projectId: string): Promise<RagStatus>;
+  query(projectId: string, query: string, k?: number): Promise<RagQueryResult[]>;
+  reindex(projectId: string): Promise<void>;
+  cancel(projectId: string): Promise<void>;
+  subscribe(projectId: string, listener: (event: RagProgressEvent) => void): Promise<{ subscriptionId: string }>;
+  unsubscribe(subscriptionId: string): Promise<void>;
+}
+
 export interface BookWriterTransport {
   readonly mode: TransportMode;
   readonly projects: ProjectTransport;
@@ -185,6 +227,7 @@ export interface BookWriterTransport {
   readonly settings: SettingsTransport;
   readonly runs: RunsTransport;
   readonly providers: ProvidersTransport;
+  readonly rag: RagTransport;
 
   /** Convenience aliases for consumers that do not need the content grouping. */
   readonly chapters: ChapterTransport;

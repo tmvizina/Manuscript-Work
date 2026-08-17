@@ -24,6 +24,10 @@ import {
   type RunSubscribeRequest,
   type RunSubscriptionAccepted,
   type RunUnsubscribeResult,
+  type RagProgressEvent,
+  type RagQueryResponse,
+  type RagReindexAccepted,
+  type RagStatus,
   type SearchRequest,
   type SearchResult,
   type SettingRecord,
@@ -40,6 +44,8 @@ import {
   assertRunRequest,
   assertRunSubscribeRequest,
   assertRunUnsubscribeRequest,
+  assertRagProjectRequest,
+  assertRagQueryRequest,
   assertSearchRequest,
   isChapterDocument,
   isChapterSummaryList,
@@ -59,6 +65,11 @@ import {
   isReviewSummaryList,
   isRunSubscriptionAccepted,
   isRunUnsubscribeResult,
+  isRagQueryResponse,
+  isRagReindexAccepted,
+  isRagStatus,
+  isRagSubscription,
+  isRagUnsubscribeResult,
   isSearchResultList,
   isSettingRecord,
   isWorldDocument,
@@ -90,6 +101,16 @@ export interface DesktopRuntime {
   ): Promise<RunSubscriptionAccepted> | RunSubscriptionAccepted;
   unsubscribeRun(subscriptionId: string): Promise<RunUnsubscribeResult> | RunUnsubscribeResult;
   search(request: SearchRequest): Promise<SearchResult[]> | SearchResult[];
+  /** Resolve a renderer-supplied project id into a trusted root. Throws if unknown. */
+  ragProject(projectId: string, operation: string): { projectId: string; rootPath: string };
+  rag: {
+    status(projectId: string): RagStatus;
+    query(projectId: string, query: string, k?: number): Promise<RagQueryResponse>;
+    reindex(project: { projectId: string; rootPath: string }): RagReindexAccepted;
+    cancel(projectId: string): RagReindexAccepted;
+    subscribe(projectId: string, deliver: (event: RagProgressEvent) => void): string;
+    unsubscribe(subscriptionId: string): boolean;
+  };
   getSetting(projectId: string, key: string): Promise<SettingRecord | null> | SettingRecord | null;
   setSetting(projectId: string, key: string, value: SettingValue): Promise<SettingRecord> | SettingRecord;
 }
@@ -394,6 +415,59 @@ export function registerIpcHandlers(options: RegisterIpcOptions): () => void {
     }
     subscriptions.delete(request.subscriptionId);
     return result;
+  });
+
+  register(IPC_CHANNELS.rag.status, "rag.status", isRagStatus, (request) => {
+    assertRagProjectRequest(request, "rag.status");
+    options.runtime.ragProject(request.projectId, "rag.status");
+    return options.runtime.rag.status(request.projectId);
+  });
+  register(IPC_CHANNELS.rag.query, "rag.query", isRagQueryResponse, async (request) => {
+    assertRagQueryRequest(request, "rag.query");
+    options.runtime.ragProject(request.projectId, "rag.query");
+    const response = await options.runtime.rag.query(request.projectId, request.query, request.k);
+    if (response.projectId !== request.projectId) {
+      invalidResponse("Rag response did not match the request", "rag.query");
+    }
+    return response;
+  });
+  register(IPC_CHANNELS.rag.reindex, "rag.reindex", isRagReindexAccepted, (request) => {
+    assertRagProjectRequest(request, "rag.reindex");
+    // The trusted record is resolved here, never sent by the renderer, so
+    // indexing can only ever walk a registered project's own root.
+    const project = options.runtime.ragProject(request.projectId, "rag.reindex");
+    return options.runtime.rag.reindex(project);
+  });
+  register(IPC_CHANNELS.rag.cancel, "rag.cancel", isRagReindexAccepted, (request) => {
+    assertRagProjectRequest(request, "rag.cancel");
+    options.runtime.ragProject(request.projectId, "rag.cancel");
+    return options.runtime.rag.cancel(request.projectId);
+  });
+  register(IPC_CHANNELS.rag.subscribe, "rag.subscribe", isRagSubscription, (request) => {
+    assertRagProjectRequest(request, "rag.subscribe");
+    options.runtime.ragProject(request.projectId, "rag.subscribe");
+    const subscriptionId = options.runtime.rag.subscribe(request.projectId, (event) => {
+      if (!active || options.webContents.isDestroyed()) return;
+      if (event.projectId !== request.projectId) return;
+      try {
+        options.webContents.send(IPC_CHANNELS.rag.event, success({ subscriptionId, event }));
+      } catch {
+        // The window can be destroyed between the check and the send; its
+        // close disposer owns releasing the subscription.
+      }
+    });
+    subscriptions.add(subscriptionId);
+    return { subscriptionId };
+  });
+  register(IPC_CHANNELS.rag.unsubscribe, "rag.unsubscribe", isRagUnsubscribeResult, (request) => {
+    assertOnlyKeys(request, ["subscriptionId"], "rag.unsubscribe");
+    assertRequestString(request.subscriptionId, "subscriptionId", "rag.unsubscribe");
+    if (!subscriptions.has(request.subscriptionId)) {
+      return { subscriptionId: request.subscriptionId, released: false };
+    }
+    const released = options.runtime.rag.unsubscribe(request.subscriptionId);
+    subscriptions.delete(request.subscriptionId);
+    return { subscriptionId: request.subscriptionId, released };
   });
 
   register(IPC_CHANNELS.search.query, "search.query", isSearchResultList, (request) => {

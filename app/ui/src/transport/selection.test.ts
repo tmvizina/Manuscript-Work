@@ -5,7 +5,15 @@ import type { BookWriterReadOnlyBridge } from "./bridge.js";
 
 function bridge(): BookWriterReadOnlyBridge {
   return {
-    providers: { list: async () => [], status: async () => [], install: async (provider) => ({ provider, status: "opened_external" as const, ok: true, installed: false }), auth: async (provider) => ({ provider, status: "authenticated" as const, ok: true, authenticated: true }), cancelAuth: async (provider) => ({ provider, cancelled: true }) },
+    rag: {
+    status: async () => ({ projectId: "p", status: "never_indexed", totalFiles: 0, totalChunks: 0, modelId: null, lastIndexedAt: null, lastError: null, available: false }),
+    query: async () => ({ projectId: "p", query: "", k: 5, results: [] }),
+    reindex: async () => ({ projectId: "p", status: "indexing" }),
+    cancel: async () => ({ projectId: "p", status: "ready" }),
+    subscribe: async () => ({ subscriptionId: "sub-1" }),
+    unsubscribe: async () => ({ subscriptionId: "sub-1", released: true }),
+  },
+  providers: { list: async () => [], status: async () => [], install: async (provider) => ({ provider, status: "opened_external" as const, ok: true, installed: false }), auth: async (provider) => ({ provider, status: "authenticated" as const, ok: true, authenticated: true }), cancelAuth: async (provider) => ({ provider, cancelled: true }) },
     projects: {
       list: async () => [],
       get: async () => null,

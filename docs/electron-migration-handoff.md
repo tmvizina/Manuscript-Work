@@ -1,6 +1,6 @@
 # Native Electron Migration: Plan and Implementation Handoff
 
-Last updated: 2026-08-16
+Last updated: 2026-08-17
 
 ## Objective
 
@@ -261,6 +261,75 @@ Committed checkpoints:
 | `08a95be` | Add the renderer transport and first read-only native vertical slice | Complete |
 | `aa2ce89` | Make packaged SQLite rebuilding target the Electron ABI deterministically | Complete |
 | `6a7313d` | Add renderer-level failure recovery without exposing error details | Complete |
+| `ad14554` | Contain rooted resource paths; reap provider process trees | Complete |
+| `785cf46` | Replace the main-process crash dialog with a bounded shutdown | Complete |
+| `7d101b3` | Plain-language install guide for unsigned family builds | Complete |
+| `310a8fd` | Package onnxruntime-node for the pinned Electron ABI | Complete (payload deferred) |
+| `9729100` | Schema migration 3 and model-free RAG corpus/chunk/vector services | Complete (unwired) |
+| `5b2b57f` | Build-time fetch and verification of the embedding model | Complete (payload deferred) |
+| `bf24606` | Embedder seam and isolated utility process | Complete (unwired) |
+| `a99e342` | Ship without the deferred RAG payload | Complete |
+
+### Post-Phase-7 security and stability fixes
+
+An independent audit of the Phase 2 boundary found two defects that the prior
+handoff text had described as complete, both fixed in `ad14554`:
+
+- `getPackagedResourcePath` contained traversal by testing
+  `relative(root, candidate)` for a `..` prefix. A UNC path resolves to itself,
+  so `relative()` returns another rooted path instead, and the guard passed it
+  through. It was reachable from the UI protocol, since `%5C%5C` decodes to
+  literal backslashes. Rooted and backslash-bearing requests are now rejected
+  before resolution, matching `resolveInside` in `@book-writer/core`.
+- Cancellation wired the process-tree kill only for `.cmd`/`.bat` shims, so a
+  provider shipped as a plain `.exe` stranded any helper processes it spawned.
+  Tree-kill now covers every win32 spawn. This was an independent source of the
+  orphaned processes previously attributed solely to the launch harness.
+
+`785cf46` addresses the recorded GUI launch dialogs. The main process installed
+no `uncaughtException`/`unhandledRejection` handler, so Electron's default
+applied: a modal dialog that leaves the process alive until a human dismisses
+it. Unattended runs therefore hung on the modal loop while spawned helpers kept
+running. The default listeners are now replaced with logging plus a bounded
+shutdown, and a watchdog exits if the shutdown itself stalls. A rejected promise
+is deliberately non-fatal, because terminating on a stray background rejection
+would discard unsaved manuscript state.
+
+What produced the original faults remains unknown; they did not reproduce on
+the development workstation. The fix converts such a fault into a log entry and
+a clean exit rather than explaining it. Treat this as diagnosable, not closed.
+
+### Native RAG: implemented core, deferred payload
+
+Tickets 1-4 of the native RAG design are committed and tested; tickets 5-7
+(IPC channels, the indexing orchestration that joins corpus sync to the
+embedder and vector store, the renderer, and low-end benchmarks) are not built.
+At the owner's direction the feature is deferred and its payload withheld from
+the installer (`a99e342`), so the shipped app is unchanged by it.
+
+Established facts worth keeping:
+
+- `onnxruntime-node` loads against the pinned Electron 36.9.5 (ABI 135) with no
+  `electron-rebuild` step, verified by running an inference inside the packaged
+  binary under `ELECTRON_RUN_AS_NODE`, not from vendor documentation.
+- The DirectML/dxcompiler/dxil DLLs are prunable for CPU-only inference,
+  verified by removing them and re-running. With them pruned the runtime cost
+  27.0 MB unpacked and 5.65 MB compressed.
+- The model is `Xenova/all-MiniLM-L6-v2` q8, Apache-2.0, 23.7 MB, fetched at
+  build time and hash-verified rather than committed. The fetch fails closed on
+  a hash mismatch, verified by tampering with one.
+- Tokenization is a hand port of BertNormalizer/BertPreTokenizer/WordPiece,
+  pinned against ids from the real Python `tokenizers` library reading this
+  repository's own `tokenizer.json`.
+- End-to-end with the real model: 384-dim unit vectors at ~2.9 ms per text,
+  scoring an identical sentence 1.0000, a paraphrase 0.5295, and an unrelated
+  sentence 0.2473. Retrieval quality on real manuscript text is still unproven.
+- Embedding peaks at 318-810 MB, which is why it belongs in a utility process
+  that exits when idle. Preserve that isolation if the feature is resumed.
+
+To resume: restore the `extraResources` entry and remove the onnxruntime-node
+exclusion in `electron-builder.yml`, put `fetch:rag-model` and `smoke:onnx`
+back into the package scripts, then build tickets 5-7.
 
 ### Reviewed P2-01/P2-02 foundation
 
@@ -474,24 +543,59 @@ launch harness surfaced exception dialogs and is now double-opt-in, and no real
 Codex model call has been authorized. The checklist deliberately records these
 as `Not run`; repository automation cannot manufacture that external evidence.
 
-1. On a clean low-end Windows x64 standard-user VM, diagnose the launch dialog,
-   run the assisted installer/upgrade/remove-data/provider/performance matrix,
-   and sign the release checklist.
-2. Supply an approved Authenticode certificate and authenticate GitHub CLI (or
-   run the workflow in GitHub) before creating a tagged non-family candidate.
-3. Obtain explicit approval for one bounded real Codex sentinel call, then retain
+### Family candidate built 2026-08-17
+
+A family-distribution candidate was produced from `a99e342` on the development
+workstation:
+
+| Field | Value |
+| --- | --- |
+| Installer | `Book Writer-0.1.0-x64.exe` |
+| Size | 85,179,719 bytes |
+| SHA-256 | `5AC271A383CB56670180A07598CB8E19CC964F8EE953604B7A0FA805F988A9FE` |
+| Authenticode | `NotSigned` (family distribution; see below) |
+| Package audit | 283 asar entries; no onnxruntime-node or rag-model present |
+| Suite | 39 files, 247 tests, 1 skipped; all TypeScript surfaces pass |
+| Launch smoke | Titled window, four-process tree, no orphans, no dialog |
+| Installer lifecycle | Install, repair-reinstall, and uninstall all passed; user data preserved by default; no leftovers |
+| Working set at launch | ~321 MB across the tree, above the 250 MiB target |
+
+This is developer-machine evidence, not release qualification. Every gate in
+[Phase 7 Windows release qualification](windows-release-qualification.md)
+remains `Not run`, and the numbers above were measured on the machine that
+compiled the build.
+
+The working-set figure is over the stated budget. It was sampled seconds after
+launch rather than at settled idle, so it is not a clean comparison, but it is
+not evidence of compliance either and should be re-measured properly.
+
+### Exact next actions
+
+1. Install the candidate on at least one Windows account that is not this
+   development machine, without dev tools or provider CLIs present. This is the
+   single highest-value unmet check: every result recorded so far comes from the
+   machine that produced the artifact, which is the one environment that cannot
+   reveal a missing runtime dependency.
+2. Re-measure cold/warm launch and settled idle working set, given the ~321 MB
+   observation above, and revise either the implementation or the budget with
+   real numbers.
+3. For distribution beyond family, supply an approved Authenticode certificate
+   and authenticate GitHub CLI (or run the workflow in GitHub). Tagged releases
+   already fail closed without a valid signature.
+4. Obtain explicit approval for one bounded real Codex sentinel call, then retain
    only the redacted result described by the provider-smoke privacy rules.
-4. Decide whether RAG becomes an embedded native index or remains an optional
-   external compatibility service; do not disguise semantic RAG as literal search.
-5. Add embedded provider payloads only if release engineering later documents the
+5. Resume native RAG at tickets 5-7 when it is wanted; the payload is withheld,
+   not removed. Do not disguise semantic RAG as literal search.
+6. Add embedded provider payloads only if release engineering later documents the
    selected artifacts, licenses, redistribution approval, hashes, and signatures.
 
 ## Known risks and decisions still requiring evidence
 
-- Local silent installer lifecycle checks pass, but automated GUI launch
-  measurement later surfaced repeated exception dialogs and orphaned child
-  processes. Default benchmarking is headless; GUI diagnosis must occur on the
-  clean Phase 7 machine with retained logs and graceful shutdown.
+- The mechanism behind the GUI launch dialogs is fixed (`785cf46`), but the
+  fault that triggered them was never reproduced or identified. A recurrence now
+  logs and exits cleanly instead of hanging, so check
+  `%APPDATA%\Book Writer\logs` if it returns. Default benchmarking stays
+  headless.
 - Vitest and esbuild require execution outside the managed filesystem sandbox on
   this machine; the full suite passes when granted repository-scoped access.
 - `electron-rebuild` changes the shared workspace `better-sqlite3` binary to the
@@ -506,6 +610,12 @@ as `Not run`; repository automation cannot manufacture that external evidence.
   policy still require owner selection before non-family distribution.
 - Performance budgets are initial targets, not measured results. Baseline and
   release numbers must identify hardware, data set, commit, and cold/warm state.
+  The one real observation so far, ~321 MB at launch on a high-end workstation,
+  is above the 250 MiB idle target and needs a proper settled-idle measurement.
+- Packaging rebuilds `better-sqlite3` for the Electron ABI, which breaks the
+  Node/Vitest suite until `npm.cmd rebuild better-sqlite3` is run from the
+  repository root. This bit again during this session; run it after every
+  `package`/`package:dir` before trusting a test result.
 - The server compatibility path should be removed from packaged production only
   after renderer parity is demonstrated; source removal is a later explicit choice.
 

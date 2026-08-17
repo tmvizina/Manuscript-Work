@@ -381,6 +381,12 @@ export interface RagFileSyncResult {
   updated: number;
   unchanged: number;
   deleted: number;
+  /**
+   * The scan output itself. An indexer needs each file's absolute path, and
+   * taking it from here keeps every path it opens sourced from the contained
+   * scan rather than rebuilt from a stored relative path.
+   */
+  files: RagCorpusFileMetadata[];
 }
 
 function trustedRagProject(project: TrustedProjectRecord): TrustedProjectRecord {
@@ -414,7 +420,7 @@ function trustedRagProject(project: TrustedProjectRecord): TrustedProjectRecord 
 export function syncRagCorpusFiles(db: DB, project: TrustedProjectRecord): RagFileSyncResult {
   const trusted = trustedRagProject(project);
   const files = scanRagCorpusFiles(trusted.rootPath);
-  const result: RagFileSyncResult = { scanned: files.length, added: 0, updated: 0, unchanged: 0, deleted: 0 };
+  const result: RagFileSyncResult = { scanned: files.length, added: 0, updated: 0, unchanged: 0, deleted: 0, files };
   const seen = new Set<string>();
   const indexedAt = nowIso();
 

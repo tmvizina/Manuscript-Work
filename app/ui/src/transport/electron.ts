@@ -27,6 +27,10 @@ import type {
   InstallSource,
   WorldDocument,
   WorldSummary,
+  RagProgressEvent,
+  RagQueryResult,
+  RagStatus,
+  RagTransport,
 } from "./types.js";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -151,6 +155,29 @@ function runRecord(value: unknown, operation: string): RunRecord {
     throw invalidTransportResponse(operation, "Native run response is invalid");
   }
   return value as unknown as RunRecord;
+}
+
+const RAG_STATUSES = ["never_indexed", "indexing", "ready", "failed", "cancelled"];
+
+function ragStatus(value: unknown, operation: string): RagStatus {
+  if (!isRecord(value) || !RAG_STATUSES.includes(String(value.status))) {
+    throw invalidTransportResponse(operation, "Native rag status is invalid");
+  }
+  return value as unknown as RagStatus;
+}
+
+function ragQueryResult(value: unknown, operation: string): RagQueryResult {
+  if (!isRecord(value) || typeof value.chunkId !== "string" || typeof value.score !== "number" || !Number.isFinite(value.score)) {
+    throw invalidTransportResponse(operation, "Native rag result is invalid");
+  }
+  return {
+    chunkId: value.chunkId,
+    relPath: typeof value.relPath === "string" ? value.relPath : "",
+    book: typeof value.book === "string" ? value.book : "",
+    heading: typeof value.heading === "string" ? value.heading : "",
+    text: typeof value.text === "string" ? value.text : "",
+    score: value.score,
+  };
 }
 
 function providerSummary(value: unknown, operation: string): ProviderSummary {
@@ -319,6 +346,41 @@ export function createElectronTransport(bridge: BookWriterReadOnlyBridge): BookW
     unsubscribe: (subscriptionId: string) => callNative("runs.unsubscribe", () => bridge.runs.unsubscribe(subscriptionId), (value) => value),
   };
 
+  const rag: RagTransport = {
+    status: async (projectId: string) => {
+      const id = requireProjectId(projectId, "rag.status");
+      return callNative("rag.status", () => bridge.rag.status(id), (value) => ragStatus(value, "rag.status"));
+    },
+    query: async (projectId: string, query: string, k?: number) => {
+      const id = requireProjectId(projectId, "rag.query");
+      if (typeof query !== "string" || query.trim().length === 0) {
+        throw new TransportError("query must not be empty", { kind: "electron", code: "INVALID_ARGUMENT", operation: "rag.query" });
+      }
+      return callNative("rag.query", () => bridge.rag.query({ projectId: id, query, ...(k === undefined ? {} : { k }) }), (value) => {
+        if (!isRecord(value) || !Array.isArray(value.results)) throw invalidTransportResponse("rag.query", "Native rag response is invalid");
+        return value.results.map((entry) => ragQueryResult(entry, "rag.query"));
+      });
+    },
+    reindex: async (projectId: string) => {
+      const id = requireProjectId(projectId, "rag.reindex");
+      await callNative("rag.reindex", () => bridge.rag.reindex({ projectId: id }), (value) => value);
+    },
+    cancel: async (projectId: string) => {
+      const id = requireProjectId(projectId, "rag.cancel");
+      await callNative("rag.cancel", () => bridge.rag.cancel(id), (value) => value);
+    },
+    subscribe: async (projectId: string, listener: (event: RagProgressEvent) => void) => {
+      const id = requireProjectId(projectId, "rag.subscribe");
+      return callNative("rag.subscribe", () => bridge.rag.subscribe(id, listener), (value) => {
+        if (!isRecord(value) || typeof value.subscriptionId !== "string") throw invalidTransportResponse("rag.subscribe", "Native rag subscription is invalid");
+        return { subscriptionId: value.subscriptionId };
+      });
+    },
+    unsubscribe: async (subscriptionId: string) => {
+      await callNative("rag.unsubscribe", () => bridge.rag.unsubscribe(subscriptionId), (value) => value);
+    },
+  };
+
   const content: ContentTransport = {
     listChapters: chapters.list,
     getChapter: chapters.get,
@@ -336,7 +398,7 @@ export function createElectronTransport(bridge: BookWriterReadOnlyBridge): BookW
       return callNative("content.getReview", () => bridge.content.getReview(id, relPath), (value) => reviewDocument(value, "content.getReview"));
     },
   };
-  return { mode: "electron", providers, projects, content, search, settings, runs, chapters, world };
+  return { mode: "electron", providers, projects, content, search, settings, runs, rag, chapters, world };
 }
 
 /** Detect the bridge and construct the native transport when present. */

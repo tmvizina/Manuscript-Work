@@ -31,6 +31,16 @@ import {
   type RunSubscriptionAccepted,
   type RunSubscriptionOptions,
   type RunUnsubscribeResult,
+  type RagApi,
+  type RagProgressEvent,
+  type RagProgressListener,
+  type RagQueryRequest,
+  type RagQueryResponse,
+  type RagReindexAccepted,
+  type RagReindexRequest,
+  type RagStatus,
+  type RagSubscription,
+  type RagUnsubscribeResult,
   type SearchApi,
   type SearchRequest,
   type SearchResult,
@@ -47,6 +57,8 @@ import {
   assertRequestString,
   assertRunRequest,
   assertRunSubscriptionOptions,
+  assertRagProjectRequest,
+  assertRagQueryRequest,
   assertSearchRequest,
   assertSettingValue,
   isAuthResult,
@@ -65,6 +77,12 @@ import {
   isReviewDocument,
   isReviewSummaryList,
   isRunSubscriptionAccepted,
+  isRagEventDelivery,
+  isRagQueryResponse,
+  isRagReindexAccepted,
+  isRagStatus,
+  isRagSubscription,
+  isRagUnsubscribeResult,
   isRunUnsubscribeResult,
   isSearchResultList,
   isSettingRecord,
@@ -170,6 +188,97 @@ function createContentApi(ipcRenderer: IpcRendererLike): ContentApi {
         assertRequestString(relPath, "relPath", "content.getReview");
         return call<ReviewDocument>(ipcRenderer, IPC_CHANNELS.content.getReview, "content.getReview", isReviewDocument, { projectId, relPath });
       },
+  };
+}
+
+/**
+ * Progress events are self-describing snapshots, so this needs none of the
+ * replay-cursor machinery the run subscription carries: a listener that misses
+ * an intermediate event still converges on the correct state from the next one.
+ * Events arriving before the subscription id is known are buffered, bounded, so
+ * a fast first file is not lost between invoke and resolve.
+ */
+function createRagApi(ipcRenderer: IpcRendererLike): RagApi {
+  const subscriptions = new Map<string, (...args: unknown[]) => void>();
+  const PENDING_LIMIT = 64;
+
+  return {
+    status: (projectId: string) => {
+      assertRequestString(projectId, "projectId", "rag.status");
+      return call<RagStatus>(ipcRenderer, IPC_CHANNELS.rag.status, "rag.status", isRagStatus, { projectId });
+    },
+    query: (request: RagQueryRequest) => {
+      assertRagQueryRequest(request, "rag.query");
+      return call<RagQueryResponse>(ipcRenderer, IPC_CHANNELS.rag.query, "rag.query", isRagQueryResponse, request);
+    },
+    reindex: (request: RagReindexRequest) => {
+      assertRagProjectRequest(request, "rag.reindex");
+      return call<RagReindexAccepted>(ipcRenderer, IPC_CHANNELS.rag.reindex, "rag.reindex", isRagReindexAccepted, request);
+    },
+    cancel: (projectId: string) => {
+      assertRequestString(projectId, "projectId", "rag.cancel");
+      return call<RagReindexAccepted>(ipcRenderer, IPC_CHANNELS.rag.cancel, "rag.cancel", isRagReindexAccepted, { projectId });
+    },
+    subscribe: async (projectId: string, listener: RagProgressListener, onError?: (error: StructuredError) => void): Promise<RagSubscription> => {
+      assertRequestString(projectId, "projectId", "rag.subscribe");
+      if (typeof listener !== "function") {
+        throw new BookWriterError({ code: "INVALID_ARGUMENT", message: "listener must be a function", operation: "rag.subscribe" });
+      }
+      if (onError !== undefined && typeof onError !== "function") {
+        throw new BookWriterError({ code: "INVALID_ARGUMENT", message: "onError must be a function", operation: "rag.subscribe" });
+      }
+
+      let accepted: RagSubscription | undefined;
+      const pending: Array<{ subscriptionId: string; event: RagProgressEvent }> = [];
+      const reportError = (error: unknown) => onError?.(asBookWriterError(error, "rag.subscribe").toJSON());
+      const deliver = (event: RagProgressEvent) => {
+        if (event.projectId !== projectId) {
+          reportError(new BookWriterError({ code: "INVALID_RESPONSE", message: "rag event does not match subscription", operation: "rag.subscribe" }));
+          return;
+        }
+        try {
+          listener(event);
+        } catch (error) {
+          reportError(error);
+        }
+      };
+      const wrapped = (...args: unknown[]) => {
+        const payload = args.length > 1 ? args[1] : args[0];
+        try {
+          const delivery = parseResponse(payload, isRagEventDelivery, "rag.subscribe");
+          if (accepted) {
+            if (delivery.subscriptionId === accepted.subscriptionId) deliver(delivery.event);
+          } else if (pending.length < PENDING_LIMIT) {
+            pending.push(delivery);
+          }
+        } catch (error) {
+          reportError(error);
+        }
+      };
+
+      ipcRenderer.on(IPC_CHANNELS.rag.event, wrapped);
+      try {
+        accepted = await call<RagSubscription>(ipcRenderer, IPC_CHANNELS.rag.subscribe, "rag.subscribe", isRagSubscription, { projectId });
+      } catch (error) {
+        ipcRenderer.removeListener(IPC_CHANNELS.rag.event, wrapped);
+        throw error;
+      }
+      subscriptions.set(accepted.subscriptionId, wrapped);
+      for (const delivery of pending.splice(0)) {
+        if (delivery.subscriptionId === accepted.subscriptionId) deliver(delivery.event);
+      }
+      return accepted;
+    },
+    unsubscribe: async (subscriptionId: string) => {
+      assertRequestString(subscriptionId, "subscriptionId", "rag.unsubscribe");
+      const result = await call<RagUnsubscribeResult>(ipcRenderer, IPC_CHANNELS.rag.unsubscribe, "rag.unsubscribe", isRagUnsubscribeResult, { subscriptionId });
+      const wrapped = subscriptions.get(subscriptionId);
+      if (wrapped) {
+        ipcRenderer.removeListener(IPC_CHANNELS.rag.event, wrapped);
+        subscriptions.delete(subscriptionId);
+      }
+      return result;
+    },
   };
 }
 
@@ -332,6 +441,7 @@ export function createBookWriterApi(ipcRenderer: IpcRendererLike): BookWriterApi
     runs: createRunsApi(ipcRenderer),
     search: createSearchApi(ipcRenderer),
     settings: createSettingsApi(ipcRenderer),
+    rag: createRagApi(ipcRenderer),
   };
 }
 

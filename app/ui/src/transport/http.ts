@@ -19,6 +19,7 @@ import type {
   WorldDocument,
   WorldSummary,
   WorldTransport,
+  RagTransport,
 } from "./types.js";
 
 export type FetchLike = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
@@ -401,7 +402,18 @@ export function createHttpTransport(options: HttpTransportOptions = {}): BookWri
     async listReviews() { throw unsupportedTransport("content.listReviews", "The compatibility Reviews page keeps its existing server routes."); },
     async getReview() { throw unsupportedTransport("content.getReview", "The compatibility Reviews page keeps its existing server routes."); },
   };
-  return { mode: "http", providers, projects, content, search, settings, runs, chapters, world };
+  // Semantic search over the compatibility server keeps its own existing page
+  // and routes. Exposing it here would let a packaged renderer fall back to a
+  // localhost service, which this migration exists to remove.
+  const rag: RagTransport = {
+    async status() { throw unsupportedTransport("rag.status", "Semantic search is desktop-only; the browser app keeps its existing RAG page."); },
+    async query() { throw unsupportedTransport("rag.query", "Semantic search is desktop-only; the browser app keeps its existing RAG page."); },
+    async reindex() { throw unsupportedTransport("rag.reindex", "Semantic search is desktop-only; the browser app keeps its existing RAG page."); },
+    async cancel() { throw unsupportedTransport("rag.cancel", "Semantic search is desktop-only; the browser app keeps its existing RAG page."); },
+    async subscribe() { throw unsupportedTransport("rag.subscribe", "Semantic search is desktop-only; the browser app keeps its existing RAG page."); },
+    async unsubscribe() { throw unsupportedTransport("rag.unsubscribe", "Semantic search is desktop-only; the browser app keeps its existing RAG page."); },
+  };
+  return { mode: "http", providers, projects, content, search, settings, runs, rag, chapters, world };
 }
 
 /** Kept exported for focused tests and future compatibility adapters. */

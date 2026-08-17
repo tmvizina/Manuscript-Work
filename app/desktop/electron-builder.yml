@@ -29,10 +29,6 @@ files:
   # Electron ABI binary is rebuilt before packaging and is the only runtime
   # artifact the installed app needs besides bindings/file-uri-to-path.
   - '!node_modules/{prebuild-install,detect-libc,expand-template,github-from-package,minimist,mkdirp-classic,napi-build-utils,node-abi,semver,pump,end-of-stream,once,wrappy,rc,deep-extend,ini,strip-json-comments,simple-get,decompress-response,mimic-response,simple-concat,tar-fs,chownr,tar-stream,bl,buffer,base64-js,ieee754,fs-constants,inherits,readable-stream,string_decoder,safe-buffer,util-deprecate,tunnel-agent}{,/**/*}'
-  # Native RAG is deferred, so the ~27 MB ONNX runtime is excluded entirely
-  # rather than shipped unused. The embedder code remains in the tree behind
-  # its seam; only the payload is withheld. Remove this line to ship it.
-  - '!node_modules/onnxruntime-node{,/**/*}'
   # onnxruntime-node ships N-API (napi-v6) prebuilts for every OS/arch it
   # supports; this app only ever loads the Windows x64 CPU execution
   # provider. Empirically verified (test/packaging/onnx-native-smoke.mjs):
@@ -64,16 +60,15 @@ extraResources:
     to: ui
     filter:
       - '**/*'
-  # The embedding model is NOT shipped yet. Native RAG is deferred: the index
-  # and query paths (design tickets 5-6) are unbuilt, so bundling ~24 MB of
-  # weights the app cannot use would only inflate the installer. To ship it,
-  # restore this entry, drop the onnxruntime-node exclusion above, and put
-  # fetch:rag-model and smoke:onnx back into the package scripts.
-  # - from: resources/rag-model
-  #   to: rag-model
-  #   filter:
-  #     - '**/*'
-  #     - '!*.partial'
+  # Embedding model for the native RAG index. Fetched and hash-verified before
+  # packaging (npm run fetch:rag-model) rather than committed, then verified
+  # again at load time by src/main/rag/modelManifest.ts. The partial-download
+  # marker is excluded so an interrupted fetch can never ship.
+  - from: resources/rag-model
+    to: rag-model
+    filter:
+      - '**/*'
+      - '!*.partial'
 win:
   target:
     - target: nsis
