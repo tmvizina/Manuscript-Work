@@ -557,6 +557,7 @@ workstation:
 | Package audit | 283 asar entries; no onnxruntime-node or rag-model present |
 | Suite | 39 files, 247 tests, 1 skipped; all TypeScript surfaces pass |
 | Launch smoke | Titled window, four-process tree, no orphans, no dialog |
+| Installer lifecycle | Install, repair-reinstall, and uninstall all passed; user data preserved by default; no leftovers |
 | Working set at launch | ~321 MB across the tree, above the 250 MiB target |
 
 This is developer-machine evidence, not release qualification. Every gate in
