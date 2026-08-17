@@ -22,6 +22,37 @@ checks have happened. See the [migration handoff](electron-migration-handoff.md#
 Do not put credentials, OAuth codes, provider account IDs, or unredacted user
 paths in the shared release record.
 
+## Family distribution (not a release)
+
+Handing an unsigned build to people you know is a different, lower bar than a
+release, and it does not use the checklist below. None of those gates may be
+marked complete on the strength of a family build.
+
+Current family candidate, built from `a99e342` on 2026-08-17:
+
+| Field | Value |
+| --- | --- |
+| Installer | `Book Writer-0.1.0-x64.exe`, 85,179,719 bytes |
+| SHA-256 | `5AC271A383CB56670180A07598CB8E19CC964F8EE953604B7A0FA805F988A9FE` |
+| Authenticode | `NotSigned` |
+| Built on | The development workstation, not a clean machine |
+
+Before handing it to someone:
+
+1. Send the SHA-256 alongside the file, through a different channel than the
+   installer where practical, so the recipient can confirm what they received.
+2. Send [Installing Book Writer](windows-install-for-family.md) with it. The
+   recipient will hit SmartScreen, and that guide is what stops the install
+   from ending there.
+3. Tell them plainly that it is unsigned and why, rather than letting the
+   warning be a surprise.
+4. Install it yourself on one machine that did not build it, first. Everything
+   measured so far comes from the machine that compiled the artifact, which
+   cannot reveal a missing runtime dependency.
+
+Family builds must not be published to a public location, listed for download,
+or described as a release. Signing and the checklist below govern that.
+
 ## Release checklist
 
 Attach the named evidence to the release record. The status column starts
