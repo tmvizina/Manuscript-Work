@@ -59,6 +59,15 @@ extraResources:
     to: ui
     filter:
       - '**/*'
+  # Embedding model for the native RAG index. Fetched and hash-verified before
+  # packaging (npm run fetch:rag-model) rather than committed, then verified
+  # again at load time by src/main/rag/modelManifest.ts. The partial-download
+  # marker is excluded so an interrupted fetch can never ship.
+  - from: resources/rag-model
+    to: rag-model
+    filter:
+      - '**/*'
+      - '!*.partial'
 win:
   target:
     - target: nsis

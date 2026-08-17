@@ -17,4 +17,15 @@ dist/desktop/
 app/server/data/
 rag/chroma_db/
 rag/.venv/
+
+# Embedding model weights, fetched at build time by
+# test/packaging/fetch-rag-model.mjs and verified against the checked-in
+# manifest.json. Deliberately untracked: ~23 MB of binary would sit in git
+# history on every clone forever. manifest.json, LICENSE, and NOTICE stay
+# tracked, so the expected bytes remain pinned and attributed.
+app/desktop/resources/rag-model/*.onnx
+app/desktop/resources/rag-model/tokenizer.json
+app/desktop/resources/rag-model/tokenizer_config.json
+app/desktop/resources/rag-model/config.json
+app/desktop/resources/rag-model/*.partial
 .idea/

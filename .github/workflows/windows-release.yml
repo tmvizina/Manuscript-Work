@@ -41,6 +41,13 @@ jobs:
       - name: Build all workspaces
         run: npm.cmd run build
 
+      # The model is not in the repository; fetch and hash-verify it before
+      # packaging so a build cannot produce an installer without it. Fails
+      # closed on any mismatch.
+      - name: Fetch and verify the RAG embedding model
+        working-directory: app/desktop
+        run: npm.cmd run fetch:rag-model
+
       - name: Package per-user x64 NSIS installer
         working-directory: app/desktop
         run: npm.cmd run package
