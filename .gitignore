@@ -13,6 +13,9 @@ node_modules/
 app/ui/dist/
 app/desktop/dist/
 packages/core/dist/
+# Build output. The installer itself is not tracked: at ~102 MB it exceeds
+# GitHub's hard 100 MB file limit, and it is already LZMA-compressed so it
+# does not shrink. Its identity lives in docs/windows-release-record.md.
 dist/desktop/
 app/server/data/
 rag/chroma_db/
