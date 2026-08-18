@@ -401,6 +401,7 @@ export function createHttpTransport(options: HttpTransportOptions = {}): BookWri
     listWorld: world.list,
     getWorld: world.get,
     async listReviews() { throw unsupportedTransport("content.listReviews", "The compatibility Reviews page keeps its existing server routes."); },
+    async reviewIdIndex() { throw unsupportedTransport("content.reviewIdIndex", "The compatibility Reviews page resolves ids on the server."); },
     async getReview() { throw unsupportedTransport("content.getReview", "The compatibility Reviews page keeps its existing server routes."); },
   };
   // Semantic search over the compatibility server keeps its own existing page

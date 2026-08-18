@@ -325,6 +325,7 @@ export interface ContentApi {
   listWorld(projectId: string): Promise<WorldSummary[]>;
   getWorld(projectId: string, relPath: string): Promise<WorldDocument>;
   listReviews(projectId: string): Promise<ReviewSummary[]>;
+  reviewIdIndex(projectId: string): Promise<ReviewIdReference[]>;
   getReview(projectId: string, relPath: string): Promise<ReviewDocument>;
 }
 
@@ -346,6 +347,12 @@ export interface SearchApi {
 export interface SettingsApi {
   get(projectId: string, key: string): Promise<SettingRecord | null>;
   set(projectId: string, key: string, value: SettingValue): Promise<SettingRecord>;
+}
+
+/** One defined review/plan ID and the document that defines it. */
+export interface ReviewIdReference {
+  id: string;
+  relPath: string;
 }
 
 export interface HelpSectionSummary {
@@ -488,6 +495,7 @@ export const IPC_CHANNELS = {
     listWorld: "book-writer/content/list-world",
     getWorld: "book-writer/content/get-world",
     listReviews: "book-writer/content/list-reviews",
+    reviewIdIndex: "book-writer/content/review-id-index",
     getReview: "book-writer/content/get-review",
   },
   runs: {

@@ -34,7 +34,8 @@ function nativeBridge(): BookWriterReadOnlyBridge {
       getChapter: async (_projectId, chapterId) => ({ chapterId, book: "book-1", relPath: "chapters/one.txt", number: 1, title: "One", wordCount: 4, active: true, text: "text" }),
       listWorld: async () => [{ documentId: "world:one.md", relPath: "one.md", title: "One" }],
       getWorld: async (_projectId, relPath) => ({ documentId: `world:${relPath}`, relPath, title: "One", text: "# One" }),
-      listReviews: async () => [],
+      reviewIdIndex: async () => [],
+    listReviews: async () => [],
       getReview: async (_projectId, relPath) => ({ relPath, kind: "review", updatedAt: "2026-08-16T00:00:00.000Z", bytes: 4, text: "text" }),
     },
     search: {

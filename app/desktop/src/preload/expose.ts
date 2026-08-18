@@ -25,6 +25,7 @@ import {
   type RunListRequest,
   type ReviewDocument,
   type ReviewSummary,
+  type ReviewIdReference,
   type RunRequest,
   RUN_REPLAY_LIMIT,
   type RunSubscription,
@@ -80,6 +81,7 @@ import {
   isReviewDocument,
   isReviewSummaryList,
   isRunSubscriptionAccepted,
+  isReviewIdReferenceList,
   isHelpDocument,
   isHelpSectionSummaryList,
   isRagEventDelivery,
@@ -187,6 +189,10 @@ function createContentApi(ipcRenderer: IpcRendererLike): ContentApi {
       listReviews: (projectId) => {
         assertRequestString(projectId, "projectId", "content.listReviews");
         return call<ReviewSummary[]>(ipcRenderer, IPC_CHANNELS.content.listReviews, "content.listReviews", isReviewSummaryList, { projectId });
+      },
+      reviewIdIndex: (projectId) => {
+        assertRequestString(projectId, "projectId", "content.reviewIdIndex");
+        return call<ReviewIdReference[]>(ipcRenderer, IPC_CHANNELS.content.reviewIdIndex, "content.reviewIdIndex", isReviewIdReferenceList, { projectId });
       },
       getReview: (projectId, relPath) => {
         assertRequestString(projectId, "projectId", "content.getReview");

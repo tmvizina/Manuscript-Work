@@ -24,6 +24,7 @@ import {
   type RunSubscribeRequest,
   type RunSubscriptionAccepted,
   type RunUnsubscribeResult,
+  type ReviewIdReference,
   type HelpDocument,
   type HelpSectionSummary,
   type RagProgressEvent,
@@ -67,6 +68,7 @@ import {
   isReviewSummaryList,
   isRunSubscriptionAccepted,
   isRunUnsubscribeResult,
+  isReviewIdReferenceList,
   isHelpDocument,
   isHelpSectionSummaryList,
   isRagQueryResponse,
@@ -105,6 +107,7 @@ export interface DesktopRuntime {
   ): Promise<RunSubscriptionAccepted> | RunSubscriptionAccepted;
   unsubscribeRun(subscriptionId: string): Promise<RunUnsubscribeResult> | RunUnsubscribeResult;
   search(request: SearchRequest): Promise<SearchResult[]> | SearchResult[];
+  reviewIdIndex(projectId: string): ReviewIdReference[];
   listHelpSections(): HelpSectionSummary[];
   getHelpSection(slug: string): HelpDocument;
   /** Resolve a renderer-supplied project id into a trusted root. Throws if unknown. */
@@ -421,6 +424,11 @@ export function registerIpcHandlers(options: RegisterIpcOptions): () => void {
     }
     subscriptions.delete(request.subscriptionId);
     return result;
+  });
+
+  register(IPC_CHANNELS.content.reviewIdIndex, "content.reviewIdIndex", isReviewIdReferenceList, (request) => {
+    const projectId = projectIdRequest(request, "content.reviewIdIndex");
+    return options.runtime.reviewIdIndex(projectId);
   });
 
   register(IPC_CHANNELS.help.list, "help.list", isHelpSectionSummaryList, (request) => {

@@ -16,6 +16,7 @@ import {
   openProject as openStoredProject,
   readWorldFile,
   readReviewFile,
+  buildReviewIdIndex,
   scanReviewDocs,
   scaffoldProjectProfile,
   resolveOrphanedAgentRuns,
@@ -28,7 +29,7 @@ import {
   type ProjectDetail as CoreProjectDetail,
   type TrustedProjectRecord,
 } from "@book-writer/core";
-import type { HelpDocument, HelpSectionSummary } from "../shared/contracts.js";
+import type { HelpDocument, HelpSectionSummary, ReviewIdReference } from "../shared/contracts.js";
 import { existsSync } from "node:fs";
 import { basename, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -370,6 +371,14 @@ export class NativeDesktopRuntime implements DesktopRuntime {
   listReviews(projectId: string): ReviewSummary[] {
     const project = this.requireProject(projectId, "content.listReviews");
     return scanReviewDocs(project.rootPath).map((document) => ({ relPath: document.rel_path, name: document.name, ext: document.ext, kind: document.kind, date: document.date, scope: document.scope, title: document.title, updatedAt: document.mtime, stats: document.stats as ReviewSummary["stats"] }));
+  }
+
+  reviewIdIndex(projectId: string): ReviewIdReference[] {
+    const project = this.requireProject(projectId, "content.reviewIdIndex");
+    const docs = scanReviewDocs(project.rootPath);
+    // Built in main because it needs to read every review document; the
+    // renderer never sees a path it did not already receive from listReviews.
+    return [...buildReviewIdIndex(project.rootPath, docs)].map(([id, relPath]) => ({ id, relPath }));
   }
 
   getReview(projectId: string, relPath: string): ReviewDocument {

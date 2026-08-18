@@ -27,6 +27,7 @@ import {
   type RunSubscriptionOptions,
   type RunUnsubscribeRequest,
   type RunUnsubscribeResult,
+  type ReviewIdReference,
   type HelpDocument,
   type HelpSectionSummary,
   RAG_LIMITS,
@@ -351,6 +352,14 @@ export function isSearchResultList(value: unknown): value is SearchResult[] {
 
 export function isSettingRecord(value: unknown): value is SettingRecord {
   return isRecord(value) && hasOnlyKeys(value, ["projectId", "key", "value", "updatedAt"]) && isNonEmptyString(value.projectId) && isNonEmptyString(value.key) && isJsonValue(value.value) && isNonEmptyString(value.updatedAt);
+}
+
+export function isReviewIdReference(value: unknown): value is ReviewIdReference {
+  return isRecord(value) && hasOnlyKeys(value, ["id", "relPath"]) && isNonEmptyString(value.id) && isNonEmptyString(value.relPath);
+}
+
+export function isReviewIdReferenceList(value: unknown): value is ReviewIdReference[] {
+  return Array.isArray(value) && value.every(isReviewIdReference);
 }
 
 export function isHelpSectionSummary(value: unknown): value is HelpSectionSummary {

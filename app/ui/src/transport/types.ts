@@ -148,6 +148,7 @@ export interface ContentTransport {
   listWorld(projectId?: string): Promise<WorldSummary[]>;
   getWorld(projectId: string | undefined, relPath: string): Promise<WorldDocument>;
   listReviews(projectId?: string): Promise<ReviewSummary[]>;
+  reviewIdIndex(projectId?: string): Promise<ReviewIdReference[]>;
   getReview(projectId: string | undefined, relPath: string): Promise<ReviewDocument>;
 }
 
@@ -217,6 +218,11 @@ export interface RagTransport {
   cancel(projectId: string): Promise<void>;
   subscribe(projectId: string, listener: (event: RagProgressEvent) => void): Promise<{ subscriptionId: string }>;
   unsubscribe(subscriptionId: string): Promise<void>;
+}
+
+export interface ReviewIdReference {
+  id: string;
+  relPath: string;
 }
 
 export interface HelpSectionSummary {
