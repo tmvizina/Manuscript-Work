@@ -5,7 +5,11 @@ import type { BookWriterReadOnlyBridge } from "./bridge.js";
 
 function bridge(): BookWriterReadOnlyBridge {
   return {
-    rag: {
+    help: {
+    list: async () => [],
+    get: async () => ({ slug: "commands", title: "Command Reference", format: "markdown" as const, text: "# Commands" }),
+  },
+  rag: {
     status: async () => ({ projectId: "p", status: "never_indexed", totalFiles: 0, totalChunks: 0, modelId: null, lastIndexedAt: null, lastError: null, available: false }),
     query: async () => ({ projectId: "p", query: "", k: 5, results: [] }),
     reindex: async () => ({ projectId: "p", status: "indexing" }),

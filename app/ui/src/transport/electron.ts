@@ -27,6 +27,9 @@ import type {
   InstallSource,
   WorldDocument,
   WorldSummary,
+  HelpDocument,
+  HelpSectionSummary,
+  HelpTransport,
   RagProgressEvent,
   RagQueryResult,
   RagStatus,
@@ -346,6 +349,17 @@ export function createElectronTransport(bridge: BookWriterReadOnlyBridge): BookW
     unsubscribe: (subscriptionId: string) => callNative("runs.unsubscribe", () => bridge.runs.unsubscribe(subscriptionId), (value) => value),
   };
 
+  const help: HelpTransport = {
+    list: () => callNative("help.list", () => bridge.help.list(), (value) => {
+      if (!Array.isArray(value)) throw invalidTransportResponse("help.list", "Native help index is not an array");
+      return value as HelpSectionSummary[];
+    }),
+    get: (slug: string) => callNative("help.get", () => bridge.help.get(slug), (value) => {
+      if (!isRecord(value) || typeof value.text !== "string") throw invalidTransportResponse("help.get", "Native help document is invalid");
+      return value as unknown as HelpDocument;
+    }),
+  };
+
   const rag: RagTransport = {
     status: async (projectId: string) => {
       const id = requireProjectId(projectId, "rag.status");
@@ -398,7 +412,7 @@ export function createElectronTransport(bridge: BookWriterReadOnlyBridge): BookW
       return callNative("content.getReview", () => bridge.content.getReview(id, relPath), (value) => reviewDocument(value, "content.getReview"));
     },
   };
-  return { mode: "electron", providers, projects, content, search, settings, runs, rag, chapters, world };
+  return { mode: "electron", providers, projects, content, search, settings, runs, rag, help, chapters, world };
 }
 
 /** Detect the bridge and construct the native transport when present. */

@@ -20,6 +20,7 @@ const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const NativeSkillPage = lazy(() => import("./pages/NativeSkillPage"));
 const NativeReviewsPage = lazy(() => import("./pages/NativeReviewsPage"));
 const NativeHelpPage = lazy(() => import("./pages/NativeHelpPage"));
+const NativeHelpSectionPage = lazy(() => import("./pages/NativeHelpSectionPage"));
 const ProviderOnboardingPage = lazy(() => import("./pages/ProviderOnboardingPage"));
 const NativeRagPage = lazy(() => import("./pages/NativeRagPage"));
 
@@ -165,8 +166,10 @@ export default function App() {
     page = <NativeSkillPage key={id} transport={transport} projectId={projectId} skill={sidebar.find((item) => item.skill_id === id)} />;
   } else if (native && (route === "/reviews" || route.startsWith("/reviews/"))) {
     page = <NativeReviewsPage transport={transport} projectId={projectId} path={route === "/reviews" ? "" : decodeURI(route.slice("/reviews/".length))} />;
+  } else if (native && route.startsWith("/help/")) {
+    page = <NativeHelpSectionPage key={route} transport={transport} slug={route.slice("/help/".length)} />;
   } else if (native && route.startsWith("/help")) {
-    page = <NativeHelpPage />;
+    page = <NativeHelpPage transport={transport} />;
   } else if (native && route === "/rag") {
     page = <NativeRagPage transport={transport} projectId={projectId} />;
   } else if (route.startsWith("/skill/")) {

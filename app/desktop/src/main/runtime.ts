@@ -28,7 +28,11 @@ import {
   type ProjectDetail as CoreProjectDetail,
   type TrustedProjectRecord,
 } from "@book-writer/core";
-import { basename, resolve } from "node:path";
+import type { HelpDocument, HelpSectionSummary } from "../shared/contracts.js";
+import { existsSync } from "node:fs";
+import { basename, dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { listHelpSections, readHelpGuide, resolveGuidesRoot } from "./help/guides.js";
 import { RagService } from "./rag/service.js";
 import { UtilityEmbedder } from "./rag/utilityEmbedder.js";
 import { createRagUtilityProcess } from "./rag/utilityProcessFactory.js";
@@ -198,6 +202,33 @@ export class NativeDesktopRuntime implements DesktopRuntime {
     await this.runs.shutdown();
     await this.rag.shutdown();
     this.db.close();
+  }
+
+  /**
+   * Bundled guides live beside the packaged UI. In development `resourcesPath`
+   * is Electron's own resources directory, so the repository copy is used
+   * instead; both paths are fixed, never renderer-supplied.
+   */
+  private guidesRoot(): string {
+    const packaged = resolveGuidesRoot(process.resourcesPath ?? "");
+    if (existsSync(packaged)) return packaged;
+    return resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..", "docs", "guides");
+  }
+
+  listHelpSections(): HelpSectionSummary[] {
+    return listHelpSections(this.guidesRoot()).map((section) => ({
+      slug: section.slug,
+      title: section.title,
+      blurb: section.blurb,
+      format: section.format,
+      available: section.available,
+    }));
+  }
+
+  getHelpSection(slug: string): HelpDocument {
+    const guide = readHelpGuide(this.guidesRoot(), slug);
+    if (!guide) notFound("Guide", "help.get");
+    return guide;
   }
 
   /** Resolve a project into the trusted record the RAG services require. */

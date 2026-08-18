@@ -24,6 +24,8 @@ import {
   type RunSubscribeRequest,
   type RunSubscriptionAccepted,
   type RunUnsubscribeResult,
+  type HelpDocument,
+  type HelpSectionSummary,
   type RagProgressEvent,
   type RagQueryResponse,
   type RagReindexAccepted,
@@ -65,6 +67,8 @@ import {
   isReviewSummaryList,
   isRunSubscriptionAccepted,
   isRunUnsubscribeResult,
+  isHelpDocument,
+  isHelpSectionSummaryList,
   isRagQueryResponse,
   isRagReindexAccepted,
   isRagStatus,
@@ -101,6 +105,8 @@ export interface DesktopRuntime {
   ): Promise<RunSubscriptionAccepted> | RunSubscriptionAccepted;
   unsubscribeRun(subscriptionId: string): Promise<RunUnsubscribeResult> | RunUnsubscribeResult;
   search(request: SearchRequest): Promise<SearchResult[]> | SearchResult[];
+  listHelpSections(): HelpSectionSummary[];
+  getHelpSection(slug: string): HelpDocument;
   /** Resolve a renderer-supplied project id into a trusted root. Throws if unknown. */
   ragProject(projectId: string, operation: string): { projectId: string; rootPath: string };
   rag: {
@@ -415,6 +421,18 @@ export function registerIpcHandlers(options: RegisterIpcOptions): () => void {
     }
     subscriptions.delete(request.subscriptionId);
     return result;
+  });
+
+  register(IPC_CHANNELS.help.list, "help.list", isHelpSectionSummaryList, (request) => {
+    assertNoRequest(request, "help.list");
+    return options.runtime.listHelpSections();
+  });
+  register(IPC_CHANNELS.help.get, "help.get", isHelpDocument, (request) => {
+    assertOnlyKeys(request, ["slug"], "help.get");
+    assertRequestString(request.slug, "slug", "help.get");
+    const document = options.runtime.getHelpSection(request.slug);
+    if (document.slug !== request.slug) invalidResponse("Guide response did not match the request", "help.get");
+    return document;
   });
 
   register(IPC_CHANNELS.rag.status, "rag.status", isRagStatus, (request) => {
