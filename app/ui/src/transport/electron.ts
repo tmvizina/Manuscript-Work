@@ -27,6 +27,7 @@ import type {
   InstallSource,
   WorldDocument,
   WorldSummary,
+  ReviewIdReference,
   HelpDocument,
   HelpSectionSummary,
   HelpTransport,
@@ -400,6 +401,13 @@ export function createElectronTransport(bridge: BookWriterReadOnlyBridge): BookW
     getChapter: chapters.get,
     listWorld: world.list,
     getWorld: world.get,
+    reviewIdIndex: async (projectId?: string) => {
+      const id = requireProjectId(projectId, "content.reviewIdIndex");
+      return callNative("content.reviewIdIndex", () => bridge.content.reviewIdIndex(id), (value) => {
+        if (!Array.isArray(value)) throw invalidTransportResponse("content.reviewIdIndex", "Native review id index is not an array");
+        return value as ReviewIdReference[];
+      });
+    },
     listReviews: async (projectId?: string) => {
       const id = requireProjectId(projectId, "content.listReviews");
       return callNative("content.listReviews", () => bridge.content.listReviews(id), (value) => {

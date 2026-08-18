@@ -78,12 +78,12 @@ function textOf(value: unknown): string {
   return isElement(value) ? textOf(value.props?.children) : "";
 }
 
-function findElement(tree: unknown, type: string): ElementLike {
+function findElement(tree: unknown, type: string, match?: (props: any) => boolean): ElementLike {
   if (tree == null || typeof tree === "boolean") throw new Error(`${type} was not rendered`);
   if (Array.isArray(tree)) {
     for (const child of tree) {
       try {
-        return findElement(child, type);
+        return findElement(child, type, match);
       } catch {
         // Continue searching the remaining children.
       }
@@ -91,8 +91,8 @@ function findElement(tree: unknown, type: string): ElementLike {
     throw new Error(`${type} was not rendered`);
   }
   if (isElement(tree)) {
-    if (tree.type === type) return tree;
-    return findElement(tree.props?.children, type);
+    if (tree.type === type && (!match || match(tree.props))) return tree;
+    return findElement(tree.props?.children, type, match);
   }
   throw new Error(`${type} was not rendered`);
 }
@@ -124,13 +124,17 @@ describe("NativeReviewsPage", () => {
       kind: summary.kind,
       updatedAt: summary.updatedAt,
       bytes: 22,
-      text: "# Chapter 1 review\n\nOne finding.",
+      text: "# Chapter 1 review\n\nOne finding. Raised as RV-001 in the review pass.",
     };
     const bridge = {
       content: {
         listReviews: vi.fn(async (projectId: string) => {
           expect(projectId).toBe("project-1");
           return [summary];
+        }),
+        reviewIdIndex: vi.fn(async (projectId: string) => {
+          expect(projectId).toBe("project-1");
+          return [{ id: "RV-001", relPath: "reviews/other.md" }];
         }),
         getReview: vi.fn(async (projectId: string, relPath: string) => {
           expect(projectId).toBe("project-1");
@@ -150,7 +154,13 @@ describe("NativeReviewsPage", () => {
     expect(bridge.content.listReviews).toHaveBeenCalledTimes(1);
     expect(bridge.content.getReview).toHaveBeenCalledTimes(1);
     expect(textOf(tree)).toContain("RV-001.md");
-    expect(textOf(findElement(tree, "pre"))).toContain("One finding.");
+    // Markdown reviews are rendered rather than shown as source, and pipeline
+    // ids link to the document that defines them.
+    const body = findElement(tree, "div", (props) => typeof props?.dangerouslySetInnerHTML?.__html === "string");
+    const html = String(body.props?.dangerouslySetInnerHTML?.__html ?? "");
+    expect(html).toContain("<h1>Chapter 1 review</h1>");
+    expect(html).toContain("One finding.");
+    expect(html).toContain('href="#/reviews/reviews/other.md"');
     expect(network).not.toHaveBeenCalled();
 
     vi.unstubAllGlobals();

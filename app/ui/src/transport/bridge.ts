@@ -25,6 +25,7 @@ import type {
   InstallSource,
   WorldDocument,
   WorldSummary,
+  ReviewIdReference,
   HelpDocument,
   HelpSectionSummary,
   RagProgressEvent,
@@ -57,6 +58,7 @@ export interface BookWriterReadOnlyBridge {
     listWorld(projectId: string): Promise<WorldSummary[]>;
     getWorld(projectId: string, relPath: string): Promise<WorldDocument>;
     listReviews(projectId: string): Promise<ReviewSummary[]>;
+    reviewIdIndex(projectId: string): Promise<ReviewIdReference[]>;
     getReview(projectId: string, relPath: string): Promise<ReviewDocument>;
   };
   readonly search: {
@@ -120,7 +122,7 @@ export function isBookWriterReadOnlyBridge(value: unknown): value is BookWriterR
   return (
     hasMethods(providers, ["list", "status", "install", "auth", "cancelAuth"]) &&
     hasMethods(projects, ["list", "get", "open", "import"]) &&
-    hasMethods(content, ["listChapters", "getChapter", "listWorld", "getWorld", "listReviews", "getReview"]) &&
+    hasMethods(content, ["listChapters", "getChapter", "listWorld", "getWorld", "listReviews", "getReview", "reviewIdIndex"]) &&
     hasMethods(search, ["query"]) &&
     hasMethods(settings, ["get", "set"]) &&
     hasMethods(runs, ["start", "list", "get", "cancel", "subscribe", "unsubscribe"]) &&

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { renderWorldMarkdown } from "../lib/markdown";
 import type { BookWriterTransport, ProjectProfileConfig, WorldDocument, WorldSummary } from "../transport";
 
 const FANTASY_LABELS: Record<string, string> = { "": "World", characters: "Characters", locations: "Locations", factions: "Factions", "magic-and-objects": "Magic & Objects", threads: "Threads", timeline: "Timeline", continuity: "Continuity", "voice-bible": "Voice Bible" };
@@ -69,7 +70,15 @@ export default function WorldPage({ transport, projectId, path, profile }: { tra
         {path && !file && !fileError && <p className="hint">Loading…</p>}
         {fileError && <p className="err">{fileError}</p>}
         {file && <><div className="reading-head"><h2>{fileName(path).replace(/\.(md|json)$/i, "").replace(/-/g, " ")}</h2><span className="hint">{file.relPath}{updated && !Number.isNaN(updated.valueOf()) ? ` · updated ${updated.toLocaleDateString()}` : ""}</span></div>
-          {isMarkdown && file.html !== undefined ? <div className="help-body wiki-body" dangerouslySetInnerHTML={{ __html: file.html }} /> : isMarkdown ? <div className="reading">{file.text}</div> : <pre className="wiki-json">{file.text}</pre>}
+          {isMarkdown
+            ? <div
+                className="help-body wiki-body"
+                // The server pre-renders and linkifies; the native boundary
+                // returns source, so the same treatment is applied here rather
+                // than leaving [[wikilinks]] as literal text.
+                dangerouslySetInnerHTML={{ __html: file.html ?? renderWorldMarkdown(file.text, entries) }}
+              />
+            : <pre className="wiki-json">{file.text}</pre>}
         </>}
       </div>
     </div>

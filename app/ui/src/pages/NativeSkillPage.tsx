@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { SkillSummary } from "../lib/api";
 import { createBufferedBatch } from "../lib/bufferedBatch";
+import { renderMarkdown } from "../lib/markdown";
 import type { BookWriterTransport, ExecutionProvider, PermissionMode, RunEvent, RunRecord, RunVariant } from "../transport";
 
 const active = (status: RunRecord["status"]) => status === "queued" || status === "starting" || status === "running";
@@ -100,6 +101,6 @@ export default function NativeSkillPage({ transport, projectId, skill }: { trans
       {error && <p className="err">{error}</p>}
       {events.length > 0 && <div className="stream">{events.map((event) => <p className="txt" key={event.sequence}>{event.text ?? event.result ?? event.output ?? event.error?.message ?? event.type}</p>)}</div>}
     </div>
-    <div className="runs"><h3>Run history</h3>{runs.length === 0 && <p className="hint">No native runs yet for this skill.</p>}{runs.map((run) => <details className="run-item" key={run.runId}><summary><span className={`chip ${run.status}`}>{run.status}</span><span className="prompt-preview">{run.prompt}</span><span className="when">{new Date(run.createdAt).toLocaleString()}</span></summary>{run.error && <pre className="run-result err">{run.error}</pre>}{run.resultText && <pre className="run-result">{run.resultText}</pre>}<div className="run-actions"><button className="btn ghost" onClick={() => setPrompt(run.prompt.replace(new RegExp(`^/${skill.skill_id}(?:-rag)?\\s*`), ""))}>Use prompt</button></div></details>)}</div>
+    <div className="runs"><h3>Run history</h3>{runs.length === 0 && <p className="hint">No native runs yet for this skill.</p>}{runs.map((run) => <details className="run-item" key={run.runId}><summary><span className={`chip ${run.status}`}>{run.status}</span><span className="prompt-preview">{run.prompt}</span><span className="when">{run.usage?.totalCostUsd != null && <>${run.usage.totalCostUsd.toFixed(2)} · </>}{new Date(run.createdAt).toLocaleString()}</span></summary>{run.error && <pre className="run-result err">{run.error}</pre>}{run.resultText && <div className="run-result md help-body" dangerouslySetInnerHTML={{ __html: renderMarkdown(run.resultText) }} />}<div className="run-actions"><button className="btn ghost" onClick={() => setPrompt(run.prompt.replace(new RegExp(`^/${skill.skill_id}(?:-rag)?\\s*`), ""))}>Use prompt</button></div></details>)}</div>
   </>;
 }
