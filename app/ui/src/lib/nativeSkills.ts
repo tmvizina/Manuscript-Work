@@ -1,4 +1,4 @@
-import type { SkillSummary } from "./api";
+import type { SidebarItem } from "../components/Sidebar";
 import type { ProjectProfileConfig } from "../transport";
 
 type Phase = "intake" | "generation" | "revision" | "output" | "archived";
@@ -29,10 +29,19 @@ const nonfiction: Record<string, [string, string]> = {
   "novel-formatting": ["Manuscript Formatting", "Apply consistent book formatting without assuming the manuscript is a novel."],
 };
 
+/**
+ * A skill listed a second time under an earlier phase, because it is used
+ * there too. Mirrors the compatibility server's SIDEBAR_ALIASES; the v2 writer
+ * drafts during Generation as well as revising.
+ */
+const aliases: Array<{ skill_id: string; phase: Phase; pipeline_order: number }> = [
+  { skill_id: "manuscript-writer-v2", phase: "generation", pipeline_order: 4.5 },
+];
+
 export const NATIVE_PHASE_LABELS: Record<string, string> = { intake: "Intake", generation: "Generation", revision: "Revision", output: "Output", archived: "Archived" };
 
-export function nativeSkills(profile?: ProjectProfileConfig): SkillSummary[] {
-  return definitions.map(([skill_id, defaultName, pipeline_order, phase, defaultBlurb]) => {
+export function nativeSkills(profile?: ProjectProfileConfig): SidebarItem[] {
+  const items: SidebarItem[] = definitions.map(([skill_id, defaultName, pipeline_order, phase, defaultBlurb]) => {
     const override = profile?.profile === "nonfiction" ? nonfiction[skill_id] : undefined;
     return {
       skill_id,
@@ -44,4 +53,13 @@ export function nativeSkills(profile?: ProjectProfileConfig): SkillSummary[] {
       has_rag_variant: 1,
     };
   });
+
+  const aliased = aliases.flatMap((alias) => {
+    const home = items.find((item) => item.skill_id === alias.skill_id);
+    return home ? [{ ...home, phase: alias.phase, pipeline_order: alias.pipeline_order, alias: true }] : [];
+  });
+
+  // Sorting by pipeline order is what places each entry under its phase
+  // heading; the Sidebar keys on phase plus id, so the repeat does not collide.
+  return [...items, ...aliased].sort((left, right) => left.pipeline_order - right.pipeline_order);
 }

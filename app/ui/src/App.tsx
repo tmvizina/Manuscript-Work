@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from "react";
 import { api, type SkillSummary } from "./lib/api";
-import Sidebar from "./components/Sidebar";
+import Sidebar, { type SidebarItem } from "./components/Sidebar";
 import TopBar from "./components/TopBar";
 import { nativeSkills, NATIVE_PHASE_LABELS } from "./lib/nativeSkills";
 import { createTransport, type ProjectDetail, type ProjectImportInput, type ProjectSummary } from "./transport";
@@ -43,7 +43,7 @@ export default function App() {
   const [projectId, setProjectId] = useState<string>();
   const [project, setProject] = useState<ProjectDetail | null>(null);
   const [projectError, setProjectError] = useState("");
-  const [sidebar, setSidebar] = useState<SkillSummary[]>([]);
+  const [sidebar, setSidebar] = useState<SidebarItem[]>([]);
   const [sidebarError, setSidebarError] = useState(false);
   const [phaseLabels, setPhaseLabels] = useState<Record<string, string>>({});
   const [health, setHealth] = useState<any>(null);
@@ -163,7 +163,7 @@ export default function App() {
     page = <ProviderOnboardingPage transport={transport} projectId={projectId} />;
   } else if (native && route.startsWith("/skill/")) {
     const id = decodeURIComponent(route.slice("/skill/".length));
-    page = <NativeSkillPage key={id} transport={transport} projectId={projectId} skill={sidebar.find((item) => item.skill_id === id)} />;
+    page = <NativeSkillPage key={id} transport={transport} projectId={projectId} skill={sidebar.find((item) => item.skill_id === id && !item.alias) ?? sidebar.find((item) => item.skill_id === id)} />;
   } else if (native && (route === "/reviews" || route.startsWith("/reviews/"))) {
     page = <NativeReviewsPage transport={transport} projectId={projectId} path={route === "/reviews" ? "" : decodeURI(route.slice("/reviews/".length))} />;
   } else if (native && route.startsWith("/help/")) {
