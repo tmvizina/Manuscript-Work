@@ -1,27 +1,38 @@
 # Shipped installer record
 
-The installer is **not** tracked in this repository. At ~102 MB it exceeds
-GitHub's hard 100 MB per-file limit, and being an LZMA-compressed NSIS package
-it does not shrink: zipping it saves 0%. A push carrying it is rejected
-outright by the remote.
+The build ships in two files, because a single one cannot be committed:
+GitHub hard-blocks files over 100 MB, and the combined installer was 102.04 MB
+and incompressible (zipping saved 0%).
 
-This file is therefore the artifact's identity. Keep the built `.exe` outside
-git and hand it over directly, or attach it to a GitHub Release, and use the
-hash below to confirm a copy is the build described here.
+| File | Size | Tracked |
+| --- | --- | --- |
+| `Book Writer-0.1.0-x64.exe` | 87.01 MB | no, delivered directly |
+| `model_quantized.onnx` | 21.91 MB | yes, `app/desktop/resources/rag-model/` |
 
-If tracking a build ever becomes necessary, Git LFS is the workable route
-(GitHub's free tier allows roughly nine builds before its 1 GB storage quota
-is used), and everyone cloning would then need LFS installed.
+The weights are the only part large enough to matter, so they are excluded
+from the installer and imported once by the application, which hash-verifies
+them against the manifest that shipped inside it. The manifest, tokenizer,
+LICENSE, and NOTICE stay in the installer: the manifest is what an imported
+file is checked against and must be the application's own copy, never one
+supplied alongside the file being checked.
+
+Installing the model, for a recipient: open **Semantic**, choose **Install
+model file…**, and select `model_quantized.onnx`. Anything else is refused by
+name, size, and hash. Until then the rest of the application works normally and
+literal search is unaffected.
+
+The installer itself is still delivered out of band. At 87 MB it would now fit
+in git, but every committed rebuild would add that permanently.
 
 ## Current artifact
 
 | Field | Value |
 | --- | --- |
 | File | `Book Writer-0.1.0-x64.exe` |
-| Size | 107,001,128 bytes |
-| SHA-256 | `7e2c698c136302d3780ea94af32f5be374480015902f1c6209b16ce0108c96ab` |
+| Size | 91,232,282 bytes |
+| SHA-256 | `5d8ba1e9814a5c278e6c423d0d5c114414742dccc18e137b9419c126cd8bd684` |
 | Authenticode | `NotSigned` — family distribution |
-| Built from | `9670aa7` |
+| Built from | `b10e80e` plus the model-split change |
 | Built on | The development workstation, 2026-08-17 |
 
 Verify a copy before trusting it:

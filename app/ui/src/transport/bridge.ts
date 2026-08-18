@@ -28,6 +28,7 @@ import type {
   ReviewIdReference,
   HelpDocument,
   HelpSectionSummary,
+  RagModelInstallResult,
   RagProgressEvent,
   RagQueryResult,
   RagStatus,
@@ -87,6 +88,7 @@ export interface BookWriterReadOnlyBridge {
     cancel(projectId: string): Promise<{ projectId: string; status: string }>;
     subscribe(projectId: string, listener: (event: RagProgressEvent) => void): Promise<{ subscriptionId: string }>;
     unsubscribe(subscriptionId: string): Promise<{ subscriptionId: string; released: boolean }>;
+    installModel(): Promise<RagModelInstallResult>;
   };
 }
 
@@ -126,7 +128,7 @@ export function isBookWriterReadOnlyBridge(value: unknown): value is BookWriterR
     hasMethods(search, ["query"]) &&
     hasMethods(settings, ["get", "set"]) &&
     hasMethods(runs, ["start", "list", "get", "cancel", "subscribe", "unsubscribe"]) &&
-    hasMethods(rag, ["status", "query", "reindex", "cancel", "subscribe", "unsubscribe"]) &&
+    hasMethods(rag, ["status", "query", "reindex", "cancel", "subscribe", "unsubscribe", "installModel"]) &&
     hasMethods(help, ["list", "get"])
   );
 }

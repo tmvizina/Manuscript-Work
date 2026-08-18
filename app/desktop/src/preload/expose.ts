@@ -38,6 +38,7 @@ import {
   type RagApi,
   type RagProgressEvent,
   type RagProgressListener,
+  type RagModelInstallResult,
   type RagQueryRequest,
   type RagQueryResponse,
   type RagReindexAccepted,
@@ -85,6 +86,7 @@ import {
   isHelpDocument,
   isHelpSectionSummaryList,
   isRagEventDelivery,
+  isRagModelInstallResult,
   isRagQueryResponse,
   isRagReindexAccepted,
   isRagStatus,
@@ -290,6 +292,7 @@ function createRagApi(ipcRenderer: IpcRendererLike): RagApi {
       }
       return accepted;
     },
+    installModel: () => call<RagModelInstallResult>(ipcRenderer, IPC_CHANNELS.rag.installModel, "rag.installModel", isRagModelInstallResult),
     unsubscribe: async (subscriptionId: string) => {
       assertRequestString(subscriptionId, "subscriptionId", "rag.unsubscribe");
       const result = await call<RagUnsubscribeResult>(ipcRenderer, IPC_CHANNELS.rag.unsubscribe, "rag.unsubscribe", isRagUnsubscribeResult, { subscriptionId });

@@ -71,10 +71,17 @@ extraResources:
   # packaging (npm run fetch:rag-model) rather than committed, then verified
   # again at load time by src/main/rag/modelManifest.ts. The partial-download
   # marker is excluded so an interrupted fetch can never ship.
+  # The weights are excluded: at ~23 MB they push the installer past GitHub's
+  # 100 MB file limit, and the installer is LZMA-compressed so it cannot be
+  # archived under it. They ship as a separate file the app imports and
+  # hash-verifies once. The manifest, tokenizer, LICENSE, and NOTICE stay
+  # inside the build, because the manifest is what an imported file is checked
+  # against and must be the application's own copy.
   - from: resources/rag-model
     to: rag-model
     filter:
       - '**/*'
+      - '!*.onnx'
       - '!*.partial'
 win:
   target:

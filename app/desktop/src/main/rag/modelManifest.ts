@@ -123,6 +123,15 @@ export interface RagModelVerifierOptions {
   sha256?: RagModelSha256;
   /** Injected existence check, used for the LICENSE/NOTICE presence gate. */
   exists?: RagModelExists;
+  /**
+   * Extra directories to look in for a manifest file that is not beside the
+   * manifest itself. The weights exceed GitHub's file limit inside an
+   * installer, so a build may ship the manifest, tokenizer, and licence while
+   * the model file is imported later into app data. A file found here is
+   * hash-checked against the same manifest, so its origin changes where it is
+   * read from and nothing about whether it is trusted.
+   */
+  fallbackRoots?: readonly string[];
 }
 
 const MANIFEST_KEYS = [
@@ -355,8 +364,12 @@ export function verifyRagModelDirectory(
     throw new RagModelManifestError("manifest_file_set_invalid", "manifest.files has no model-role entry", "files");
   }
 
+  const resolvedPaths = new Map<string, string>();
+
   for (const entry of manifest.files) {
-    const filePath = join(modelDir, entry.fileName);
+    const candidates = [join(modelDir, entry.fileName), ...(options.fallbackRoots ?? []).map((root) => join(root, entry.fileName))];
+    const filePath = candidates.find((candidate) => exists(candidate)) ?? candidates[0];
+    resolvedPaths.set(entry.fileName, filePath);
 
     let actualSize: number;
     try {
@@ -413,7 +426,7 @@ export function verifyRagModelDirectory(
   }
 
   return {
-    modelPath: join(modelDir, modelEntry.fileName),
+    modelPath: resolvedPaths.get(modelEntry.fileName) ?? join(modelDir, modelEntry.fileName),
     tokenizerDir: modelDir,
     modelId: manifest.modelId,
     modelSha256: modelEntry.sha256,

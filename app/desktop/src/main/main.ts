@@ -10,6 +10,7 @@ import { PROJECT_SETTING_KEYS } from "../shared/contracts.js";
 import { createUiUrl, isAllowedUiUrl, registerUiProtocol, registerUiScheme } from "./uiProtocol.js";
 import type { ExecutionProvider } from "../shared/contracts.js";
 import { ProviderInstallation } from "./providers/installation.js";
+import { installRagModelWeights } from "./rag/modelInstall.js";
 
 const DEV_URL_ENV = ["BOOK_WRITER_DEV_URL", "ELECTRON_RENDERER_URL", "VITE_DEV_SERVER_URL"] as const;
 
@@ -237,6 +238,21 @@ export async function createMainWindow(runtime: NativeDesktopRuntime): Promise<B
       return result.canceled ? null : result.filePaths[0] ?? null;
     },
     installProvider: (provider, source) => providerInstallation.install(provider, source),
+    installRagModel: () => installRagModelWeights({
+      resourcesPath: process.resourcesPath,
+      userDataModelDir: runtime.ragModelUserDir(),
+      // The dialog runs here, so the renderer never names a path; the chosen
+      // file is still hash-checked against the manifest inside the app.
+      pickFile: async () => {
+        const selection = await dialog.showOpenDialog(window, {
+          title: "Choose the Book Writer model file",
+          buttonLabel: "Install",
+          properties: ["openFile"],
+          filters: [{ name: "Model weights", extensions: ["onnx"] }],
+        });
+        return selection.canceled || selection.filePaths.length !== 1 ? null : selection.filePaths[0];
+      },
+    }),
   });
   installNavigationGuards(window);
   window.webContents.session.setPermissionCheckHandler(() => false);
@@ -270,7 +286,10 @@ if (!hasSingleInstanceLock) {
   void app.whenReady()
     .then(async () => {
       const paths = configureUserDataPaths();
-      desktopRuntime = new NativeDesktopRuntime(join(paths.data, "book-writer.db"), { databaseBackupDirectory: paths.backups });
+      desktopRuntime = new NativeDesktopRuntime(join(paths.data, "book-writer.db"), {
+        databaseBackupDirectory: paths.backups,
+        userDataRoot: paths.userData,
+      });
       await createMainWindow(desktopRuntime);
     })
     .catch((error: unknown) => {

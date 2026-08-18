@@ -27,6 +27,7 @@ import {
   type ReviewIdReference,
   type HelpDocument,
   type HelpSectionSummary,
+  type RagModelInstallResult,
   type RagProgressEvent,
   type RagQueryResponse,
   type RagReindexAccepted,
@@ -71,6 +72,7 @@ import {
   isReviewIdReferenceList,
   isHelpDocument,
   isHelpSectionSummaryList,
+  isRagModelInstallResult,
   isRagQueryResponse,
   isRagReindexAccepted,
   isRagStatus,
@@ -132,6 +134,7 @@ export interface RegisterIpcOptions {
   allowedSettingKeys: ReadonlySet<string>;
   pickProjectRoot?: () => Promise<string | null>;
   installProvider?: (provider: ExecutionProvider, source: InstallSource) => Promise<InstallResult>;
+  installRagModel?: () => Promise<RagModelInstallResult>;
 }
 
 type Guard<T> = (value: unknown) => value is T;
@@ -441,6 +444,15 @@ export function registerIpcHandlers(options: RegisterIpcOptions): () => void {
     const document = options.runtime.getHelpSection(request.slug);
     if (document.slug !== request.slug) invalidResponse("Guide response did not match the request", "help.get");
     return document;
+  });
+
+  register(IPC_CHANNELS.rag.installModel, "rag.installModel", isRagModelInstallResult, async (request) => {
+    assertNoRequest(request, "rag.installModel");
+    if (!options.installRagModel) {
+      throw new BookWriterError({ code: IPC_ERROR_CODES.featureUnavailable, message: "Model installation is not available", operation: "rag.installModel" });
+    }
+    // The picker runs in main; the renderer never supplies or sees a path.
+    return options.installRagModel();
   });
 
   register(IPC_CHANNELS.rag.status, "rag.status", isRagStatus, (request) => {

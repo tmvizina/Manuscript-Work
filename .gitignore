@@ -26,9 +26,15 @@ rag/.venv/
 # manifest.json. Deliberately untracked: ~23 MB of binary would sit in git
 # history on every clone forever. manifest.json, LICENSE, and NOTICE stay
 # tracked, so the expected bytes remain pinned and attributed.
-app/desktop/resources/rag-model/*.onnx
 app/desktop/resources/rag-model/tokenizer.json
 app/desktop/resources/rag-model/tokenizer_config.json
 app/desktop/resources/rag-model/config.json
 app/desktop/resources/rag-model/*.partial
+
+# The weights are tracked deliberately. They are excluded from the installer
+# (see electron-builder.yml) because they would push it past GitHub's 100 MB
+# file limit, so they are distributed as this separate file and imported by
+# the app, which hash-verifies them against the manifest above. At ~23 MB the
+# file itself is well under the limit.
+!app/desktop/resources/rag-model/model_quantized.onnx
 .idea/

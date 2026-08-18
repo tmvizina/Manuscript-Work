@@ -31,6 +31,7 @@ import type {
   HelpDocument,
   HelpSectionSummary,
   HelpTransport,
+  RagModelInstallResult,
   RagProgressEvent,
   RagQueryResult,
   RagStatus,
@@ -391,6 +392,10 @@ export function createElectronTransport(bridge: BookWriterReadOnlyBridge): BookW
         return { subscriptionId: value.subscriptionId };
       });
     },
+    installModel: () => callNative("rag.installModel", () => bridge.rag.installModel(), (value) => {
+      if (!isRecord(value) || typeof value.message !== "string") throw invalidTransportResponse("rag.installModel", "Native install result is invalid");
+      return value as unknown as RagModelInstallResult;
+    }),
     unsubscribe: async (subscriptionId: string) => {
       await callNative("rag.unsubscribe", () => bridge.rag.unsubscribe(subscriptionId), (value) => value);
     },

@@ -32,6 +32,7 @@ import {
   type HelpSectionSummary,
   RAG_LIMITS,
   type RagProgressEvent,
+  type RagModelInstallResult,
   type RagQueryRequest,
   type RagQueryResponse,
   type RagQueryResult,
@@ -464,6 +465,16 @@ export function isRagEventDelivery(value: unknown): value is { subscriptionId: s
     hasOnlyKeys(value, ["subscriptionId", "event"]) &&
     isNonEmptyString(value.subscriptionId) &&
     isRagProgressEvent(value.event)
+  );
+}
+
+export function isRagModelInstallResult(value: unknown): value is RagModelInstallResult {
+  return (
+    isRecord(value) &&
+    hasOnlyKeys(value, ["status", "message"]) &&
+    typeof value.status === "string" &&
+    ["installed", "already_installed", "cancelled", "rejected"].includes(value.status) &&
+    typeof value.message === "string"
   );
 }
 

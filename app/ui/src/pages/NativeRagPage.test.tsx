@@ -30,12 +30,15 @@ function progress(overrides: Partial<RagProgressEvent> = {}): RagProgressEvent {
 }
 
 describe("describeRagState", () => {
-  it("reports a build without the model as unavailable and unbuildable", () => {
+  it("treats a missing model as something the user can fix, not a dead end", () => {
+    // The weights ship separately because they exceed the installer's size
+    // limit, so this state has a remedy and must not read as "unsupported".
     const view = describeRagState(status({ available: false, status: "never_indexed", totalChunks: 0 }), null);
 
     expect(view.unavailable).toBe(true);
     expect(view.canQuery).toBe(false);
-    expect(view.headline).toMatch(/Not included in this build/i);
+    expect(view.headline).toMatch(/model file/i);
+    expect(view.detail).toMatch(/separate file/i);
   });
 
   it("offers to build a missing index and refuses queries until it exists", () => {

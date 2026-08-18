@@ -16,6 +16,7 @@ function bridge(): BookWriterReadOnlyBridge {
     cancel: async () => ({ projectId: "p", status: "ready" }),
     subscribe: async () => ({ subscriptionId: "sub-1" }),
     unsubscribe: async () => ({ subscriptionId: "sub-1", released: true }),
+    installModel: async () => ({ status: "installed" as const, message: "ok" }),
   },
   providers: { list: async () => [], status: async () => [], install: async (provider) => ({ provider, status: "opened_external" as const, ok: true, installed: false }), auth: async (provider) => ({ provider, status: "authenticated" as const, ok: true, authenticated: true }), cancelAuth: async (provider) => ({ provider, cancelled: true }) },
     projects: {

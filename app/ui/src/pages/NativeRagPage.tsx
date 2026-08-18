@@ -30,8 +30,8 @@ export function describeRagState(status: RagStatus | null, progress: RagProgress
   let headline = "";
   let detail = "";
   if (unavailable) {
-    headline = "Not included in this build";
-    detail = "This copy was packaged without the embedding model. Literal search still works from the Search page.";
+    headline = "Semantic search needs its model file";
+    detail = "The model ships as a separate file because it is too large to include in the installer. Install it once and it stays installed.";
   } else if (indexing) {
     headline = "Indexing…";
     detail = progress
@@ -77,6 +77,7 @@ export default function NativeRagPage({ transport, projectId }: Props) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<RagQueryResult[] | null>(null);
   const [busy, setBusy] = useState(false);
+  const [installing, setInstalling] = useState(false);
   const [error, setError] = useState("");
   const subscriptionRef = useRef<string | null>(null);
 
@@ -135,6 +136,21 @@ export default function NativeRagPage({ transport, projectId }: Props) {
     }
   };
 
+  const installModel = async () => {
+    setInstalling(true);
+    setError("");
+    try {
+      const result = await transport.rag.installModel();
+      // A cancelled picker is not a failure; say nothing and leave the state.
+      if (result.status === "rejected") setError(result.message);
+      if (result.status === "installed" || result.status === "already_installed") refresh();
+    } catch (cause: any) {
+      setError(String(cause?.message ?? cause));
+    } finally {
+      setInstalling(false);
+    }
+  };
+
   const startIndex = async () => {
     if (!projectId) return;
     setError("");
@@ -163,9 +179,16 @@ export default function NativeRagPage({ transport, projectId }: Props) {
     return (
       <>
         <h1>Semantic search</h1>
+        {error && <p className="err">{error}</p>}
         <div className="empty">
           <p><strong>{view.headline}.</strong></p>
           <p>{view.detail}</p>
+          <p>
+            <button className="btn" onClick={installModel} disabled={installing}>
+              {installing ? "Installing…" : "Install model file…"}
+            </button>
+          </p>
+          <p className="hint">Literal search still works from the Search page meanwhile.</p>
         </div>
       </>
     );

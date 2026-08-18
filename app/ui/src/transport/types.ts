@@ -211,6 +211,11 @@ export interface RagProgressEvent {
   error: string | null;
 }
 
+export interface RagModelInstallResult {
+  status: "installed" | "already_installed" | "cancelled" | "rejected";
+  message: string;
+}
+
 export interface RagTransport {
   status(projectId: string): Promise<RagStatus>;
   query(projectId: string, query: string, k?: number): Promise<RagQueryResult[]>;
@@ -218,6 +223,7 @@ export interface RagTransport {
   cancel(projectId: string): Promise<void>;
   subscribe(projectId: string, listener: (event: RagProgressEvent) => void): Promise<{ subscriptionId: string }>;
   unsubscribe(subscriptionId: string): Promise<void>;
+  installModel(): Promise<RagModelInstallResult>;
 }
 
 export interface ReviewIdReference {

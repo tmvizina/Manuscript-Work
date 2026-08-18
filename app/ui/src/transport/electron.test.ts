@@ -15,6 +15,7 @@ function nativeBridge(): BookWriterReadOnlyBridge {
     cancel: async () => ({ projectId: "p", status: "ready" }),
     subscribe: async () => ({ subscriptionId: "sub-1" }),
     unsubscribe: async () => ({ subscriptionId: "sub-1", released: true }),
+    installModel: async () => ({ status: "installed" as const, message: "ok" }),
   },
   providers: {
       list: async () => [{ provider: "claude", status: "ready", version: "claude 2.1.0", executablePath: "C:/Tools/claude.exe" }, { provider: "codex", status: "not_installed" }],

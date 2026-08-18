@@ -413,6 +413,7 @@ export function createHttpTransport(options: HttpTransportOptions = {}): BookWri
     async reindex() { throw unsupportedTransport("rag.reindex", "Semantic search is desktop-only; the browser app keeps its existing RAG page."); },
     async cancel() { throw unsupportedTransport("rag.cancel", "Semantic search is desktop-only; the browser app keeps its existing RAG page."); },
     async subscribe() { throw unsupportedTransport("rag.subscribe", "Semantic search is desktop-only; the browser app keeps its existing RAG page."); },
+    async installModel() { throw unsupportedTransport("rag.installModel", "Semantic search is desktop-only; the browser app keeps its existing RAG page."); },
     async unsubscribe() { throw unsupportedTransport("rag.unsubscribe", "Semantic search is desktop-only; the browser app keeps its existing RAG page."); },
   };
   // The browser app keeps its existing /api/help routes and pages rather than

@@ -83,6 +83,8 @@ export interface NativeDesktopRuntimeOptions {
   providerDiscovery?: ProviderDiscovery;
   providerAuthentication?: ProviderAuthentication;
   databaseBackupDirectory?: string;
+  /** Electron userData root; imported model weights are stored beneath it. */
+  userDataRoot?: string;
 }
 
 function notFound(entity: string, operation: string): never {
@@ -146,8 +148,11 @@ export class NativeDesktopRuntime implements DesktopRuntime {
   private readonly providerDiscovery: ProviderDiscovery;
   private readonly providerAuthentication: ProviderAuthentication;
   readonly rag: RagService;
+  private readonly userDataRoot: string;
 
   constructor(dbPath: string, options: NativeDesktopRuntimeOptions = {}) {
+    // Defaults beside the database, which already lives below userData.
+    this.userDataRoot = resolve(options.userDataRoot ?? dirname(dirname(resolve(dbPath))));
     this.db = openDb(dbPath, options.databaseBackupDirectory ? { backupDirectory: options.databaseBackupDirectory } : {});
     this.providerDiscovery = options.providerDiscovery ?? new ProviderDiscovery();
     this.providerAuthentication = options.providerAuthentication ?? new ProviderAuthentication({ discovery: this.providerDiscovery });
@@ -190,9 +195,11 @@ export class NativeDesktopRuntime implements DesktopRuntime {
       db: this.db,
       // Resolved lazily: a build without bundled weights must still start and
       // report the feature as unavailable rather than fail at construction.
-      resolveModel: () => resolveVerifiedRagModel(process.resourcesPath ?? ""),
+      // Weights may be bundled or imported later into app data; both are
+      // verified against the manifest that shipped inside the application.
+      resolveModel: () => resolveVerifiedRagModel(process.resourcesPath ?? "", { fallbackRoots: [this.ragModelUserDir()] }),
       createEmbedder: () => new UtilityEmbedder({
-        model: resolveVerifiedRagModel(process.resourcesPath ?? ""),
+        model: resolveVerifiedRagModel(process.resourcesPath ?? "", { fallbackRoots: [this.ragModelUserDir()] }),
         createChild: (model) => createRagUtilityProcess(model),
       }),
     });
@@ -203,6 +210,11 @@ export class NativeDesktopRuntime implements DesktopRuntime {
     await this.runs.shutdown();
     await this.rag.shutdown();
     this.db.close();
+  }
+
+  /** Where imported model weights are stored, below Electron userData. */
+  ragModelUserDir(): string {
+    return resolve(this.userDataRoot, "rag-model");
   }
 
   /**

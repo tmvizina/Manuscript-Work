@@ -400,6 +400,13 @@ export interface RagStatus {
   available: boolean;
 }
 
+export type RagModelInstallStatus = "installed" | "already_installed" | "cancelled" | "rejected";
+
+export interface RagModelInstallResult {
+  status: RagModelInstallStatus;
+  message: string;
+}
+
 export interface RagQueryRequest {
   projectId: string;
   query: string;
@@ -460,6 +467,7 @@ export interface RagApi {
   cancel(projectId: string): Promise<RagReindexAccepted>;
   subscribe(projectId: string, listener: RagProgressListener, onError?: (error: StructuredError) => void): Promise<RagSubscription>;
   unsubscribe(subscriptionId: string): Promise<RagUnsubscribeResult>;
+  installModel(): Promise<RagModelInstallResult>;
 }
 
 export interface BookWriterApi {
@@ -519,6 +527,7 @@ export const IPC_CHANNELS = {
     cancel: "book-writer/rag/cancel",
     subscribe: "book-writer/rag/subscribe",
     unsubscribe: "book-writer/rag/unsubscribe",
+    installModel: "book-writer/rag/install-model",
     event: "book-writer/rag/event",
   },
   settings: {
