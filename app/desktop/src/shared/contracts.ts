@@ -348,6 +348,28 @@ export interface SettingsApi {
   set(projectId: string, key: string, value: SettingValue): Promise<SettingRecord>;
 }
 
+export interface HelpSectionSummary {
+  slug: string;
+  title: string;
+  blurb: string;
+  format: "markdown" | "html";
+  /** False when this build did not bundle the guide file. */
+  available: boolean;
+}
+
+export interface HelpDocument {
+  slug: string;
+  title: string;
+  format: "markdown" | "html";
+  /** Source text. The renderer decides how to present it. */
+  text: string;
+}
+
+export interface HelpApi {
+  list(): Promise<HelpSectionSummary[]>;
+  get(slug: string): Promise<HelpDocument>;
+}
+
 export type RagIndexStatus = "never_indexed" | "indexing" | "ready" | "failed" | "cancelled";
 
 /** Bounds every RAG request, mirroring how search bounds its own. */
@@ -441,6 +463,7 @@ export interface BookWriterApi {
   search: SearchApi;
   settings: SettingsApi;
   rag: RagApi;
+  help: HelpApi;
 }
 
 export const BOOK_WRITER_WINDOW_KEY = "bookWriter" as const;
@@ -477,6 +500,10 @@ export const IPC_CHANNELS = {
     event: "book-writer/runs/event",
   },
   search: { query: "book-writer/search/query" },
+  help: {
+    list: "book-writer/help/list",
+    get: "book-writer/help/get",
+  },
   rag: {
     status: "book-writer/rag/status",
     query: "book-writer/rag/query",

@@ -219,6 +219,26 @@ export interface RagTransport {
   unsubscribe(subscriptionId: string): Promise<void>;
 }
 
+export interface HelpSectionSummary {
+  slug: string;
+  title: string;
+  blurb: string;
+  format: "markdown" | "html";
+  available: boolean;
+}
+
+export interface HelpDocument {
+  slug: string;
+  title: string;
+  format: "markdown" | "html";
+  text: string;
+}
+
+export interface HelpTransport {
+  list(): Promise<HelpSectionSummary[]>;
+  get(slug: string): Promise<HelpDocument>;
+}
+
 export interface BookWriterTransport {
   readonly mode: TransportMode;
   readonly projects: ProjectTransport;
@@ -228,6 +248,7 @@ export interface BookWriterTransport {
   readonly runs: RunsTransport;
   readonly providers: ProvidersTransport;
   readonly rag: RagTransport;
+  readonly help: HelpTransport;
 
   /** Convenience aliases for consumers that do not need the content grouping. */
   readonly chapters: ChapterTransport;

@@ -19,6 +19,7 @@ import type {
   WorldDocument,
   WorldSummary,
   WorldTransport,
+  HelpTransport,
   RagTransport,
 } from "./types.js";
 
@@ -413,7 +414,13 @@ export function createHttpTransport(options: HttpTransportOptions = {}): BookWri
     async subscribe() { throw unsupportedTransport("rag.subscribe", "Semantic search is desktop-only; the browser app keeps its existing RAG page."); },
     async unsubscribe() { throw unsupportedTransport("rag.unsubscribe", "Semantic search is desktop-only; the browser app keeps its existing RAG page."); },
   };
-  return { mode: "http", providers, projects, content, search, settings, runs, rag, chapters, world };
+  // The browser app keeps its existing /api/help routes and pages rather than
+  // routing guides through this transport.
+  const help: HelpTransport = {
+    async list() { throw unsupportedTransport("help.list", "The browser app reads guides from its existing help routes."); },
+    async get() { throw unsupportedTransport("help.get", "The browser app reads guides from its existing help routes."); },
+  };
+  return { mode: "http", providers, projects, content, search, settings, runs, rag, help, chapters, world };
 }
 
 /** Kept exported for focused tests and future compatibility adapters. */

@@ -31,6 +31,9 @@ import {
   type RunSubscriptionAccepted,
   type RunSubscriptionOptions,
   type RunUnsubscribeResult,
+  type HelpApi,
+  type HelpDocument,
+  type HelpSectionSummary,
   type RagApi,
   type RagProgressEvent,
   type RagProgressListener,
@@ -77,6 +80,8 @@ import {
   isReviewDocument,
   isReviewSummaryList,
   isRunSubscriptionAccepted,
+  isHelpDocument,
+  isHelpSectionSummaryList,
   isRagEventDelivery,
   isRagQueryResponse,
   isRagReindexAccepted,
@@ -198,6 +203,16 @@ function createContentApi(ipcRenderer: IpcRendererLike): ContentApi {
  * Events arriving before the subscription id is known are buffered, bounded, so
  * a fast first file is not lost between invoke and resolve.
  */
+function createHelpApi(ipcRenderer: IpcRendererLike): HelpApi {
+  return {
+    list: () => call<HelpSectionSummary[]>(ipcRenderer, IPC_CHANNELS.help.list, "help.list", isHelpSectionSummaryList),
+    get: (slug: string) => {
+      assertRequestString(slug, "slug", "help.get");
+      return call<HelpDocument>(ipcRenderer, IPC_CHANNELS.help.get, "help.get", isHelpDocument, { slug });
+    },
+  };
+}
+
 function createRagApi(ipcRenderer: IpcRendererLike): RagApi {
   const subscriptions = new Map<string, (...args: unknown[]) => void>();
   const PENDING_LIMIT = 64;
@@ -442,6 +457,7 @@ export function createBookWriterApi(ipcRenderer: IpcRendererLike): BookWriterApi
     search: createSearchApi(ipcRenderer),
     settings: createSettingsApi(ipcRenderer),
     rag: createRagApi(ipcRenderer),
+    help: createHelpApi(ipcRenderer),
   };
 }
 

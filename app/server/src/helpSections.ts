@@ -28,6 +28,12 @@ export const HELP_SECTIONS: HelpSection[] = [
     externalPath: "/help/workflow",
   },
   {
+    slug: "nonfiction",
+    title: "Nonfiction & the Knowledge Base",
+    blurb: "How a practical nonfiction project differs from fiction — attributed experience, dated safety claims, and the Knowledge Base layout.",
+    mdFile: join(REPO_ROOT, "docs/guides/nonfiction-knowledge-base.md"),
+  },
+  {
     slug: "syncing",
     title: "Syncing Skills & Commands",
     blurb: "The three places skills live and the everyday recipes for keeping machines in sync.",

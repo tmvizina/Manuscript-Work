@@ -60,6 +60,13 @@ extraResources:
     to: ui
     filter:
       - '**/*'
+  # The guide library. Bundled so Help works offline and matches the browser
+  # app's content rather than a hardcoded summary of it.
+  - from: ../../docs/guides
+    to: guides
+    filter:
+      - '**/*.md'
+      - '**/*.html'
   # Embedding model for the native RAG index. Fetched and hash-verified before
   # packaging (npm run fetch:rag-model) rather than committed, then verified
   # again at load time by src/main/rag/modelManifest.ts. The partial-download

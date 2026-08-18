@@ -27,6 +27,8 @@ import {
   type RunSubscriptionOptions,
   type RunUnsubscribeRequest,
   type RunUnsubscribeResult,
+  type HelpDocument,
+  type HelpSectionSummary,
   RAG_LIMITS,
   type RagProgressEvent,
   type RagQueryRequest,
@@ -349,6 +351,33 @@ export function isSearchResultList(value: unknown): value is SearchResult[] {
 
 export function isSettingRecord(value: unknown): value is SettingRecord {
   return isRecord(value) && hasOnlyKeys(value, ["projectId", "key", "value", "updatedAt"]) && isNonEmptyString(value.projectId) && isNonEmptyString(value.key) && isJsonValue(value.value) && isNonEmptyString(value.updatedAt);
+}
+
+export function isHelpSectionSummary(value: unknown): value is HelpSectionSummary {
+  return (
+    isRecord(value) &&
+    hasOnlyKeys(value, ["slug", "title", "blurb", "format", "available"]) &&
+    isNonEmptyString(value.slug) &&
+    isNonEmptyString(value.title) &&
+    typeof value.blurb === "string" &&
+    (value.format === "markdown" || value.format === "html") &&
+    isBoolean(value.available)
+  );
+}
+
+export function isHelpSectionSummaryList(value: unknown): value is HelpSectionSummary[] {
+  return Array.isArray(value) && value.every(isHelpSectionSummary);
+}
+
+export function isHelpDocument(value: unknown): value is HelpDocument {
+  return (
+    isRecord(value) &&
+    hasOnlyKeys(value, ["slug", "title", "format", "text"]) &&
+    isNonEmptyString(value.slug) &&
+    isNonEmptyString(value.title) &&
+    (value.format === "markdown" || value.format === "html") &&
+    typeof value.text === "string"
+  );
 }
 
 const RAG_INDEX_STATUSES = ["never_indexed", "indexing", "ready", "failed", "cancelled"];
